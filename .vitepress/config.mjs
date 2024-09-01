@@ -36,8 +36,14 @@ export default defineConfig({
         text: 'Frontend',
         items: [
           { text: 'Setup', link: '/frontend-setup' },
-          { text: 'Search', link: '/availability-search' },
-          { text: 'Results', link: '/availability-search' },
+          { text: 'Search', items: 
+            [
+              { text: 'Overview', link: '/availability-search-component' },
+              { text: 'Single Entry', link: '/availability-search-single' },
+              { text: 'Multiple Entries', link: '/availability-search-multiple' },
+            ] 
+          },
+          { text: 'Results', link: '/availability-results' },
           { text: 'Checkout', link: '/checkout' },
         ]
       }
