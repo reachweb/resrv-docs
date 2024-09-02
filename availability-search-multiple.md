@@ -1,20 +1,20 @@
-# Availability Search for multiple entries
+# Availability Search for Multiple Entries
 
 This page explains how to allow your users to search for all available Entries for a specific date or dates.
 
-## Using Livewire Filters (recommended)
+## Using Livewire Filters (Recommended)
 
-In most modern websites filtering a list of Entries for the results should be instant and quick. With that in mind, we've decided to combine Statamic Resrv with another product of ours, [Livewire Filters](https://livewirefilters.com/).
+In most modern websites, filtering a list of Entries for results should be instant and quick. With that in mind, we've decided to combine Statamic Resrv with another product of ours, [Livewire Filters](https://livewirefilters.com/).
 
-### What is Livewire Filters?
+### What Is Livewire Filters?
 
-**Livewire Filters** is an add-on for that enables you to use Livewire to create "live" filters (meaning they feel like Javascript, no reload is needed) for your Statamic collections. It's **super powerful** and it allows your to easily filter your entries by almost any field. You can [read the docs](https://livewirefilters.com/docs/v1/overview) at its website to learn more about how to use it, but for the purpose of this page, we'll just go over the basics.
+**Livewire Filters** is an add-on that enables you to use Livewire to create "live" filters (meaning they feel like JavaScript, no reload is needed) for your Statamic collections. It's **super powerful** and allows you to easily filter your entries by almost any field. You can [read the docs](https://livewirefilters.com/docs/v1/overview) on its website to learn more about how to use it, but for the purpose of this page, we'll just go over the basics.
 
-To use Livewire Filters, you just need to [install the addon](https://livewirefilters.com/docs/v1/installation). Statamic Resv will detect that it exists and automatically register the extra components needed.
+To use Livewire Filters, you just need to [install the addon](https://livewirefilters.com/docs/v1/installation). Statamic Resrv will detect that it exists and automatically register the extra components needed.
 
-### How to filter your Entries
+### How to Filter Your Entries
 
-Again, more info can be found in the [Livewire Filters docs](https://livewirefilters.com/docs/v1/usage-overview). Statamic Resrv registers an extra Livewire component called `LfAvailabilityFilter`. This component actually includes `AvailabilitySearch` and ties it to the `LivewireCollection` component that Livewire Filters provides.
+Again, more info can be found in the [Livewire Filters docs](https://livewirefilters.com/docs/v1/usage-overview). Statamic Resrv registers an extra Livewire component called `LfAvailabilityFilter`. This component includes `AvailabilitySearch` and ties it to the `LivewireCollection` component that Livewire Filters provides.
 
 A quick example would be something like this:
 
@@ -33,14 +33,13 @@ A quick example would be something like this:
 </div>
 ```
 
-The `LfAvailabilityFilter` accepts the same properties as the [AvailabilitySearch](./availability-search-component) component, but it also needs a `blueprint` property that you need to set to `collection.blueprint` as in the example above.
+The `LfAvailabilityFilter` accepts the same properties as the [AvailabilitySearch](./availability-search-component) component, but it also needs a `blueprint` property that you need to set to `collection.blueprint`, as in the example above. It then uses a `resrv_search` query scope to filter out the entries that are not available for the selected dates.
 
-That's all! Now all you need to do is edit your `LivewireCollection` view at `resources/views/vendor/statamic-livewire-filters/livewire/livewire-collection.blade.php` and your have a blazing fast "live" filtering system for your Entries.
-
+That's all! Now all you need to do is edit your `LivewireCollection` view at `resources/views/vendor/statamic-livewire-filters/livewire/livewire-collection.blade.php` and you'll have a blazing fast "live" filtering system for your entries.
 
 ## Using the Collection Tag
 
-In case you don't want to use Livewire or you don't need all the extra power that Livewire Filters offer, you can always use the regular [Collection Tag](https://statamic.dev/tags/collection) to list all available entries. You can still apply the same `resrv-search` query scope to filter out the entries that are not available for the selected dates.
+If you don't want to use Livewire or don't need all the extra power that Livewire Filters offer, you can always use the regular [Collection Tag](https://statamic.dev/tags/collection) to list all available entries. You can still apply the same `resrv-search` query scope to filter out the entries that are not available for the selected dates.
 
 A basic example would look like this:
 
@@ -74,21 +73,21 @@ This will display an `AvailabilitySearch` component in the side, without live re
 You need to to also send the session data along (the `resrv_search:resrv_availability="{ session:resrv-search }"` part). Even though this could have been done in the query scope itself, that way we have better control over the data that is sent can better handle Livewire filtering as described further down.
 :::
 
-## Accessing availability data
+## Accessing Availability Data
 
-When an AvailabiltySearch is active, a hook is triggered that adds the availability data into each Entry so that you can use them in your templates. The data is added an array passed through as the `live_availability` key of the entry.
+When an AvailabilitySearch is active, a hook is triggered that adds the availability data into each Entry so that you can use them in your templates. The data is added as an array passed through as the `live_availability` key of the entry.
 
 It has the following properties:
 
 | Property | Description |
 | -------- | ----------- |
 | price | The total price of the Entry for the given dates. |
-| original_price | The starting price if a Dynamic Pricing is active. |
-| payment | What the user needs to pay to book this Entry (check the Global config for more info) |
-| property | The property the above refer to in case Advanced Availability is used. |
+| original_price | The starting price if Dynamic Pricing is active. |
+| payment | What the user needs to pay to book this Entry (check the Global config for more info). |
+| property | The property the above refers to in case Advanced Availability is used. |
 | propertyLabel | The label of the above property. |
 
-When the availablity data is provided you can use them like so:
+When the availability data is provided, you can use them like so:
 
 ```antlers{11-15}
 [...]
