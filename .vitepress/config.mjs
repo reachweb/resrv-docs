@@ -56,6 +56,7 @@ export default defineConfig({
               { text: 'Stripe', link: '/stripe' },
             ] 
           },
+          { text: 'Languages', link: '/languages' },
         ]
       },
     ],
