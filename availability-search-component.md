@@ -30,8 +30,8 @@ Of course, there are quite a few properties that you can set depending on the us
 | enableQuantity | boolean | true | When enabled, a quantity control is added so that the user can book more than one product at once. |
 | live | boolean | true | When enabled, the component will automatically update the results when the user changes any value of their search. When disabled, the component will only update when the user clicks the "Search" button. |
 | redirectTo | string | null | If live mode is disabled, you can select a page to redirect to when the user clicks "Search". |
-| advanced | mixed | false | If you are using the advanced availability feature, you need to set this to the collection.blueprint value of the collection you are using (for example pages.page) in order to load the properties. |
-| anyAdvanced | boolean | false | **Usable when search for multiple entries** When enabled, the component will pass "any" as the property and the results will return the cheapest property that is available. |
+| advanced | mixed | false | If you are using the advanced availability feature, you need to set this to the `collection.blueprint` value of the collection you are using (for example pages.page) in order to load the properties. |
+| anyAdvanced | boolean | false | **Usable when searching for multiple entries** When enabled, the component will pass "any" as the property and the results will return the cheapest property that is available. |
 | resetAdvancedOnBoot | boolean | false | When enabled, the component will reset the property when it boots back to null regardless of what's saved in the session. |
 | overrideProperties | array | null | You can override the properties that have been set up using Advanced Availability in the Collection. |
 | view | string | "availability-search" | You can override the view that is used to render the component. Really useful when you want to have different versions of the AvailabilitySearch component on different pages. Expects a `name.blade.php` file in the `/resources/views/vendor/statamic-resrv/livewire` folder. |

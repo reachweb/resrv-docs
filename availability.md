@@ -18,7 +18,7 @@ By default, Statamic appends "_field" to the handle of each new field. For Resrv
 
 After adding the field to your blueprint, simply open an Entry, and you'll see the Availability calendar.
 
-<Image src="./img/resrv-availability-calendar.webp" alt="The Availability calendar when editing a field." />
+<Image src="./img/resrv-availability-calendar.webp" alt="The Availability calendar when editing availability and pricing for a date range." />
 
 You can use the `Enable reservations` toggle to disable reservations completely for this entry.
 
@@ -33,7 +33,7 @@ The terms used here:
 | Term          | Meaning     |
 | ------------- | ------------- |
 | Availability  | The quantity of the available items (for example rooms, seats, etc.) |
-| Price         | The price for that particular day. |
+| Price         | The price for the selected day (or date range) |
 
 To *stop sales* you can set the quantity to 0 or just delete the availability info for that day.
 
