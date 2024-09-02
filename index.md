@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "Statamic Resrv"
-  text: "Statamic Resrv is a fully featured reservations engine build using Laravel and \"living\" inside a Statamic CMS installation."
+  text: "A fully featured reservations engine for Statamic."
   tagline: My great project tagline
   actions:
     - theme: brand

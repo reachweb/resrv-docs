@@ -21,7 +21,7 @@ Each search that the user makes is saved in the session, so that their search pe
 <Image src="./img/resrv-availability-search.webp" alt="A very simple AvailabilitySearch component with its pal, AvailabilityResults" />
 
 ## Component properties
-y
+
 Of course, there are quite a few properties that you can set depending on the use case. Here's a list of all the available properties:
 
 | Property | Type | Default | Description |

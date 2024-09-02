@@ -12,10 +12,12 @@ const props = defineProps({
 </script>
 
 <template>
-  <figure class="code-image-container">
-    <img :src="src" :alt="alt" class="code-image" />
-    <figcaption v-if="alt" class="code-image-caption">{{ alt }}</figcaption>
-  </figure>
+    <figure class="code-image-container">
+        <a :href="src" target="_blank" rel="noopener noreferrer">
+            <img :src="src" :alt="alt" class="code-image" />
+        </a>
+        <figcaption v-if="alt" class="code-image-caption">{{ alt }}</figcaption>
+    </figure>
 </template>
 
 <style scoped>
