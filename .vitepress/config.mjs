@@ -46,11 +46,22 @@ export default defineConfig({
           { text: 'Results', link: '/availability-results' },
           { text: 'Checkout', link: '/checkout' },
         ]
-      }
+      },
+      {
+        text: 'Configuration',
+        items: [
+          { text: 'Global Configuration', link: '/configuration' },
+          { text: 'Payment gateways', items: 
+            [
+              { text: 'Strip', link: '/stripe' },
+            ] 
+          },
+        ]
+      },
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
+      { icon: 'github', link: 'https://github.com/reachweb/statamic-resrv' }
     ],
   },
   markdown: {

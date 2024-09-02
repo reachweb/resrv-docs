@@ -9,10 +9,10 @@ hero:
   actions:
     - theme: brand
       text: Getting Started
-      link: /getting-started
+      link: /installation
     - theme: alt
-      text: API Examples
-      link: /api-examples
+      text: Statamic Marketplace
+      link: https://statamic.com/addons
 
 features:
   - title: Feature A
