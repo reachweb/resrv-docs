@@ -37,11 +37,11 @@ Resrv can be quite complex to set up, depending on the use case. But here are th
 to follow to get started:
 
 1. [Install](./installation) the addon, migrate the database, and publish the config and view files.
-2. Create the checkout page, which contains the Checkout Livewire component and the checkout complete page.
-3. Configure Resrv to select the above pages.
+2. Create the [checkout page](./checkout), which contains the Checkout Livewire component and the checkout complete page.
+3. [Configure Resrv](./configuration#checkout-settings) to use the above pages.
 4. Add a [Resrv Availability](./availability) field to one of your Collections.
 5. Add pricing and availability to your Entries.
-6. Add any additional Extras or Options that you may need.
+6. Add any additional [Extras](./extras) or [Options](./options) that you may need.
 7. Set up the payment provider and configure the webhooks. [Stripe](./stripe) is supported out of the box.
-8. Add the frontend assets and use the Livewire components to add availability search to your site.
+8. Add the [frontend](./frontend-setup) assets and use the Livewire components to add availability search to your site.
 9. Profit!
