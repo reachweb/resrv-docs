@@ -53,7 +53,7 @@ export default defineConfig({
           { text: 'Global Configuration', link: '/configuration' },
           { text: 'Payment gateways', items: 
             [
-              { text: 'Strip', link: '/stripe' },
+              { text: 'Stripe', link: '/stripe' },
             ] 
           },
         ]
