@@ -18,7 +18,7 @@ Again, more info can be found in the [Livewire Filters docs](https://livewirefil
 
 A quick example would be something like this:
 
-```antlers{3-7,13}
+```antlers{3-7,10}
 <div class="container mx-auto my-12 flex">
     <div class="w-96">
         {{ livewire:lf-availability-filter
@@ -32,6 +32,10 @@ A quick example would be something like this:
     </div>
 </div>
 ```
+
+::: tip
+You need to to also send the session data along (the `resrv_search:resrv_availability="{ session:resrv-search }"` part). Even though this could have been done in the query scope itself, because of the way Livewire works, we cannot trust that the session data of the Livewire component is the same as the user's.
+:::
 
 The `LfAvailabilityFilter` accepts the same properties as the [AvailabilitySearch](./availability-search-component) component, but it also needs a `blueprint` property that you need to set to `collection.blueprint`, as in the example above. It then uses a `resrv_search` query scope to filter out the entries that are not available for the selected dates.
 
@@ -67,11 +71,11 @@ A basic example would look like this:
 </div>
 ```
 
-This will display an `AvailabilitySearch` component in the side, without live refresh. When a user clicks "Search", they will be redirected back to the same page and the `resrv-search` query scope will filter out any not available entries for the dates selected.
-
 ::: tip
-You need to to also send the session data along (the `resrv_search:resrv_availability="{ session:resrv-search }"` part). Even though this could have been done in the query scope itself, that way we have better control over the data that is sent can better handle Livewire filtering as described further down.
+You need to to also send the session data along (the `resrv_search:resrv_availability="{ session:resrv-search }"` part) here as well.
 :::
+
+This will display an `AvailabilitySearch` component in the side, without live refresh. When a user clicks "Search", they will be redirected back to the same page and the `resrv-search` query scope will filter out any not available entries for the dates selected.
 
 ## Accessing Availability Data
 
@@ -112,5 +116,5 @@ When the availability data is provided, you can use them like so:
 ```
 
 ::: tip
-The method above works for both the **Collection Tag** and the **Livewire Filters** component.
+The method above works for both the **Livewire Filters** and the the **Collection Tag** component.
 :::
