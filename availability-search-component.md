@@ -12,7 +12,7 @@ In its most simple form, you can include the AvailabilitySearch component in you
 {{ livewire:availability-search calendar="range" }}
 ```
 
-More often than not, you'll also want to include the [Availability Results](./availability-results) component to display the results of the search and the "Book now" button that starts the checkout process.
+More often than not, you'll also want to include the [AvailabilityResults](./availability-results) component to display the results of the search and the "Book now" button that starts the checkout process.
 
 ::: tip
 Each search that the user makes is saved in the session, so that their search persists between page loads.
@@ -21,7 +21,7 @@ Each search that the user makes is saved in the session, so that their search pe
 <Image src="./img/resrv-availability-search.webp" alt="A very simple AvailabilitySearch component with its pal, AvailabilityResults" />
 
 ## Component properties
-
+y
 Of course, there are quite a few properties that you can set depending on the use case. Here's a list of all the available properties:
 
 | Property | Type | Default | Description |
@@ -29,7 +29,7 @@ Of course, there are quite a few properties that you can set depending on the us
 | calendar | string | "single" | The calendar type to use. Single selects a single date, range selects a date range. |
 | enableQuantity | boolean | true | When enabled, a quantity control is added so that the user can book more than one product at once. |
 | live | boolean | true | When enabled, the component will automatically update the results when the user changes any value of their search. When disabled, the component will only update when the user clicks the "Search" button. |
-| redirectTo | string | null | **Expects a Statamic Entry ID.** If live mode is disabled, you can select a page to redirect to when the user clicks "Search". |
+| redirectTo | string | null | If live mode is disabled, you can select a page to redirect to when the user clicks "Search". |
 | advanced | mixed | false | If you are using the advanced availability feature, you need to set this to the collection.blueprint value of the collection you are using (for example pages.page) in order to load the properties. |
 | anyAdvanced | boolean | false | **Usable when search for multiple entries** When enabled, the component will pass "any" as the property and the results will return the cheapest property that is available. |
 | resetAdvancedOnBoot | boolean | false | When enabled, the component will reset the property when it boots back to null regardless of what's saved in the session. |
