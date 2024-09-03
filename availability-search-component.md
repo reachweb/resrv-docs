@@ -2,7 +2,7 @@
 
 The AvailabilitySearch Livewire component is the main component that you'll use to add the reservation functionality to your site. It allows the user to search for a date or date range, by specific property and select the quantity that they want to book.
 
-In this page, we'll go over the basics of how to use the component, and then we'll explain how to use it to search for availability of a [single entry](./availability-search-single.md) or how to pair it with [Livewire Filters](https://livewirefilters.com/) in order to search for all [available entries](./availability-search-multiple) for a specific date or dates.
+In this page, we'll go over the basics of how to use the component, and then we'll explain how to use it to search for availability of a [single entry](./availability-search-single.md) or how to pair it with [Livewire Filters](https://livewirefilters.com/) or Statamic's Collection Tag in order to search for all [available entries](./availability-search-multiple) for a specific date or dates.
 
 ## Component basics
 

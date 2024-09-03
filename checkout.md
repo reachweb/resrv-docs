@@ -48,7 +48,7 @@ After the checkout is complete, the user will be redirected to the "Checkout com
 {{ /resrv_checkout_redirect }}
 ```
 
-This tag displays an automated message depending on the status of the payment. Besides that, inside the tag you can access a `reservation` variable that contains the reservation data. This is the correct place to add any goal-based events or Javascript code.
+This tag displays an automated message depending on the status of the payment. Besides that, inside the tag you can access a `reservation` variable that contains the reservation data. This is the correct place to add any goal-based events, like Analytics.
 
 
 ## Checkout form

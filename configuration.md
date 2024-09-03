@@ -6,7 +6,7 @@ You can find the configuration page in Statamic's Control Panel under the "Setti
 
 ## General Information
 
-Here you can set some general information about your company. This information is used in the Reservation emails that are automatically sent to the user.
+Here you can set some general contact information that will be used in the Reservation emails that are automatically sent to the user.
 
 ::: warning
 The "Logo" field doesn't work yet, please check the email configuration page to see how to add a logo manually.
@@ -48,11 +48,11 @@ The "Logo" field doesn't work yet, please check the email configuration page to 
 
 - **Payment type**: Here you can select what the user will pay online. You can choose between paying everything (reservation plus any extras and options), the reservation price only, a percentage of the reservation price, or a fixed amount.
 
-- **Minutes to hold**: When a user initiates a checkout, the availability for their reservation is temporarily blocked for the given number of minutes. This helps to prevent double bookings, especially when availability is low. If the user skips the checkout and returns to the site, the availability will be restored instantly.
+- **Minutes to hold**: When a user initiates a checkout, the availability for their reservation is temporarily blocked for the given number of minutes. This helps to prevent double bookings, especially when availability is low. If the user skips the checkout and returns to the site, the availability will be restored instantly when he performs a new availability search.
 
 ## Livewire checkout settings
 
-Here you need to select the Entries that hold the [Checkout Livewire component](./checkout#checkout-component) and the Entry that holds the [Checkout Complete Livewire component](./checkout#checkout-complete).
+Here you need to select the Entries that hold the [Checkout Livewire component](./checkout#checkout-component) and the [Checkout Complete Livewire component](./checkout#checkout-complete).
 
 ## Currency settings
 

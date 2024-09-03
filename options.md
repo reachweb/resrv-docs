@@ -1,6 +1,8 @@
 # Options
 
-Options are a great way to add a bit of flexibility to your Reservations. They are similar to Extras, but they are less advanced and bound to each Entry by default. You can read the diferences between Extras and Options in the [Extras](./extras#extras-or-options) docs.
+Options are a great way to add a bit of flexibility to your Reservations. They allow you to add a number of values to a specific Option and let the user choose between them.
+
+They are similar to Extras, but they are less advanced and bound to each Entry by default. You can read the diferences between Extras and Options in the [Extras](./extras#extras-or-options) docs.
 
 ## Managing Options
 
