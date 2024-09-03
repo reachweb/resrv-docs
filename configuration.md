@@ -52,7 +52,7 @@ The "Logo" field doesn't work yet, please check the email configuration page to 
 
 ## Livewire checkout settings
 
-Here you need to select the Entries that hold the [Checkout Livewire component](./checkout#checkout-component) and the [Checkout Complete Livewire component](./checkout#checkout-complete).
+Here you need to select the Entries that hold the [Checkout Livewire component](./checkout#checkout-component) and the [Checkout Complete Tag](./checkout#checkout-complete).
 
 ## Currency settings
 
