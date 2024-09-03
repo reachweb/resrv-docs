@@ -18,7 +18,7 @@ composer require reachweb/statamic-resrv
 
 ## Migration
 
-After you've set up your database, you need to run the migrations to create the tables:
+After you've set up [your database](https://laravel.com/docs/11.x/database#configuration), you need to run the migrations to create the tables:
 
 ```bash
 php artisan migrate
@@ -43,7 +43,7 @@ Publishing configuration file
 Publishing checkout form
 Publishing checkout form blueprint
 
- Do you want to publish the Livewire checkout views? (recommended) (yes/no):
+ Do you want to publish the Livewire views? (recommended) (yes/no):
  > yes
 
 Publishing checkout views

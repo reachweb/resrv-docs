@@ -4,7 +4,7 @@ Most of the texts in Resrv are read from the addon's language file. This page ex
 
 ## Publishing the language file
 
-To publish the language file just run:
+If you didn't publish them during installation, you first need to publish the language files:
 
 ```bash
 php artisan vendor:publish --tag=resrv-language
