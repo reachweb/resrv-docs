@@ -4,7 +4,7 @@ This page explains how to allow your users to inquire about the availability and
 
 ## Usage
 
-Usually, you'll use this on the Entry's page, in a sidebar or a modal. To offer your users the most flexibility, we've split the search and results parts into separate components. That way, you can better customize the layout to fit your needs.
+Usually, you'll use this on the Entry's page, in a sidebar or a modal. To offer you the most flexibility, we've split the search and results parts into separate components. That way, you can better customize the layout to fit your needs.
 
 So, let's say you have a cruise named "Three Islands Cruise" and you want to allow your users to book tickets. A basic example would look like this:
 
