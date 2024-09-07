@@ -10,7 +10,12 @@ export default defineConfig({
   title: "Statamic Resrv",
   description: "Statamic Resrv is a fully featured reservations engine build using Laravel and \"living\" inside a Statamic CMS installation.",
   themeConfig: {
-    // https://vitepress.dev/reference/default-theme-config
+    logo: { 
+      light: '/logo-light.svg', 
+      dark: '/logo-dark.svg', 
+      alt: 'Statamic Resrv' 
+    },
+    siteTitle: false,
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Documentation', link: '/installation' }
