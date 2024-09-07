@@ -1,5 +1,7 @@
 ---
 layout: home
+title: Booking system addon-on for Statamic
+description: An advanced reservation system for Laravel and Statamic. Suitable for hotels, restaurants, conferences, car rentals, boat rentals, and more.
 
 hero:
   name: "Statamic Resrv"
