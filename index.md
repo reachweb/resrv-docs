@@ -5,6 +5,9 @@ hero:
   name: "Statamic Resrv"
   text: "A fully featured reservations add-on for Statamic."
   tagline: "Turn your client's website into a powerful booking system."
+  image:
+    src: /resrv-big.svg
+    alt: Statamic Resrv
   actions:
     - theme: brand
       text: Getting Started
