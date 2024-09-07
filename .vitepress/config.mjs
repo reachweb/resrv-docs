@@ -8,6 +8,15 @@ const antlersDef = JSON.parse(readFileSync(path.resolve(__dirname, './languages/
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "Statamic Resrv",
+  head: [
+    ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' }],
+    ['link', { rel: 'manifest', href: '/site.webmanifest' }],
+    ['link', { rel: 'mask-icon', href: '/safari-pinned-tab.svg', color: '#f78964' }],
+    ['meta', { name: 'msapplication-TileColor', content: '#2b5797' }],
+    ['meta', { name: 'theme-color', content: '#f78964' }],
+  ],
   description: "Statamic Resrv is a fully featured reservations engine build using Laravel and \"living\" inside a Statamic CMS installation.",
   themeConfig: {
     logo: { 
