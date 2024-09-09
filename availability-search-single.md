@@ -29,4 +29,4 @@ The component will display relevant information or error messages if the user fa
 
 ## What's next?
 
-You can now move to the [AvailabilityResults](./availability-results) component to customize the results shown.
+You can now move to the [AvailabilityResults](./availability-results) component to customize the results shown or check out how to searh for [multiple available entries](./availability-search-multiple).

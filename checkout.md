@@ -69,8 +69,12 @@ You can use Statamic's validation tab to add validation to your fields. The fiel
 
 <Image src="./img/resrv-checkout-form-frontend.webp" alt="And the same checkout form in the frontend." />
 
-## Next steps
+## Required Configuration
 
-For the checkout to work correctly, you need to select the Checkout Entry, the Checkout Complete Entry and the Checkout form you created in the previous steps, in the addon's [configuration](./configuration.md) page.
+For the checkout to work correctly, you need to select the Checkout Entry, the Checkout Complete Entry, and the Checkout form you created in the previous steps, in the addon's [configuration](./configuration.md) page.
 
-Finally you must also setup and enable a payment gateway.
+Finally, you must also set up and enable a payment gateway.
+
+## Skip Payment
+
+If the price of the reservation is zero, or if dynamic pricing is used that makes it zero, the checkout will be completed without any payment. This means you can use only the reservation part of Resrv. For example, if you have a restaurant that takes reservations but doesn't charge for them, you can simply set the price to zero.
