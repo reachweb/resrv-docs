@@ -55,6 +55,10 @@ This tag displays an automated message depending on the status of the payment. B
 
 We are leveraging the [Statamic form builder](https://statamic.dev/forms) in order to allow you to customize the checkout form. If you published it during the installation process, you will find it in your Blueprints.
 
+::: warning ALWAYS KEEP THE EMAIL FIELD
+The email field (with the handle `email`) is required for the checkout emails to work. Always make sure to keep it in your checkout form.
+:::
+
 You can use Statamic's validation tab to add validation to your fields. The fields that are implemented in the frontend are:
 
 - Text

@@ -75,6 +75,7 @@ export default defineConfig({
             ] 
           },
           { text: 'Languages', link: '/languages' },
+          { text: 'Emails', link: '/emails' },
         ]
       },
     ],
