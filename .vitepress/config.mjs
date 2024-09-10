@@ -63,6 +63,7 @@ export default defineConfig({
           },
           { text: 'Results', link: '/availability-results' },
           { text: 'Checkout', link: '/checkout' },
+          { text: 'Guests', link: '/guests' },
         ]
       },
       {

@@ -52,3 +52,7 @@ This is something that you'd probably use on the homepage of a site. To use it t
 When you want your user to search for a single Entry, usually on the aforementioned Entry's page. Follow along at [single entry](./availability-search-single.md) for examples.
 3. **As a search form on an index page.**
 When you want the user to input their search properties and list all available Entries. You can find your options on the [multiple entries](./availability-search-multiple) page.
+
+## Passing data to checkout
+
+There are some cases where you might want to pass some data to the checkout page before the user gets there. A good example is the [Guests component](./guests) where we pass along the number of guests to the checkout page. To achive that you can bind the control you want to use to the `data.customer.handle` property of the `AvailabilitySearch` component. Just make sure to create the appropriate fields in your [checkout form](./checkout#checkout-form). If you don't want to allow the user to edit them, remember to set them as `hidden` fields in your blueprint.
