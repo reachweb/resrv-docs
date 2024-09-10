@@ -48,4 +48,7 @@ Please note that coupons **always** get applied, even if there are overriding dy
 
 ## Applied Dynamic Pricing
 
-On the Reservation Details page in the Control Panel, you can view which dynamic pricing campaigns have been applied to a reservation.
+On the [Reservation Details](./reservations#reservation-details) page in the Control Panel, you can view which dynamic pricing campaigns have been applied to a reservation.
+
+<Image src="./img/resrv-dynamic-pricing-applied.webp" alt="The applied dynamic pricing campaigns in the reservation details page." />
+

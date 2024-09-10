@@ -46,6 +46,8 @@ export default defineConfig({
           { text: 'Options', link: '/options' },
           { text: 'Dynamic Pricing', link: '/dynamic-pricing' },
           { text: 'Fixed Pricing', link: '/fixed-pricing' },
+          { text: 'Reservations', link: '/reservations' },
+          { text: 'Affiliates', link: '/affiliates' },
         ]
       },
       {
