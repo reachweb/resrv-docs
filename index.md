@@ -16,7 +16,7 @@ hero:
       link: /installation
     - theme: alt
       text: Statamic Marketplace
-      link: https://statamic.com/addons
+      link: https://statamic.com/addons/reach/resrv
 
 features:
   - title: Works with Statamic Entries

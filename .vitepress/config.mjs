@@ -27,7 +27,8 @@ export default defineConfig({
     siteTitle: false,
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Documentation', link: '/installation' }
+      { text: 'Documentation', link: '/installation' },
+      { text: 'Purchase', link: 'https://statamic.com/addons/reach/resrv' }
     ],
 
     sidebar: [
@@ -79,6 +80,7 @@ export default defineConfig({
           { text: 'Emails', link: '/emails' },
         ]
       },
+      { text: 'Support & Pricing', link: '/support' },
     ],
 
     search: {
