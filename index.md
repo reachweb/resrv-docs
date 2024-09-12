@@ -15,7 +15,7 @@ hero:
       text: Getting Started
       link: /installation
     - theme: alt
-      text: Statamic Marketplace
+      text: Get it at the Statamic Marketplace
       link: https://statamic.com/addons/reach/resrv
 
 features:
