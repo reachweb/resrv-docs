@@ -74,6 +74,7 @@ export default defineConfig({
           { text: 'Payment gateways', items: 
             [
               { text: 'Stripe', link: '/stripe' },
+              { text: 'Mollie', link: '/mollie' },
             ] 
           },
           { text: 'Languages', link: '/languages' },

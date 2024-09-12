@@ -11,7 +11,7 @@ Before using this component, let's go through the required steps to get it worki
 1. You need to create an Entry that will be used as the checkout page. This Entry can follow your website's design but must have a different template that will include the `Checkout` component.
 2. You also need to create a "Checkout complete" page. Again, this page can be like any page on your site, but in its template, you must include the `resrv_checkout_redirect` tag.
 3. You need to create the checkout form. If you used the installer, a sample checkout form is already published for you to edit.
-4. You must configure Stripe and include its Javascript in your layout page. This is explained on the [Stripe](./stripe) page.
+4. You must configure Stripe or Mollie in order to accept payments. This is explained on the respective pages: [Stripe](./stripe) and [Mollie](./mollie).
 
 ## Checkout Component
 

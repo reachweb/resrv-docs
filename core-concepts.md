@@ -42,6 +42,6 @@ to follow to get started:
 4. Add a [Resrv Availability](./availability) field to one of your Collections.
 5. Add pricing and availability to your Entries.
 6. Add any additional [Extras](./extras) or [Options](./options) that you may need.
-7. Set up the payment provider and configure the webhooks. [Stripe](./stripe) is supported out of the box.
+7. Set up the payment provider and configure the webhooks. [Stripe](./stripe) is supported out of the box and [Mollie](./mollie) is available as an add-on.
 8. Add the [frontend](./frontend-setup) assets and use the Livewire components to add availability search to your site.
 9. Profit!
