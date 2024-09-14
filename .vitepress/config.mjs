@@ -10,7 +10,7 @@ export default defineConfig({
   title: "Statamic Resrv",
   cleanUrls: true,
   sitemap: {
-    hostname: 'https://resrv.eu'
+    hostname: 'https://resrv.dev'
   },
   head: [
     ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' }],

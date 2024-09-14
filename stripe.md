@@ -58,7 +58,7 @@ php artisan config:clear
 
 In order to receive payment information from Stripe, you need to set up a webhook. You can do this in the Stripe dashboard under the "Developers" section. Select the "Webhooks" tab and click on "Add endpoint".
 
-At the endpoint URL, you need to enter the URL of your site, followed by `/resrv/api/webhook`. So if your site is https://resrv.eu, the endpoint URL should be `https://resrv.eu/resrv/api/webhook`. Please note that HTTPS is required.
+At the endpoint URL, you need to enter the URL of your site, followed by `/resrv/api/webhook`. So if your site is https://resrv.dev, the endpoint URL should be `https://resrv.dev/resrv/api/webhook`. Please note that HTTPS is required.
 
 At the "Select events to listen to" section, you need to select the following events:
 
