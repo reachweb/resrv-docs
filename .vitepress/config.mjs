@@ -28,6 +28,9 @@ export default defineConfig({
       dark: '/logo-dark.svg', 
       alt: 'Statamic Resrv' 
     },
+    footer: {
+      copyright: 'Copyright © 2024 Reach Web Agency'
+    },
     siteTitle: false,
     nav: [
       { text: 'Home', link: '/' },
