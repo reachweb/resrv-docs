@@ -68,6 +68,7 @@ You can use Statamic's validation tab to add validation to your fields. The fiel
 - Textarea
 - Integer
 - Toggle
+- Dictionaries <Badge type="tip" text="NEW" />
 
 <Image src="./img/resrv-checkout-form.webp" alt="The checkout form in the Statamic form builder." />
 
