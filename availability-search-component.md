@@ -58,3 +58,15 @@ When you want the user to input their search properties and list all available E
 ## Passing data to checkout
 
 There are some cases where you might want to pass some data to the checkout page before the user gets there. A good example is the [Guests component](./guests) where we pass along the number of guests to the checkout page. To achive that you can bind the control you want to use to the `data.customer.handle` property of the `AvailabilitySearch` component. Just make sure to create the appropriate fields in your [checkout form](./checkout#checkout-form). If you don't want to allow the user to edit them, remember to set them as `hidden` fields in your blueprint.
+
+## Disabling dates of the week
+
+In some cases you might want to disable specific days of the week. To do so, you need to edit your `availability-search.blade.php` file (make sure you [publish your views during installation](/installation) or by running `php artisan vendor:publish --tag=resrv-checkout-views`) and add a `disabledDays` array to the `x-resrv::availability-dates` component like so:
+
+```blade{3}
+<x-resrv::availability-dates
+    :$calendar
+    disabledDays="[0, 1, 2, 3, 4, 5]"
+    :errors="$errors"
+/>
+```

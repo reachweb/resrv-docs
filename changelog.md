@@ -1,5 +1,9 @@
 # Resrv Changelog
 
+## v4.0.1
+#### Release date: 1st Mar 2025
+- Fix issues with diffInDays method changing in Carbon v3.
+
 ## v4.0.0
 #### Release date: 28th Feb 2025
 

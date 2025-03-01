@@ -47,7 +47,7 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Documentation', link: '/installation' },
       {
-        text: 'v4.0.0',
+        text: 'v4.0.1',
         items: [
           {
             items: [
