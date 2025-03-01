@@ -20,7 +20,7 @@
 
 - **Make a backup of your database.**
 - **Migrate your database by running `php artisan migrate`**
-- The *resrv_statamicentry_extra* table is being replaced by the *resrv_entry_extra* table. This should be handled automatically by the migration but please database.
+- The *resrv_statamicentry_extra* table is being replaced by the *resrv_entry_extra* table. This should be handled automatically by the migration but please check your database afterwards.
 - There are major changes in Resrv's frontend views: if you were overriding those you need to manually upgrade the availability-search.blade.php, checkout-extras.blade.php, checkout-extra.blade.php files (and possibly more like the dictionary fields).
 
 ## v3.2.0
