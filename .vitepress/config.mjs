@@ -46,6 +46,17 @@ export default defineConfig({
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Documentation', link: '/installation' },
+      {
+        text: 'v4.0.0',
+        items: [
+          {
+            items: [
+              { text: 'Changelog', link: '/changelog' },
+              { text: 'Support', link: '/support' }
+            ]
+          }
+        ]
+      },
       { text: 'Purchase', link: 'https://statamic.com/addons/reach/resrv' }
     ],
 

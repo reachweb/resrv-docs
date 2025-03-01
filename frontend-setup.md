@@ -29,9 +29,9 @@ Even though it's not strictly necessary, it's recommended to add the Livewire st
 
 ## Other required assets
 
-Besides the Livewire scripts, Resrv also requires [Flatpickr](https://flatpickr.js.org/) and [Day.js](https://day.js.org/).
+Besides the Livewire scripts, Resrv also requires [Vanilla Calendar Pro](https://vanilla-calendar.pro/) and [Day.js](https://day.js.org/).
 
-You can either install them via npm and include them in your build process (make sure you also import Flatpickr's CSS), or you can include them directly in your layout file using a pre-compiled version that ships with Resrv:
+You can always install them via npm and include them in your build process (make sure you also import the necessary CSS file), but it's highly suggested that you can include them directly in your layout file using a pre-compiled version that ships with Resrv:
 
 ```antlers{11,17}
 <!-- resources/views/layout.antlers.html -->
@@ -55,6 +55,11 @@ You can either install them via npm and include them in your build process (make
     </body>
 </html>
 ```
+
+::: info
+We have forked Vanilla Calendar Pro in order to better support minimum and maximum ranges plus to make it easier to style using CSS variables. You can always use the upstream version but you might have some minor annoyances.
+:::
+
 
 ## Frontend styles & TailwindCSS
 
@@ -96,3 +101,29 @@ If you are not using TailwindCSS, it's recommended that you style the Livewire c
 ::: warning
 The `resrv-tailwind.css` file should only be included if you don't use TailwindCSS. Since it contains what are known as reset styles, it can mess up your site's styling. The suggested approach is to use it as a starting point and then style the components yourself using your own CSS.
 :::
+
+## CSS Variables
+
+You can set the following CSS variables in your style file in order to style Vanilla Calendar Pro:
+
+```css
+--calendar-day-font-size: 1rem;
+--calendar-price-font-size: 0.75rem;
+--calendar-day-font-weight: 400;
+--calendar-day-padding: 0px;
+--calendar-day-border-radius: 0.5rem;
+--calendar-color-white: #ffffff;
+--calendar-color-slate-50: #f8fafc;
+--calendar-color-slate-100: #f1f5f9;
+--calendar-color-slate-200: #e2e8f0;
+--calendar-color-slate-300: #cbd5e1;
+--calendar-color-slate-400: #94a3b8;
+--calendar-color-slate-500: #64748b;
+--calendar-color-slate-600: #475569;
+--calendar-color-slate-900: #0f172a;
+--calendar-color-main: #06b6d4;
+--calendar-color-weekend-enabled: #f43f5e;
+--calendar-color-weekend-disabled: #fff1f2;
+```
+
+Use `!important` in case your changes are not visible.

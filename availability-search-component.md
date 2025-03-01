@@ -34,6 +34,8 @@ Of course, there are quite a few properties that you can set depending on the us
 | anyAdvanced | boolean | false | **Usable when searching for multiple entries** When enabled, the component will pass "any" as the property and the results will return the cheapest property that is available. |
 | resetAdvancedOnBoot | boolean | false | When enabled, the component will reset the property when it boots back to null regardless of what's saved in the session. |
 | overrideProperties | array | null | You can override the properties that have been set up using Advanced Availability in the Collection. |
+| showAvailabilityOnCalendar | boolean | false | Show availability & pricing information on the calendar. Usable only when browsing [a specific entry](/availability-search-single#display-availability-in-the-calendar). |
+| entry | string | none | **Needs to be a Statamic Entry ID**. Only needed when *showAvailabilityOnCalendar* is enabled. |
 | view | string | "availability-search" | You can override the view that is used to render the component. Really useful when you want to have different versions of the AvailabilitySearch component on different pages. Expects a `name.blade.php` file in the `/resources/views/vendor/statamic-resrv/livewire` folder. |
 
 ## Customizing

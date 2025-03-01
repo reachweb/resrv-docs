@@ -70,6 +70,8 @@ You can use Statamic's validation tab to add validation to your fields. The fiel
 - Toggle
 - Dictionaries <Badge type="tip" text="NEW" />
 
+The dictionary *Countries* will display an AlpineJS filtered select box. Resrv adds the dictionary *Country Phone Codes* which displays a select box with all country codes plus an input box for the actual phone number.
+
 <Image src="./img/resrv-checkout-form.webp" alt="The checkout form in the Statamic form builder." />
 
 <Image src="./img/resrv-checkout-form-frontend.webp" alt="And the same checkout form in the frontend." />

@@ -23,6 +23,18 @@ Here, we have an AvailabilitySearch component with advanced availability and qua
 
 <Image src="./img/resrv-availability-search-single.webp" alt="What the above example displays with some minimal changes" />
 
+## Display availability in the calendar
+
+When inside an entry, you may want to display the availability plan (pricing & available items) for that entry. To do this, enable the `showAvailabilityOnCalendar` parameter and pass the entry's ID, for example:
+
+```antlers
+{{ livewire:availability-search showAvailabilityOnCalendar="true" :entry="id" }}
+```
+
+Resrv takes care of the rest for you:
+
+<Image src="./img/resrv-availability-search-with-prices.webp" alt="The calendar with availability displayed." />
+
 ## Error handling
 
 The component will display relevant information or error messages if the user fails to set all the required search properties (in this example, date & property) or if there is no availability.
