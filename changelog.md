@@ -1,5 +1,11 @@
 # Resrv Changelog
 
+## v4.1.0
+#### Release date: 18th Mar 2025
+- Laravel 12 support
+- Added a fix for the new country code dictionary so that it can be used in regular Statamic forms and pass the value to the email template correctly.
+- Cleanup of unused database columns and tables.
+
 ## v4.0.1
 #### Release date: 1st Mar 2025
 - Fix issues with diffInDays method changing in Carbon v3.
