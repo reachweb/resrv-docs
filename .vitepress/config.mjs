@@ -40,14 +40,14 @@ export default defineConfig({
       alt: 'Statamic Resrv' 
     },
     footer: {
-      copyright: 'Copyright © 2024 Reach Web Agency'
+      copyright: 'Copyright © 2025 Reach Web Agency'
     },
     siteTitle: false,
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Documentation', link: '/installation' },
       {
-        text: 'v4.1.0',
+        text: 'v5.0.0',
         items: [
           {
             items: [

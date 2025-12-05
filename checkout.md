@@ -37,11 +37,11 @@ After the checkout is complete, the user will be redirected to the "Checkout com
 
 ```antlers
 {{ resrv_checkout_redirect }}
-    <div class="w-full bg-white rounded-[48px] p-4 md:p-8 xl:p-10">          
-        <div class="text-xl xl:text-2xl font-medium mb-4 font-serif">
+    <div class="w-full">          
+        <div class="text-xl xl:text-2xl font-bold mb-3 lg:mb-4">
             {{ title  }}
         </div>
-        <p class="font-medium lg:text-lg">
+        <p class="lg:text-lg">
             {{ message }}
         </p>                        
     </div>
