@@ -1,7 +1,7 @@
 # Resrv Changelog
 
 ## v5.0.0
-#### Release date: 13 Jul 2025
+#### Release date: 5th Dec 2025
 
 ### This release contains breaking changes please read follow the release notes to upgrade existing Resrv installations.
 
