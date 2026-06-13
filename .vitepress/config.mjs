@@ -47,10 +47,11 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Documentation', link: '/installation' },
       {
-        text: 'v5.0.0',
+        text: 'v6.0.0',
         items: [
           {
             items: [
+              { text: 'Upgrading to v6', link: '/upgrading' },
               { text: 'Changelog', link: '/changelog' },
               { text: 'Support', link: '/support' }
             ]
@@ -66,16 +67,19 @@ export default defineConfig({
         items: [
           { text: 'Installation', link: '/installation' },
           { text: 'Core Concepts', link: '/core-concepts' },
+          { text: 'Upgrading to v6', link: '/upgrading' },
         ]
       },
       {
         text: 'Backend',
         items: [
           { text: 'Availability', link: '/availability' },
+          { text: 'Rates', link: '/rates' },
           { text: 'Extras', link: '/extras' },
           { text: 'Options', link: '/options' },
           { text: 'Dynamic Pricing', link: '/dynamic-pricing' },
           { text: 'Fixed Pricing', link: '/fixed-pricing' },
+          { text: 'Cutoff', link: '/cutoff' },
           { text: 'Reservations', link: '/reservations' },
           { text: 'Affiliates', link: '/affiliates' },
         ]
@@ -84,14 +88,16 @@ export default defineConfig({
         text: 'Frontend',
         items: [
           { text: 'Setup', link: '/frontend-setup' },
-          { text: 'Search', items: 
+          { text: 'Search', items:
             [
               { text: 'Overview', link: '/availability-search-component' },
               { text: 'Single Entry', link: '/availability-search-single' },
               { text: 'Multiple Entries', link: '/availability-search-multiple' },
-            ] 
+            ]
           },
           { text: 'Results', link: '/availability-results' },
+          { text: 'Available Dates', link: '/availability-list' },
+          { text: 'Cart Booking', link: '/cart-booking' },
           { text: 'Checkout', link: '/checkout' },
           { text: 'Guests', link: '/guests' },
         ]
@@ -100,11 +106,13 @@ export default defineConfig({
         text: 'Configuration',
         items: [
           { text: 'Global Configuration', link: '/configuration' },
-          { text: 'Payment gateways', items: 
+          { text: 'Payment gateways', items:
             [
+              { text: 'Overview', link: '/payment-gateways' },
               { text: 'Stripe', link: '/stripe' },
               { text: 'Mollie', link: '/mollie' },
-            ] 
+              { text: 'Custom Gateways', link: '/custom-payment-gateway' },
+            ]
           },
           { text: 'Languages', link: '/languages' },
           { text: 'Emails', link: '/emails' },

@@ -4,7 +4,7 @@ Resrv offers a basic affiliate system that allows you to track any reservations 
 
 ## Basics
 
-To use the affiliate system, you need to enable it in the addon's [configuration](./configuration#reservation-settings) page. Once enabled, you can find the Affiliates link in the Control Panel.
+To use the affiliate system, you need to enable it in the addon's [configuration](./configuration#engine) page. Once enabled, you can find the Affiliates link in the Control Panel.
 
 When adding an affiliate, you will be presented with the following options:
 
@@ -33,13 +33,13 @@ However, this approach has some limitations. For instance, if a user blocks cook
 
 ## Skipping payment
 
-As previously mentioned, if you enable the **Allow skipping payment** option, the affiliate will be able to bypass the payment step during the checkout process. This feature is useful if you want an affiliate to book a reservation on behalf of a client without immediate payment—for example, if an agency or concierge is booking for a client who will pay later. Be cautious when using this feature, as sharing the affiliate code may allow other users to bypass payment unintentionally.
+As previously mentioned, if you enable the **Allow skipping payment** option, the affiliate will be able to bypass the payment step during the checkout process. This feature is useful if you want an affiliate to book a reservation on behalf of a client without immediate payment, for example, if an agency or concierge is booking for a client who will pay later. Be cautious when using this feature, as sharing the affiliate code may allow other users to bypass payment unintentionally.
 
 When skipping payment is allowed, a new button labeled **Complete reservation and pay later** will appear in the checkout process after entering the client's details.
 
 ## How to credit affiliates
 
-In the [reservation details](reservations#reservation-details) page, you can see the affiliate that was credited for the reservation:
+In the [reservation details](./reservations#reservation-details) page, you can see the affiliate that was credited for the reservation:
 
 <Image src="./img/resrv-reservation-affiliate-credit.webp" alt="What appears in the reservations details page when an affiliate is credited." />
 

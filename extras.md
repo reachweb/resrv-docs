@@ -18,6 +18,8 @@ Each Extra has a name, a description, and a price. The price can be calculated i
 
 - **Relative to a checkout form item**: You can select a field in the [checkout form](./checkout) (should be a numerical field) and calculate the price based on the value of that field. For example, if you set the field to `adults` and the price to `10`, and the user selects `3` adults, the Extra will cost `30`.
 
+The min/max [dynamic pricing](./dynamic-pricing) clamp rules also apply to Extras, clamping the per-day total of the Extra after any other adjustments.
+
 If you enable the **Can add more than one** option, the user can use a quantity field on the frontend to order more than one of that extra, up to the max amount you set with "Maximum number for 1 reservation".
 
 You can also override the default name by using the **Override label** field (useful if you have many similar extras and want to differentiate them in the control panel but display the same name to the user).

@@ -1,0 +1,1 @@
+import{_ as e,c as a,o as t,a4 as s}from"./chunks/framework.CRCV4hx_.js";const k=JSON.parse('{"title":"Mollie","description":"","frontmatter":{},"headers":[],"relativePath":"mollie.md","filePath":"mollie.md"}'),i={name:"mollie.md"},n=s("",27),l=[n];function o(h,p,r,d,c,y){return t(),a("div",null,l)}const u=e(i,[["render",o]]);export{k as __pageData,u as default};

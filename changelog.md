@@ -1,5 +1,41 @@
 # Resrv Changelog
 
+## v6.0.0
+#### Release date: June 2026
+
+### This is a major release with breaking changes. Please read the [Upgrade Guide](./upgrading) and back up your database before upgrading.
+
+Resrv v6 brings the add-on to Statamic 6, introduces the new Rates system, adds multiple payment gateways, and rebuilds the Control Panel.
+
+### Requirements
+- PHP 8.4+
+- Laravel 12 or 13
+- Statamic 6
+- Livewire 3.6.4+ or 4
+
+### New features
+- **[Rates](./rates):** a new collection-scoped rate system that replaces the old per-entry "advanced availability" and "connected availabilities". Rates support independent or relative pricing, independent or shared inventory, date and stay restrictions, per-rate cancellation policies, and selective entry assignment.
+- **[Multiple payment gateways](./payment-gateways):** offer several payment methods at checkout with a gateway picker, a built-in offline (bank transfer / pay-at-premises) gateway, per-gateway surcharges and amount limits, and per-gateway webhooks. A documented interface lets you [build your own gateway](./custom-payment-gateway).
+- **New frontend components:** [`availability-collection`](./availability-search-multiple#the-availability-collection-component) (a live, no-extra-package list of available entries for a whole collection), [`availability-multi-results`](./cart-booking) (cart-based multi-rate / multi-date booking), and [`availability-list`](./availability-list) (a list of upcoming available dates).
+- **[Settings in the Control Panel](./configuration):** business, reservation, checkout, email and currency settings now live under Resrv → Settings. `config/resrv-config.php` keeps developer-only keys. The `php please resrv:settings:migrate` command migrates legacy values.
+- **[Email customization](./emails):** configure recipients, subject, from address and template per event and per checkout form, plus opt-in abandoned-reservation recovery emails. The Logo field now renders in emails automatically.
+- **Per-rate [cancellation policies](./rates#cancellation-policy):** set a free-cancellation window or mark a rate as non-refundable; the policy is shown to the customer and snapshotted onto the reservation.
+- **[CSV export](./reservations#export):** export reservations filtered by date range, status and columns, with custom checkout fields included.
+- **Reports** can now run against the booking-creation date as well as the reservation date.
+- **Minimum and maximum [dynamic pricing](./dynamic-pricing) rules:** clamp the final price to a floor or ceiling, applied after all other rules and coupons (and to extras).
+- The frontend calendar moved to [`@reachweb/alpine-calendar`](./frontend-setup) and the Control Panel was rebuilt on Statamic 6 (Vue 3 + Inertia + Tailwind v4).
+
+### Breaking changes
+- Platform floor raised to PHP 8.4 / Laravel 12–13 / Statamic 6 / Livewire 3.6.4+.
+- The `property` column, `advanced_availability` and `connected_availabilities` are removed and replaced by Rates. Run `php artisan resrv:upgrade-to-rates` after migrating.
+- Custom payment gateways must implement five new `PaymentInterface` methods.
+- CP-managed settings move out of `config/resrv-config.php` into the Control Panel.
+- Published frontend views (e.g. `availability-advanced` → `availability-rates`), language overrides and the calendar's CSS variables changed.
+
+### Upgrading
+
+Follow the full [Upgrade Guide](./upgrading). In short: back up your database, bump your requirements and run `composer update`, run `php artisan migrate`, run `php please resrv:settings:migrate` and `php artisan resrv:upgrade-to-rates`, then update any published views, language files and custom payment gateways.
+
 ## v5.0.0
 #### Release date: 5th Dec 2025
 

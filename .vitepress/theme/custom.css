@@ -1,3 +1,22 @@
+/* Animate the layout offset so the announcement banner opens/closes like a
+   drawer, smoothly pushing the nav, sidebar and content down. Registering the
+   variable lets it transition; unsupported browsers just snap into place. */
+@property --vp-layout-top-height {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+}
+
+:root {
+    transition: --vp-layout-top-height 0.35s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        transition: none;
+    }
+}
+
 :root {
     --vp-home-hero-name-color: transparent;
     --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #F56B3C, #F8AD22);

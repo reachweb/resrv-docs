@@ -46,6 +46,36 @@ You can set up coupons to apply a discount to a reservation. Simply enter a coup
 
 Please note that coupons **always** get applied, even if there are overriding dynamic pricing campaigns in place. You can also apply the other conditions mentioned above to coupons, such as limiting their use to a specific date range.
 
+## Minimum and maximum prices <Badge type="tip" text="NEW" />
+
+In addition to **Increase** and **Decrease**, the Operation field offers two more values that let you set a price floor or cap:
+
+| Operation | Effect |
+| --------- | ------ |
+| **Minimum** | If the computed price falls below this amount, it is raised up to this amount (a floor). |
+| **Maximum** | If the computed price rises above this amount, it is lowered down to this amount (a cap). |
+
+When you choose **Minimum** or **Maximum**, the **Type** is forced to **Fixed**: a clamp is always a fixed monetary amount (e.g. floor at `150`, cap at `250`). Percentage clamps are not supported.
+
+### When clamps are evaluated
+
+Clamps are special: they always run **after** everything else, regardless of where you drag them in the list. The price is computed in two phases:
+
+1. All **Increase** and **Decrease** rules run first, one by one, in their drag-and-drop order (exactly as described above).
+2. The **Minimum** and **Maximum** clamps run last, against the final computed price.
+
+This means a clamp also runs **after** an "Overrides all other dynamic pricing" rule and **after** any coupon has been applied, so it always evaluates the truly final price.
+
+::: info
+For example, a base price of $200 with a 50% discount becomes $100. A **Minimum** clamp of `150` then lifts it back up to $150. The clamp still wins even if the discount came from an overriding campaign or a coupon.
+:::
+
+A few more details worth knowing:
+
+- A **Minimum** only raises the price when it is below the floor, and a **Maximum** only lowers it when it is above the cap, otherwise the price is left untouched.
+- If a misconfigured **Decrease** would drive the price below zero, the result is floored at `0`. This safety floor is applied after the min/max clamps, so a configured minimum still takes precedence.
+- Clamps also apply to [Extra](./extras) prices. For a per-day extra, the clamp is evaluated against the extra's total for the booking (price × days), not the per-unit price.
+
 ## Applied Dynamic Pricing
 
 On the [Reservation Details](./reservations#reservation-details) page in the Control Panel, you can view which dynamic pricing campaigns have been applied to a reservation.

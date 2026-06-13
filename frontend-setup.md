@@ -29,9 +29,11 @@ Even though it's not strictly necessary, it's recommended to add the Livewire st
 
 ## Other required assets
 
-Besides the Livewire scripts, Resrv also requires [Vanilla Calendar Pro](https://vanilla-calendar.pro/) and [Day.js](https://day.js.org/).
+Besides the Livewire scripts, Resrv's date picker is built on [@reachweb/alpine-calendar](https://github.com/reachweb/alpine-calendar), an AlpineJS-native calendar component, and uses [Day.js](https://day.js.org/) for date handling.
 
-You can always install them via npm and include them in your build process (make sure you also import the necessary CSS file), but it's highly suggested that you can include them directly in your layout file using a pre-compiled version that ships with Resrv:
+AlpineJS ships with Livewire 3, so it is already on the page once you add <code v-pre>{{ livewire:scripts }}</code>. The calendar plugin registers itself on Alpine's `alpine:init` event, and Day.js is bundled into the precompiled JS and exposed as `window.dayjs`.
+
+You can install these via npm and include them in your own build process, but the simplest supported path is to include the precompiled version that ships with Resrv directly in your layout file. These files are published to `public/vendor/statamic-resrv/frontend/` during [installation](./installation).
 
 ```antlers{11,17}
 <!-- resources/views/layout.antlers.html -->
@@ -56,74 +58,107 @@ You can always install them via npm and include them in your build process (make
 </html>
 ```
 
-::: info
-We have forked Vanilla Calendar Pro in order to better support minimum and maximum ranges plus to make it easier to style using CSS variables. You can always use the upstream version but you might have some minor annoyances.
-:::
-
-
 ## Frontend styles & TailwindCSS
 
-Resrv's Livewire components are styled using TailwindCSS. On a default Statamic installation, TailwindCSS is already included, and if you published the views as recommended during the [installation process](./installation), running `npm run dev` will automatically include the required TailwindCSS styles.
+Resrv's Livewire components are styled using TailwindCSS. Statamic 6 ships with **Tailwind v4**, which is configured CSS-first: there is no `tailwind.config.js`.
 
-It's highly recommended to install the TailwindCSS Forms plugin:
+So that Tailwind doesn't purge the utility classes used by Resrv's components, point it at the published Resrv blade views with the `@source` directive in your main CSS file:
+
+```css
+@import "tailwindcss";
+
+@source "../../vendor/reachweb/statamic-resrv/resources/views/**/*.blade.php";
+```
+
+::: tip
+Adjust the relative path in `@source` to match where your CSS lives relative to the `vendor/` directory.
+:::
+
+It's highly recommended to install the TailwindCSS Forms plugin, since Resrv's inputs use the `form-input`, `form-select`, `form-checkbox` and `form-radio` classes:
 
 ```bash
-npm install @tailwindcss/forms
+npm install -D @tailwindcss/forms
 ```
 
-And then add it to your `tailwind.config.js` file:
+In Tailwind v4 the plugin is registered in CSS with the `@plugin` directive instead of a JS config:
 
-```js{16-18}
-export default {
-    content: [
-        './resources/**/*.antlers.html',
-        './resources/**/*.antlers.php',
-        './resources/**/*.blade.php',
-        './resources/**/*.vue',
-        './content/**/*.md',
-    ],
+```css
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
 
-    theme: {
-        extend: {},
-    },
-
-    plugins: [
-        require('@tailwindcss/typography'),
-        require("@tailwindcss/forms")({
-            strategy: 'class'
-        }),
-    ],
-}
+@source "../../vendor/reachweb/statamic-resrv/resources/views/**/*.blade.php";
 ```
 
-If you are not using TailwindCSS, it's recommended that you style the Livewire components using your own CSS. However, to help you get started, we've included a `resrv-tailwind.css` file in the `vendor/statamic-resrv/frontend/css` directory that you can import so that you can get Resrv running and then customize it to your liking.
+If you are not using TailwindCSS, it's recommended that you style the Livewire components using your own CSS. However, to help you get started, a compiled `resrv-tailwind.css` file ships in the `vendor/statamic-resrv/frontend/css` directory that you can include to get Resrv running and then customize to your liking.
 
 ::: warning
-The `resrv-tailwind.css` file should only be included if you don't use TailwindCSS. Since it contains what are known as reset styles, it can mess up your site's styling. The suggested approach is to use it as a starting point and then style the components yourself using your own CSS.
+The `resrv-tailwind.css` file should only be included if you don't use TailwindCSS. Since it contains reset styles, it can clash with your site's existing styling. Use it as a starting point and then style the components yourself with your own CSS.
 :::
 
 ## CSS Variables
 
-You can set the following CSS variables in your style file in order to style Vanilla Calendar Pro:
+The calendar is themed with CSS custom properties. The defaults are declared at zero specificity, so any override you set in your own stylesheet wins regardless of load order. You do **not** need `!important`.
+
+The accent color (selected days and active states) is `--color-calendar-primary`.
+
+### Color tokens
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `--color-calendar-bg` | `#fff` | Calendar background |
+| `--color-calendar-text` | `oklch(21% .034 264.665)` | Primary text |
+| `--color-calendar-border` | `oklch(92.8% .006 264.531)` | Borders / dividers |
+| `--color-calendar-hover` | `oklch(96.7% .003 264.542)` | Hover background |
+| `--color-calendar-overlay` | `oklch(0 0 0 / .2)` | Popup overlay backdrop |
+| `--color-calendar-primary` | `oklch(54.6% .245 262.881)` | Accent: selected / active day |
+| `--color-calendar-primary-text` | `#fff` | Text on the accent (selected day) |
+| `--color-calendar-muted` | `oklch(44.6% .03 256.802)` | Muted text base |
+| `--color-calendar-disabled` | `var(--color-calendar-muted)` | Disabled day text |
+| `--color-calendar-other-month` | `var(--color-calendar-muted)` | Days outside the current month |
+| `--color-calendar-weekday` | `var(--color-calendar-muted)` | Weekday header labels |
+| `--color-calendar-range` | `oklch(97% .014 254.604)` | In-range background (between start/end) |
+| `--color-calendar-today-ring` | `oklch(70.7% .165 254.624)` | Ring around "today" |
+| `--color-calendar-focus-ring` | `var(--color-calendar-primary)` | Keyboard focus ring |
+| `--color-calendar-available` | `oklch(.65 .2 145)` | Availability dot / label color |
+| `--color-calendar-available-bg` | `oklch(.95 .05 145)` | Available background tint |
+| `--color-calendar-unavailable` | `oklch(70.7% .022 261.325)` | Unavailable (struck-through) day color |
+
+### Radius tokens
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `--radius-calendar` | `.5rem` | Calendar container + buttons radius |
+| `--radius-calendar-day` | `9999px` | Day cell radius (fully round by default) |
+| `--radius-calendar-day-range-edge` | `var(--radius-calendar-day)` | Range start/end edge radius |
+| `--radius-calendar-day-range-middle` | `0` | In-range middle cells radius |
+
+### Other tokens
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `--shadow-calendar` | `0 10px 15px -3px #0000001a, 0 4px 6px -4px #0000001a` | Calendar box shadow |
+| `--font-calendar` | `system-ui, -apple-system, sans-serif` | Calendar font family |
+
+Override only what you need in your own stylesheet:
 
 ```css
---calendar-day-font-size: 1rem;
---calendar-price-font-size: 0.75rem;
---calendar-day-font-weight: 400;
---calendar-day-padding: 0px;
---calendar-day-border-radius: 0.5rem;
---calendar-color-white: #ffffff;
---calendar-color-slate-50: #f8fafc;
---calendar-color-slate-100: #f1f5f9;
---calendar-color-slate-200: #e2e8f0;
---calendar-color-slate-300: #cbd5e1;
---calendar-color-slate-400: #94a3b8;
---calendar-color-slate-500: #64748b;
---calendar-color-slate-600: #475569;
---calendar-color-slate-900: #0f172a;
---calendar-color-main: #06b6d4;
---calendar-color-weekend-enabled: #f43f5e;
---calendar-color-weekend-disabled: #fff1f2;
+:root {
+  --color-calendar-primary: #06b6d4;
+  --color-calendar-primary-text: #ffffff;
+  --color-calendar-bg: #ffffff;
+  --color-calendar-text: #0f172a;
+  --color-calendar-border: #e2e8f0;
+  --color-calendar-hover: #f1f5f9;
+  --color-calendar-range: #ecfeff;
+  --color-calendar-today-ring: #67e8f9;
+  --color-calendar-available: #16a34a;
+  --color-calendar-unavailable: #94a3b8;
+  --radius-calendar: 0.5rem;
+  --radius-calendar-day: 9999px;
+  --font-calendar: system-ui, -apple-system, sans-serif;
+}
 ```
 
-Use `!important` in case your changes are not visible.
+## Next steps
+
+With the assets in place, you're ready to add the reservation components to your templates. Start with the [Availability Search component](./availability-search-component) to let visitors pick dates and check availability.

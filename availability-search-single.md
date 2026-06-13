@@ -11,15 +11,15 @@ So, let's say you have a cruise named "Three Islands Cruise" and you want to all
 ```antlers
 <div class="max-w-md">
     <div class="my-8">
-        {{ livewire:availability-search enableQuantity="true" advanced="cruises.cruise" }}
+        {{ livewire:availability-search enableQuantity="true" :rates="true" :entry="id" }}
     </div>
     <div class="my-8">
-        {{ livewire:availability-results :entry="id" }}
+        {{ livewire:availability-results :entry="id" :rates="true" }}
     </div>
 </div>
 ```
 
-Here, we have an AvailabilitySearch component with advanced availability and quantity enabled. The results are displayed in a separate [AvailabilityResults](./availability-results) component.
+Here, we have an AvailabilitySearch component with [rates](./rates) and quantity enabled. Passing `:entry="id"` lets the search resolve the per-entry rate labels for the dropdown. The results are displayed in a separate [AvailabilityResults](./availability-results) component, which must also receive `:rates="true"` to show the rate-based UI.
 
 <Image src="./img/resrv-availability-search-single.webp" alt="What the above example displays with some minimal changes" />
 
@@ -35,10 +35,14 @@ Resrv takes care of the rest for you:
 
 <Image src="./img/resrv-availability-search-with-prices.webp" alt="The calendar with availability displayed." />
 
+::: info
+When [rates](./rates) are also enabled, the calendar shows availability only after a specific rate is picked, since pricing and availability depend on the selected rate.
+:::
+
 ## Error handling
 
-The component will display relevant information or error messages if the user fails to set all the required search properties (in this example, date & property) or if there is no availability.
+The component will display relevant information or error messages if the user fails to set all the required search fields (in this example, date & rate) or if there is no availability.
 
 ## What's next?
 
-You can now move to the [AvailabilityResults](./availability-results) component to customize the results shown or check out how to searh for [multiple available entries](./availability-search-multiple).
+You can now move to the [AvailabilityResults](./availability-results) component to customize the results shown or check out how to search for [multiple available entries](./availability-search-multiple).
