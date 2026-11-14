@@ -1,5 +1,15 @@
 # Resrv Changelog
 
+## v6.5.1
+#### Release date: 14th November 2026
+
+### Bug fixes
+- **Stale "Search error" next to valid results:** with Livewire 4.4.8 or later, the availability results, availability collection and multi-rate cart components could show "Search error: The dates field is required." next to valid results after a visitor picked dates. An earlier error such as "Please select a rate before proceeding." could also stay visible after a new search. Every new search now starts without earlier errors. Customised views get the fix without republishing.
+
+### Upgrading
+
+Run `composer update reachweb/statamic-resrv`. There are no migrations and no other upgrade steps.
+
 ## v6.5.0
 #### Release date: 14th November 2026
 
