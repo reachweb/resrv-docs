@@ -1,0 +1,38 @@
+---
+title: Introduction
+description: What Resrv is, and how its entries, Control Panel tools, Livewire components and settings fit together.
+---
+
+Resrv is a reservation engine for Statamic, built with Laravel. It runs inside your Statamic site, so you take bookings on your own website for hotel rooms, restaurant tables, conferences, car or boat rentals, and more.
+
+Resrv {{version}} requires PHP {{phpVersion}}, Laravel {{laravelVersion}}, Statamic {{statamicVersion}} and Livewire {{livewireVersion}}.
+
+## How it fits together
+
+- **Entries are your products.** Add a Resrv Availability field to a collection, and each of its entries gets its own availability and prices. One site can sell different things, such as rooms in one collection and cars in another. An entry can also have several [rates](/rates), like room types or pricing tiers.
+- **The Control Panel runs the business.** You edit availability and prices per entry, and manage reservations, [manual reservations](/manual-reservations), the calendar, reports, [extras](/extras), [options](/options), [dynamic pricing](/dynamic-pricing) and [affiliates](/affiliates).
+- **Livewire components run the frontend.** You add them to your templates for availability search, results, the cart and checkout.
+- **Settings live in the Control Panel.** Most of them are under **Resrv → Settings**. You only need the config file for developer keys, like extra [payment gateways](/payment-gateways).
+
+## Where to start
+
+<CardGroup cols={2}>
+  <Card title="Installation" href="/installation" icon="download">
+    Requirements, Composer and the install script.
+  </Card>
+  <Card title="Core Concepts" href="/core-concepts" icon="book-open">
+    How Resrv works, and the steps to set it up.
+  </Card>
+  <Card title="Backend" href="/availability" icon="calendar-days">
+    Availability, rates, extras and reservations in the Control Panel.
+  </Card>
+  <Card title="Frontend" href="/frontend-setup" icon="layout-template">
+    The assets and the Livewire components for your templates.
+  </Card>
+  <Card title="Configuration" href="/configuration" icon="settings">
+    Global settings, payment gateways, languages and emails.
+  </Card>
+  <Card title="Upgrading to v6" href="/upgrading" icon="circle-arrow-up">
+    What to change when you come from v5 or an earlier v6.
+  </Card>
+</CardGroup>

@@ -1,0 +1,50 @@
+:root {
+  --blume-foreground: #171718;
+}
+
+:root[data-theme="dark"] {
+  --blume-border: #29292c;
+  --blume-muted: #1c1c1e;
+  --blume-code-background: #1c1c1e;
+}
+
+/* Archivo is wider than Blume's default face: -0.05em heading tracking crowds it */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  letter-spacing: -0.02em;
+}
+
+/* Header logo: Blume draws logos at 20px, too small for the horizontal lockup's wordmark */
+[data-blume-header] a > img[src^="/brand/resrv-logo"] {
+  height: 1.75rem;
+}
+
+/* Installation's steps hold the page's own h2s: keep them in the heading colour */
+[data-blume-step] :is(h2, h3) {
+  color: var(--blume-foreground);
+}
+
+/* Checklists ("- [ ] item"): the box takes the bullet's place, as on the old site */
+ul.contains-task-list {
+  list-style: none;
+  padding-inline-start: 0;
+}
+
+.task-list-item {
+  position: relative;
+  padding-inline-start: 1.75em;
+}
+
+.task-list-item > input[type="checkbox"] {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0.375em;
+  width: 1em;
+  height: 1em;
+  margin: 0;
+  accent-color: var(--blume-accent);
+}

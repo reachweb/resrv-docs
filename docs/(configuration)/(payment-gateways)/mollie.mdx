@@ -1,0 +1,78 @@
+---
+title: Mollie
+---
+
+You can use Mollie to receive payments from your customers. It's a **redirect gateway**, so customers pay on Mollie's hosted checkout and then return to your site. It comes as a separate add-on (`reachweb/resrv-payment-mollie`) that supports Resrv v6.
+
+:::warning[Upgrading to Resrv v6.5]
+Resrv v6.5.0 changes the `PaymentInterface`, adding a 4th `paymentIntent()` parameter and the required `retrievePaymentIntent()` method (see [Writing a custom payment gateway](/custom-payment-gateway)). Update the Mollie add-on to a release that implements both **in the same deploy** as Resrv v6.5. Otherwise, while Mollie is configured, every request that loads Resrv's payment gateways fails with a fatal error. That includes checkout, webhooks and the Control Panel reservation pages. Before upgrading, check that `MolliePaymentGateway` in the add-on version you'll install declares `retrievePaymentIntent()`. If no such release exists yet, hold off on the Resrv upgrade.
+:::
+
+For [manual reservations](/manual-reservations), customers pay from the [payment page](/payment-page) and only Mollie's webhook can confirm the booking, so make sure the webhook route below is set up.
+
+:::warning
+Even though this payment gateway is tested, it's suggested that you test it in test mode before going live.
+:::
+
+## Install the Mollie payment gateway add-on
+
+First, install the add-on that provides the Mollie payment gateway:
+
+```bash
+composer require reachweb/resrv-payment-mollie
+```
+
+## Setting up the API key
+
+From your Mollie account you need your `Live API key`.
+
+For security reasons, your key is not stored in the add-on's configuration but in your `.env` file. Add it there:
+
+```dotenv
+MOLLIE_KEY=...
+```
+
+If you have cached your config, remember to clear the config cache after changing the `.env` file:
+
+```bash
+php artisan config:clear
+```
+
+## Register the gateway
+
+You enable Mollie in `config/resrv-config.php`, in one of two ways.
+
+### Recommended: register it under `payment_gateways` [#recommended-register-it-under-payment-gateways]
+
+Add Mollie to the `payment_gateways` array with its class and a label. We recommend this for Mollie, since it's a redirect gateway:
+
+```php
+'payment_gateways' => [
+    'mollie' => [
+        'class' => Reach\ResrvPaymentMollie\Http\Payment\MolliePaymentGateway::class,
+        'label' => 'Mollie',
+    ],
+],
+```
+
+You can also give it a surcharge or amount limits (see [Payment gateways](/payment-gateways)).
+
+:::tip[Webhook route]
+Under `payment_gateways`, Mollie's webhook route is `/resrv/api/webhook/mollie` (matching the array key). Set this URL in your Mollie dashboard.
+:::
+
+### Alternative: set it as the single gateway
+
+If Mollie is your only gateway, you can instead swap the Stripe class for Mollie in the `payment_gateway` setting, near the end of `config/resrv-config.php`:
+
+```php
+'payment_gateway' => Reach\ResrvPaymentMollie\Http\Payment\MolliePaymentGateway::class,
+```
+
+Mollie's webhook route is then the bare `/resrv/api/webhook` URL.
+
+## Next steps
+
+That's it! You should now be able to receive payments using Mollie.
+
+To build your own gateway, see [Writing a custom payment gateway](/custom-payment-gateway).

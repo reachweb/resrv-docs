@@ -1,9 +1,7 @@
-# Dependencies
 node_modules/
-
-# VitePress build output and cache
-.vitepress/dist/
-.vitepress/cache/
-
-# OS files
+.blume/
+dist/
+.env.local
+.blume-verify/
 .DS_Store
+.impeccable/

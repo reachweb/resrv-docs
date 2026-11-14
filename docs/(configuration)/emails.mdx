@@ -1,0 +1,213 @@
+---
+title: Emails
+---
+
+Each email Resrv sends is tied to an **event**, with a default template, subject and recipients. You can change any of these from the Control Panel, or turn the email off.
+
+## Email events
+
+| Event | Sent when | Default recipients |
+| --- | --- | --- |
+| `customer_confirmed` | A reservation is confirmed (payment succeeds) | Customer |
+| `admin_made` | A reservation is confirmed | Admins, affiliate |
+| `customer_refunded` | A reservation is refunded | Customer, admins |
+| `customer_cancelled` | A reservation is cancelled without a refund: the customer cancels outside the free cancellation window, you void a booking that collected nothing, or an unpaid [manual reservation](/manual-reservations) is cancelled (see [Manual reservation emails](#manual-reservation-emails)) | Customer |
+| `customer_abandoned` | A customer started but didn't finish a reservation (opt-in, see below) | Customer |
+| `customer_payment_request` | A [manual reservation](/manual-reservations) asks the customer to pay (see [Payment request](#payment-request)) | Customer |
+| `admin_cancelled` | A customer cancels from the [reservation status](/reservation-status) page, or a manual reservation's payment hold lapses | Admins |
+
+:::info
+An eighth event, `admin_orphaned_payment`, alerts your admins when a payment succeeds on a reservation that can't be confirmed any more (expired, refunded, partner or, from v6.5.0, cancelled). From v6.5.0 it also flags manual reservations whose online payment needs checking. It isn't in the Control Panel email settings, so it's always on and goes to the **Admin email** addresses. See [Reconciliation alerts](/manual-reservations#reconciliation-alerts) and [The orphan-payment race](/custom-payment-gateway#the-orphan-payment-race).
+:::
+
+The `admins` recipient is the list in the **Admin email** field (Settings → Engine). If it's empty, admins get no emails. The `affiliate` recipient is any related affiliate with email notifications on, and only when [affiliates](/affiliates) are enabled.
+
+## Customizing emails from the Control Panel
+
+Go to **Resrv → Settings → Emails**. The **Reservation email overrides** section lets you change each event globally or per checkout form.
+
+### Global email event settings
+
+Add a row to the **Global email event settings** grid for each event you want to change:
+
+| Field | Description |
+| --- | --- |
+| Event | The event to change: `customer_confirmed`, `admin_made`, `customer_refunded`, `customer_cancelled`, `customer_abandoned`, `customer_payment_request`, or `admin_cancelled`. |
+| Enabled | On by default. Turn it off to stop sending the email. |
+| Recipient sources | The built-in recipient groups: `customer`, `admins`, `affiliate`. |
+| Extra email addresses | More recipients, one per line or comma-separated. |
+| From address | Overrides the From address. |
+| From name | Overrides the From name. |
+| Subject | Overrides the subject. |
+| Email template | One of the [available templates](#editing-the-templates). Leave empty for the event's default. |
+
+:::warning[RECIPIENTS REPLACE THE DEFAULTS]
+If you set Recipient sources or Extra email addresses on a row, they **replace** the event's default recipients. Leave both empty to keep the defaults. Invalid addresses are dropped, and an email with no valid recipients isn't sent.
+:::
+
+<Frame caption="Global email event settings grid in the Control Panel">
+  ![Global email event settings grid in the Control Panel](/img/resrv-emails-global.webp)
+</Frame>
+
+### Per-form overrides
+
+The **Per-form email event overrides** grid has the same fields plus a **Form** picker. Use it to change an event for one [checkout form](/checkout), for example to give your VIP form a different subject.
+
+Resrv finds the reservation's form through your checkout form mappings (see [Configuration](/configuration)). If it can't find one, per-form overrides are skipped.
+
+### Precedence
+
+```text
+per-form override  >  global override  >  built-in default
+```
+
+Anything you leave empty falls through to the layer below.
+
+## Abandoned reservation emails
+
+Resrv can email customers who started a reservation but didn't finish it. It's **off by default**. Turn it on under **Resrv → Settings → Emails → Abandoned reservation emails**:
+
+| Setting | Default | Description |
+| --- | --- | --- |
+| Enable abandoned reservation emails | `false` | Lets the `resrv:send-abandoned-emails` command email customers with expired reservations. |
+| Delay (in days) | `1` | Days after a reservation expires before the email is sent. `1` = next day. |
+
+A console command sends the emails, so you need to schedule it in your app's `routes/console.php`:
+
+```php
+use Illuminate\Support\Facades\Schedule;
+
+Schedule::command('resrv:send-abandoned-emails')->daily();
+```
+
+:::warning[REQUIRES CRON]
+Scheduled commands need your server's cron to run `php artisan schedule:run` every minute. Without it, no abandoned emails are sent.
+:::
+
+The command emails expired reservations that have customer data and haven't had the email yet. Each **customer email** address gets one email, even after several abandoned checkouts.
+
+You can also run it manually:
+
+```bash
+php please resrv:send-abandoned-emails
+```
+
+## Manual reservation emails <Badge variant="accent">NEW</Badge> [#manual-reservation-emails]
+
+[Manual reservations](/manual-reservations) add the **Customer payment request** event and reuse the cancellation events. Once the customer pays, or you **Mark as paid**, the usual **Customer confirmed** and **Admin made** emails go out.
+
+### Payment request
+
+The `customer_payment_request` event (**Customer payment request** in the **Event** dropdown) tells the customer how much to pay and how. It's on by default, goes to the customer and uses the `payment-request` template.
+
+It's sent when you:
+
+- create a reservation that requests a payment, with **Send payment request email** switched on (the default)
+- click **Send payment request** or **Resend payment request** in the reservations listing or on the reservation page
+- change the deadline with **Extend hold** and tick the option to email the payment request
+
+Each successful send is recorded under **Payment request emailed** on the reservation page. If you turn the event off, creating the reservation shows "Reservation created, but the payment request email was not sent. You can send it from the reservation.", and **Send payment request** fails with "The payment request email is disabled in the email settings, so it was not sent."
+
+Until you set a **Subject** on the event, Laravel falls back to *Reservation Payment Request*.
+
+The email includes:
+
+- your business details, and the customer's first name in the greeting if the checkout form has a `first_name` field
+- the booking reference and the **Amount to pay**, including any surcharge
+- "Please pay by" and the date, only when there's a payment deadline ("Please pay by the end of your arrival day" when the arrival day ends first)
+- the reservation details, extras and options, and the remaining amount if you requested less than the total
+- for online payment methods, a **Pay now** button to the [payment page](/payment-page), with the link also as text
+- for offline methods, your [Offline Payment Instructions](/configuration#manual-reservations) under "How to pay", or, if you left them empty, a request to contact you quoting the booking reference
+
+The first email opens with "We have created a reservation for you. Please complete the payment to confirm it." Later sends are reminders: "Here is the payment link for your reservation again." (online) or "Here are the payment details for your reservation again." (offline), then "Please complete the payment to confirm it." A reminder from **Extend hold** with a new deadline ends with "Your payment deadline is now …" and the deadline instead.
+
+:::info[NOTHING TO COLLECT]
+A manual reservation that collects nothing is confirmed on creation and gets no payment request. The switch on the create page then reads **Send confirmation email** and only controls **Customer confirmed**. **Admin made** is always sent.
+:::
+
+### Lapsed holds
+
+When the [lapsed-hold sweep](/configuration#scheduling-the-lapsed-hold-sweep) cancels a reservation, Resrv emails the customer and your admins:
+
+| Recipient | Email event | Default subject | Opening line |
+| --- | --- | --- | --- |
+| Customer | **Customer cancelled (no refund)** (`customer_cancelled`) | Reservation cancelled — payment not received | "We did not receive your payment by …, so your reservation has been cancelled and the dates have been released." |
+| Admins | **Admin cancelled (by customer)** (`admin_cancelled`) | Reservation cancelled — payment hold lapsed | "A reservation has been cancelled because its payment hold lapsed — the customer did not pay in time." |
+
+The customer email also lists the reservation details and asks them to get in touch if they still want the dates. Despite its label, **Admin cancelled (by customer)** covers lapsed holds too. There's no separate switch for lapsed holds, so turning either event off also stops its lapsed-hold email. A **Subject** set on the event replaces the default subject.
+
+### Cancelling an unpaid reservation
+
+When you cancel an **Awaiting payment** reservation, the **Cancel reservation** dialog has an **Email the customer a cancellation notice** checkbox. It's ticked by default only if a payment request was emailed, since otherwise the customer may not know the booking exists. If it's ticked, the customer gets the **Customer cancelled (no refund)** email, which says "Your reservation has been cancelled." and "No payment was collected for this reservation, so there is nothing to refund." No admin email is sent for a cancellation you make yourself.
+
+:::warning[PAYMENTS IN FLIGHT]
+If the customer's online payment had gone through, or was still going through, when the reservation was cancelled (by you or the sweep), the customer is emailed "If you had just completed the payment for this reservation, don't worry — we have been notified and the charge will be refunded." This email goes out even if you unticked the checkbox, as long as **Customer cancelled (no refund)** is enabled. Your admins get a "Captured payment on a cancelled reservation" alert (for a lapsed hold, instead of the lapsed-hold email). Resrv does **not** refund the charge for you. Refund it in your payment provider's dashboard.
+:::
+
+## Adding a logo
+
+Set the **Logo** field under **Resrv → Settings → General** to an **absolute URL** (including `https://`):
+
+```text
+https://yourdomain.com/img/logo.png
+```
+
+The email header shows it as an image, up to 200px wide. Leave the field empty to show your business name as text.
+
+## Editing the templates
+
+For full control over the markup, publish the email views:
+
+```bash
+php artisan vendor:publish --tag=resrv-emails
+```
+
+They're published to `resources/views/vendor/statamic-resrv/email`. The `reservations/` directory has one template per event:
+
+- `confirmed.blade.php`: customer confirmation (`customer_confirmed`)
+- `made.blade.php`: admin notification (`admin_made`)
+- `refunded.blade.php`: refund notice (`customer_refunded`)
+- `cancelled-customer.blade.php`: customer cancellation notice, including lapsed holds (`customer_cancelled`)
+- `abandoned.blade.php`: recovery email (`customer_abandoned`)
+- `payment-request.blade.php`: payment request for manual reservations (`customer_payment_request`)
+- `cancelled.blade.php`: admin cancellation alert for customer cancellations and lapsed holds (`admin_cancelled`)
+- `orphaned-payment.blade.php`: admin orphaned-payment alert (`admin_orphaned_payment`)
+
+The `theme/` directory has the shared HTML and CSS components (layout, header, footer, message, panel, table, button, subcopy) used by every email.
+
+:::tip[CUSTOM TEMPLATES APPEAR IN THE PICKER]
+Any Blade file you add to `resources/views/vendor/statamic-resrv/email/reservations/` shows up in the **Email template** dropdown in Settings → Emails. The label is the filename with dashes turned into spaces.
+:::
+
+:::info
+These templates date from Laravel 9.x, so they use the older Markdown mail syntax (`@component('mail::message')`, `mail::table`, `mail::panel`, `mail::button`). We're gradually modernizing them.
+:::
+
+### Template changes in v6.5 [#template-changes-in-v6-5]
+
+v6.5.0 changes six templates and adds one. If you published the email views, or picked a custom template for an event or form, your copies keep working but won't get these changes:
+
+- `confirmed` and `made`: when nothing was charged online (offline methods, reservations marked as paid), the payment row reads "Amount already paid" instead of "Already paid by credit card". The payment rows now also show for the **Payment type** "Charge the whole amount plus any options and extras" when less than the total was paid.
+- `refunded`: when a refund doesn't go through the gateway, the email adds "Your payment of … will be returned to you separately." If Resrv doesn't know whether the customer paid (an offline checkout booking), it reads "If you have already paid for this reservation, your payment of … will be returned to you separately." instead.
+- `cancelled`: a lapsed hold tells admins the reservation was cancelled "because its payment hold lapsed" rather than "by the customer".
+- `cancelled-customer`: the "Date" row is now "Cancelled on", and lapsed holds and payments in flight get their own wording (see [Manual reservation emails](#manual-reservation-emails)).
+- `orphaned-payment`: each reconciliation case gets its own explanation and recommended action.
+- `payment-request`: new. If you haven't published it, Resrv uses the packaged copy.
+
+:::warning[RE-PUBLISH OR MERGE]
+Old copies of the changed templates ignore the new `$holdLapsed`, `$paymentInFlight`, `$paymentCollected`, `$context`, `$refundedAutomatically` and `$returnedSeparately` data and keep the old wording. Merge the changes into your copies, or re-publish them with `php artisan vendor:publish --tag=resrv-emails --force` (this overwrites your edits) and re-apply your changes.
+:::
+
+## Extending emails (advanced)
+
+Add-ons can change an outgoing reservation email through the `Reach\StatamicResrv\Events\BuildingReservationEmail` event. It fires **before** the email is sent and carries the `Mailable` and the related `Reservation`. A listener can use the full Laravel mailable API, such as `attachData()`, `withSymfonyMessage(...)` for inline images, `subject(...)` or `with([...])`.
+
+:::warning[LISTENERS MUST BE SYNCHRONOUS]
+A listener that changes the mailable must **not** implement `ShouldQueue`. The event fires inside the `build()` call that sends the email, so a queued listener would run after the email has gone out.
+:::
+
+For an example, see the `reachweb/statamic-resrv-vouchers` add-on, which attaches a PDF voucher and an inline QR code to the confirmation email.
+
+## Sending emails
+
+All emails are sent out automatically. Just make sure your Statamic installation is configured [to send emails](https://statamic.dev/email).

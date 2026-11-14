@@ -1,0 +1,9 @@
+---
+// Blume renders "- [ ] item" checklists with disabled boxes. The upgrade guide's checklists are
+// meant to be ticked while you work, so this enables them. Ticks aren't saved.
+---
+<script is:inline>
+  document.querySelectorAll(".task-list-item > input[type='checkbox'][disabled]").forEach((box) => {
+    box.disabled = false;
+  });
+</script>

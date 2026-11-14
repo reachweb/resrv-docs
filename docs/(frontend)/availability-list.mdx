@@ -1,0 +1,76 @@
+---
+title: Availability List Component
+sidebar:
+  label: Available Dates
+  badge: NEW
+---
+
+The `AvailabilityList` Livewire component lists the **upcoming available dates** for a single Entry, starting from a date the user picks. It has been available since v5.1.0.
+
+## How it works
+
+`AvailabilityList` doesn't book anything itself. It drives an [AvailabilitySearch](/availability-search-component) component:
+
+1. The user picks a *start date* in an `availability-search`, usually a single-date calendar.
+2. `AvailabilityList` lists the available dates from that day on.
+3. When the user clicks a date, the component dispatches `availability-date-selected` to `availability-search`, which sets the date and searches again.
+4. Your [AvailabilityResults](/availability-results) component shows the chosen date and the "Book now" button.
+
+## Basic usage
+
+Add the component to the Entry's page with a single-date search:
+
+```antlers
+<div class="max-w-md">
+    <div class="my-8">
+        {{ livewire:availability-search calendar="single" }}
+    </div>
+    <div class="my-8">
+        {{ livewire:availability-list :entry="id" }}
+    </div>
+</div>
+```
+
+Add an `availability-results` component too, so the user can book the date they click.
+
+## Component properties
+
+| Property | Type | Default | Description |
+| -------- | ---- | ------- | ----------- |
+| entry | string | none - required | **Needs to be a Statamic Entry ID.** The ID of the entry you want to list available dates for. |
+| rates | boolean | false | Shows availability per [rate](/rates), with each rate's label. |
+| overrideRates | array | [] | A `rate_id => label` map that replaces the rate labels from the database. |
+| groupByDate | boolean | false | `false` groups dates under each rate. `true` groups rates under each date and uses the `availability-list-by-date` view. |
+| view | string | "availability-list" | Override the view used to render the component. Expects a `name.blade.php` file in the `/resources/views/vendor/statamic-resrv/livewire` folder. If `groupByDate` is `true` and `view` is left at its default, it switches to `availability-list-by-date`. |
+
+:::info
+The list starts from the search's `date_start`. Pair it with a single-date [AvailabilitySearch](/availability-search-single) so the user has a clear start date to set.
+:::
+
+## Grouping by date
+
+Set `groupByDate` to `true` to list each available date once, with its bookable rates underneath. This uses the `availability-list-by-date` view:
+
+```antlers
+{{-- date-first grouping --}}
+{{ livewire:availability-list :entry="id" :rates="true" :group-by-date="true" }}
+```
+
+## Customizing
+
+There are two views:
+
+- `/resources/views/vendor/statamic-resrv/livewire/availability-list.blade.php`: the default, grouped by rate. Each date is a card with the weekday, day and month, the price, and an "only N left" badge when stock is low.
+- `/resources/views/vendor/statamic-resrv/livewire/availability-list-by-date.blade.php`: grouped by date, used when `groupByDate` is enabled. Each rate is a button under its date.
+
+Publish the frontend views to customize them:
+
+```bash
+php artisan vendor:publish --tag=resrv-checkout-views
+```
+
+The views use translation strings like `availableDates`, `availableDatesFrom`, `noAvailableDates`, `pleaseSelectStartDate`, `only`, `left`, `available` and `optionsAvailable`. See [Languages](/languages) to override them.
+
+## What's next? [#what-s-next]
+
+See the [AvailabilityResults](/availability-results) component for booking the selected date and the [AvailabilitySearch](/availability-search-component) component for the search options.

@@ -5,18 +5,18 @@ Copy everything below the line into a fresh Claude Code session started in this 
 
 ---
 
-You are updating outdated documentation screenshots in this VitePress docs site so they
+You are updating outdated documentation screenshots in this Blume docs site so they
 reflect the new **Statamic 6 / Resrv v6** Control Panel UI. Three screenshots on the
 Availability page were already redone this way — use them and the scripts below as the pattern.
 
 ## Environment
-- Docs dev server (rendered pages): http://localhost:5175  (start with `npm run docs:dev` if it's down)
+- Docs dev server (rendered pages): http://localhost:4321  (start with `npm run dev` if it's down)
 - Control Panel (already running, Statamic 6 + Resrv v6): https://resrv-hotel.test/cp/
 - The CP site is a **testbed** — you may add/edit availability, reservations, rates, etc. as needed.
   Do NOT permanently alter blueprints or save throwaway config: when a shot needs a temporary
   value (e.g. a field's label), set it, screenshot, and close WITHOUT saving.
-- Screenshots are `.webp` under `public/img/`, referenced from the `*.md` pages via
-  `<Image src="./img/....webp" ... />`. **Keep exact filenames** (some contain typos, e.g.
+- Screenshots are `.webp` under `public/img/`, referenced from the `docs/**/*.mdx` pages as
+  `<Frame caption="...">![...](/img/....webp)</Frame>`. **Keep exact filenames** (some contain typos, e.g.
   `resrv-availabilty-field.webp`).
 
 ## Tooling
@@ -36,9 +36,9 @@ Availability page were already redone this way — use them and the scripts belo
 - Viewport width is **1440** for all captures. Crop tightly to the relevant panel/component.
 
 ## Method (repeat per page)
-1. Pick a target page (see list below). Read its `.md` and note every `<Image src=...webp>`
+1. Pick a target page (see list below). Read its `.mdx` and note every `/img/...webp` image
    and its caption/surrounding text.
-2. Open the rendered page (e.g. http://localhost:5175/extras) and look at each current
+2. Open the rendered page (e.g. http://localhost:4321/extras) and look at each current
    screenshot so you know exactly what view + framing to reproduce.
 3. Decide, per image, whether it is a **Control-Panel** screenshot that changed in v6.
    Skip front-end/site screenshots and anything already correct. If a v5 feature was removed
@@ -52,7 +52,7 @@ Availability page were already redone this way — use them and the scripts belo
 
 ## Candidate pages (grep for pages that embed images)
 ```bash
-grep -rlE '<Image |\.webp' *.md
+grep -rlE '\.webp' docs
 ```
 Start with the ones the user cares about (e.g. **extras.md**, **options.md**, **surcharges.md**,
 **cutoff.md**, **dynamic-pricing.md**, **rates.md**, **reservations.md**, **checkout.md**,

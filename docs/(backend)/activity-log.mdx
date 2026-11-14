@@ -1,0 +1,83 @@
+---
+title: Activity Log
+---
+
+The activity log records every availability change and every reservation status change, so you can find out things like who changed the price for August.
+
+## Enabling the activity log
+
+The activity log is off by default. Turn on **Enable activity log** in the addon's [configuration](/configuration#engine) page and the Activity Log link appears in the Control Panel.
+
+:::info[Logging starts when you enable it]
+Changes made while the log is off are never recorded.
+:::
+
+## Availability changes
+
+Each change to availability or price is recorded per date and rate, with one of these reasons:
+
+| Reason | When it is recorded |
+|---|---|
+| Reservation created | A customer starts checkout, or a user [creates a reservation in the Control Panel](/manual-reservations), and availability is held for its dates. Reservations with **Decrease availability** turned off record nothing. |
+| Reservation expired | A pending reservation times out and its availability is released. |
+| Reservation refunded | A reservation is refunded and its availability is returned. |
+| Reservation cancelled | A reservation is cancelled and its availability is returned, for example when an unpaid manual reservation passes its payment deadline. |
+| Edited in the Control Panel | A user changes availability or pricing from the availability calendar. |
+| Deleted in the Control Panel | A user deletes availability for a date range. |
+| Stuck pending cleared | The cleanup tool restores availability that a stale checkout left blocked. |
+| Data import | A CSV import writes availability (see [Data imports](#data-imports)). |
+
+Each row stores the date, the rate, the field that changed (`available` or `price`), the old and new value, and the user for Control Panel changes. Changes caused by a reservation also store its ID.
+
+Changes made together are grouped, so editing a whole season shows as one line with the reason, the user and the number of changes. Expand it to see each row.
+
+You can filter the list by entry, reason and availability date.
+
+## Reservation events
+
+The second tab tracks each reservation's status changes. Each row stores the old and new status, the reason and, where applicable, the user:
+
+| Event | When it is recorded |
+|---|---|
+| Checkout started | A customer begins checkout and a pending reservation is created. |
+| Created in the Control Panel | A user creates a reservation with **Create reservation** (see [Manual reservations](/manual-reservations)). It starts as **Awaiting payment**. |
+| Confirmed at checkout | The customer returns from payment and the reservation is confirmed. |
+| Confirmed by payment webhook | The payment provider's webhook confirms the reservation, including payments made from the [payment page](/payment-page). The gateway and payment ID are stored too. |
+| Confirmed in the Control Panel | A user marks an **Awaiting payment** reservation as paid, or creates a reservation that collects nothing (it's confirmed straight away). |
+| Expired | A pending reservation times out without payment. |
+| Refunded in the Control Panel | A user refunds the reservation. The user is recorded. |
+| Reservation cancelled | A reservation is cancelled without a refund. This happens when a user cancels an **Awaiting payment** reservation or a partner or zero-payment booking, when the payment deadline passes, or when a customer cancels after the free-cancellation window. Custom site code can also dispatch it (see the developer note below). |
+
+The "Created in the Control Panel", "Confirmed in the Control Panel" and "Reservation cancelled" entries don't record the user. The reservation page shows who created it under **Created by**.
+
+You can filter the list by reference, reason and date.
+
+## Data imports
+
+Each CSV import is logged as one grouped operation, with the `import` badge on its rows. The rows only show the values the import wrote. To see what a date looked like before an import, check its earlier entries.
+
+## Retention
+
+Log entries are never deleted automatically. The [housekeeping command](/upgrading#_2-optional-schedule-housekeeping) prunes entries older than the `--log-days` option (365 days by default):
+
+```bash
+php please resrv:housekeeping --log-days=365
+```
+
+Use `--dry-run` to preview what would be deleted. If you already schedule housekeeping, it prunes the log too:
+
+```php
+Schedule::command('resrv:housekeeping')->daily();
+```
+
+Pruning also runs when the activity log is off, so old rows still get cleared if you stop using it.
+
+## Good to know
+
+Log entries keep the entry title, rate and user name from the time of the change, so they stay readable after the related reservation, availability or rate is deleted.
+
+If a log write fails, the booking, refund or edit still completes and the error goes to the application log.
+
+:::info[Developer note]
+Resrv dispatches the `Reach\StatamicResrv\Events\ReservationCancelled` event whenever it cancels a reservation without a refund (see [Reservation events](#reservation-events)). You can also dispatch it from your own code for a custom cancellation flow. Resrv then releases the reservation's availability and, with the activity log enabled, logs it as "Reservation cancelled". From v6.5.0, the event also carries an optional `$context` (`hold_lapsed`, `unpaid_hold` or `payment_in_flight`) and a `$notifyCustomer` flag. If your listeners email the customer, skip the email when `$notifyCustomer` is `false`.
+:::

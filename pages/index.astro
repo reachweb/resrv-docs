@@ -1,0 +1,2588 @@
+---
+import Icon from "blume/components/Icon.astro";
+import PageLayout from "blume/components/layout/PageLayout.astro";
+import data from "blume:data";
+import {
+  demoCpUrl,
+  demoLogin,
+  demoUrl,
+  easyFormsUrl,
+  githubUrl,
+  issuesUrl,
+  license,
+  livewireFiltersUrl,
+  marketplaceUrl,
+  partnerUrl,
+  price,
+  reachUrl,
+  requirements,
+  sellerUrl,
+  supportEmail,
+} from "../site";
+
+// The home page: a product page for Resrv, built on Blume's full-width layout. The docs start
+// at /introduction. Every claim here is covered by the docs page linked beside it: change both
+// together. The screenshots in public/home/ come from the Resrv Hotel demo, and the control
+// panel ones have a light and a dark version that swap with the site's theme. The smaller
+// panels redraw the control panel in HTML with the demo's own names and numbers.
+
+const { config } = data;
+const host = (url: string) => new URL(url).host;
+
+const uses = [
+  {
+    icon: "bed-double",
+    title: "Hotels and rentals",
+    text: "Nightly prices, room types as rates, and breakfast as an option.",
+    link: { label: "Rates", href: "/rates" },
+  },
+  {
+    icon: "utensils",
+    title: "Restaurants",
+    text: "Lunch and dinner sittings by date. Set the price to zero and guests book without paying.",
+    link: { label: "Checkout", href: "/checkout" },
+  },
+  {
+    icon: "compass",
+    title: "Tours and excursions",
+    text: "Guests add several rates and dates to a cart and pay for them in one checkout.",
+    link: { label: "Cart booking", href: "/cart-booking" },
+  },
+  {
+    icon: "flower-2",
+    title: "Spas and wellness",
+    text: "Treatments by the day, with the price of each day shown in the date picker.",
+    link: { label: "Single entry search", href: "/availability-search-single" },
+  },
+  {
+    icon: "car",
+    title: "Car and boat rentals",
+    text: "A price for each rental length, and a fee when pickup and return differ.",
+    link: { label: "Fixed pricing", href: "/fixed-pricing" },
+  },
+  {
+    icon: "ticket",
+    title: "Conferences and events",
+    text: "A set number of places, and a checkout form you build in Statamic.",
+    link: { label: "Checkout form", href: "/checkout" },
+  },
+];
+
+const fieldtypes = ["Resrv Availability", "Resrv Options", "Resrv Extras", "Resrv Fixed Pricing", "Resrv Cutoff"];
+
+// The Sea View Suite's first two weeks of November 2026 in the demo: 3 free a day,
+// €320 on weekdays and €368 on Fridays and Saturdays.
+const calendarDays = Array.from({ length: 14 }, (_, i) => ({
+  day: i + 1,
+  price: i % 7 >= 5 ? "368" : "320",
+}));
+
+const screens = [
+  {
+    id: "list",
+    label: "Reservations",
+    path: "reservations",
+    width: 1800,
+    height: 909,
+    alt: "Resrv's Reservations list in the Statamic control panel: five confirmed bookings with their entry, rate, dates, deposit, total and customer, and a Create reservation button.",
+  },
+  {
+    id: "calendar",
+    label: "Calendar",
+    path: "reservations/calendar",
+    width: 1800,
+    height: 1267,
+    alt: "The Reservations Calendar for July 2026, with two Garden View Double bookings drawn as bars across their dates.",
+  },
+  {
+    id: "reports",
+    label: "Reports",
+    path: "reports",
+    width: 1800,
+    height: 1267,
+    alt: "Reports for 2026: 6 reservations, €4,712.60 revenue, €785.43 average value, and a best sellers table by entry.",
+  },
+  {
+    id: "create",
+    label: "New booking",
+    path: "reservations/create",
+    width: 1800,
+    height: 1267,
+    alt: "The Create reservation form filled in for the Sea View Suite, 14 to 18 December 2026, with an airport transfer and Continental breakfast, and a summary showing the dynamic pricing discount and a €1,229.40 total.",
+  },
+];
+
+// The demo's rates for the Rooms collection, as its Rates screen lists them.
+const rates = [
+  { name: "Best Flexible", child: false, badges: ["All entries", "3 derived rates"] },
+  { name: "Bed & Breakfast", child: true, badges: ["Relative", "Shared"] },
+  { name: "Advance Saver", child: true, badges: ["Non-refundable", "Relative", "Shared"] },
+  { name: "Last-Minute Escape", child: true, badges: ["Non-refundable", "Relative", "Shared"] },
+];
+
+const campaigns = [
+  { n: 1, title: "Stay 7+ nights: save 10%" },
+  { n: 2, title: "Early bird: book 30+ days ahead, save 12%" },
+  { n: 3, title: "COASTAL10: 10% off" },
+];
+
+const details = [
+  {
+    icon: "calendar-check",
+    title: "Guests manage their booking",
+    text: "A status page where guests look up a booking and cancel it within the free cancellation window.",
+    href: "/reservation-status",
+  },
+  {
+    icon: "mail",
+    title: "Emails you can edit",
+    text: "Confirmation, refund and abandoned checkout emails, with subjects and recipients set in the control panel.",
+    href: "/emails",
+  },
+  {
+    icon: "languages",
+    title: "In your site's languages",
+    text: "Translate the frontend's text for each site of a Statamic multisite.",
+    href: "/languages",
+  },
+  {
+    icon: "timer",
+    title: "Cutoff times",
+    text: "Stop bookings a set number of hours before an activity starts.",
+    href: "/cutoff",
+  },
+  {
+    icon: "history",
+    title: "Activity log",
+    text: "See who changed a price or the availability for a date, and when.",
+    href: "/activity-log",
+  },
+  {
+    icon: "file-spreadsheet",
+    title: "CSV export",
+    text: "Export reservations with the columns you pick, custom checkout fields included.",
+    href: "/reservations#export",
+  },
+  {
+    icon: "palette",
+    title: "Your templates",
+    text: "Publish the Blade views and style them with Tailwind and CSS variables.",
+    href: "/frontend-setup",
+  },
+  {
+    icon: "plug",
+    title: "Any payment provider",
+    text: "Write a gateway class for a provider Resrv doesn't support yet.",
+    href: "/custom-payment-gateway",
+  },
+];
+---
+
+<PageLayout
+  site={{ title: config.title, description: config.description }}
+  logo={config.logo}
+  favicon={config.favicon}
+  appleIcon={config.appleIcon}
+  banner={config.banner}
+  analytics={config.analytics}
+  navigation={data.navigation}
+  fontCssVars={data.fontCssVars}
+  themeMode={config.theme.mode}
+  searchEnabled={config.search.enabled}
+  siteUrl={config.site}
+  ogEnabled={config.og.enabled}
+  ogImage="/brand/link-preview-1200x630-light.png"
+  ogImageAlt="Resrv"
+  ogImageSize={{ width: 1200, height: 630 }}
+  x={config.x}
+  structuredDataEnabled={config.structuredData}
+  page={{
+    title: "Resrv: a booking system for Statamic",
+    description: config.description,
+    route: "/",
+  }}
+>
+  <link rel="preload" href="/home/fonts/archivo-wide.woff2" as="font" type="font/woff2" crossorigin />
+
+  <div class="home">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap">
+        <a class="news" href="/manual-reservations">
+          <span class="news-tag">New in 6.5</span>
+          <span class="news-text">Take bookings by phone and email a payment link</span>
+          <Icon name="arrow-right" size={14} />
+        </a>
+        <h1 id="hero-title">Make any Statamic entry bookable</h1>
+        <div class="hero-row">
+          <p class="lead">
+            Resrv adds availability, rates, extras, checkout and payments to your Statamic site. Guests
+            book rooms, tables or tours on your pages, and you manage every reservation in the control
+            panel.
+          </p>
+          <div class="hero-side">
+            <div class="actions">
+              <a class="btn btn-primary" href="#demo">
+                Try the live demo <Icon name="arrow-down" size={16} />
+              </a>
+              <a class="btn btn-secondary" href={marketplaceUrl}>Buy for {price}</a>
+              <a class="btn btn-link" href="/introduction">Read the docs</a>
+            </div>
+            <ul class="facts" aria-label="At a glance">
+              <li><Icon name="check" size={14} /> One-time {price}</li>
+              <li><Icon name="check" size={14} /> Statamic {requirements.statamic}</li>
+              <li><Icon name="check" size={14} /> Livewire frontend</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="wrap stage">
+        <figure class="shot shot-site">
+          <div class="frame">
+            <div class="bar" aria-hidden="true">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="address"><Icon name="lock" size={11} /> {host(demoUrl)}/rooms</span>
+            </div>
+            <img
+              src="/home/hero-site.webp"
+              width="1600"
+              height="1000"
+              fetchpriority="high"
+              alt="The Resrv Hotel demo's rooms page after a search for 14 to 18 December: four rooms, each with a discounted total price, a free cancellation date and a Book now button."
+            />
+          </div>
+          <figcaption><span class="dot is-orange"></span>Guests book on your site</figcaption>
+        </figure>
+        <figure class="shot shot-cp">
+          <div class="frame">
+            <div class="bar" aria-hidden="true">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="address"><Icon name="lock" size={11} /> {host(demoCpUrl)}/cp/resrv/reservations</span>
+            </div>
+            <img
+              class="is-light"
+              src="/home/hero-cp-light.webp"
+              width="1600"
+              height="752"
+              alt="Resrv's Reservations list in the Statamic control panel, with five confirmed bookings and their entries, rates, dates, totals and customers."
+            />
+            <img
+              class="is-dark"
+              src="/home/hero-cp-dark.webp"
+              width="1600"
+              height="752"
+              alt="Resrv's Reservations list in the Statamic control panel, with five confirmed bookings and their entries, rates, dates, totals and customers."
+            />
+          </div>
+          <figcaption><span class="dot is-amber"></span>You manage them in Statamic</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="who-title">
+      <div class="wrap who">
+        <div class="who-text">
+          <h2 id="who-title">For Statamic sites that take bookings</h2>
+          <p>
+            Resrv is for developers and agencies who build with Statamic, and for the businesses they
+            build for. You set up the collections and templates. Your client manages availability,
+            prices and reservations in the control panel.
+          </p>
+          <p>
+            Any entry can be bookable, so one site can rent rooms from one collection and cars from
+            another.
+          </p>
+          <a class="more" href="/core-concepts">How Resrv works <Icon name="arrow-right" size={14} /></a>
+        </div>
+        <ul class="uses">
+          {
+            uses.map((use) => (
+              <li>
+                <span class="use-icon">
+                  <Icon name={use.icon} size={20} />
+                </span>
+                <div>
+                  <h3>{use.title}</h3>
+                  <p>
+                    {use.text} <a href={use.link.href}>{use.link.label}</a>
+                  </p>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <section class="section tinted" aria-labelledby="how-title">
+      <div class="wrap">
+        <header class="section-head">
+          <h2 id="how-title">From entry to booking in three steps</h2>
+          <p>Resrv builds on Statamic's entries, blueprints and forms, so it fits into a site you already have.</p>
+        </header>
+        <div class="track" aria-hidden="true"><i></i><i></i><i></i></div>
+        <ol class="steps">
+          <li class="step">
+            <div class="step-text">
+              <span class="step-num">1</span>
+              <h3>Add the availability field</h3>
+              <p>Add a Resrv Availability field to a collection's blueprint. Each entry in it can now take bookings.</p>
+              <a class="more" href="/availability">Availability <Icon name="arrow-right" size={14} /></a>
+            </div>
+            <div class="step-visual" aria-hidden="true">
+              <div class="cp-card">
+                <p class="cp-head">Add field</p>
+                <div class="cp-body">
+                  <p class="cp-search"><Icon name="search" size={13} /> resrv</p>
+                  <p class="cp-group">Special</p>
+                  <ul class="fieldtypes">
+                    {
+                      fieldtypes.map((name, i) => (
+                        <li class:list={{ "is-active": i === 0 }}>
+                          <Icon name={i === 0 ? "calendar-days" : "square-plus"} size={14} />
+                          {name}
+                        </li>
+                      ))
+                    }
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-text">
+              <span class="step-num">2</span>
+              <h3>Set availability and prices</h3>
+              <p>Fill each entry's calendar with how many are free and what they cost. Add rates for room types or pricing tiers.</p>
+              <a class="more" href="/rates">Rates <Icon name="arrow-right" size={14} /></a>
+            </div>
+            <div class="step-visual" aria-hidden="true">
+              <div class="cp-card">
+                <p class="cp-head"><span>November 2026</span><span class="cp-select">Best Flexible <Icon name="chevron-down" size={12} /></span></p>
+                <div class="cal">
+                  {["S", "M", "T", "W", "T", "F", "S"].map((d) => <span class="cal-dow">{d}</span>)}
+                  {
+                    calendarDays.map((d) => (
+                      <span class="cal-day">
+                        <b>{d.day}</b>
+                        <i># 3</i>
+                        <small>€{d.price}</small>
+                      </span>
+                    ))
+                  }
+                </div>
+              </div>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-text">
+              <span class="step-num">3</span>
+              <h3>Add the Livewire components</h3>
+              <p>Put the search and results components in your templates. The checkout component handles extras, the guest's details and payment.</p>
+              <a class="more" href="/frontend-setup">Frontend setup <Icon name="arrow-right" size={14} /></a>
+            </div>
+            <div class="step-visual" aria-hidden="true">
+              <div class="code">
+                <p class="code-file">rooms/show.antlers.html</p>
+                <pre><code><span class="t">{"{{ livewire:availability-search"}</span>
+    <span class="a">:entry</span>=<span class="s">"id"</span> <span class="t">{"}}"}</span>
+<span class="t">{"{{ livewire:availability-results"}</span>
+    <span class="a">:entry</span>=<span class="s">"id"</span> <span class="t">{"}}"}</span></code></pre>
+                <p class="code-file">checkout.antlers.html</p>
+                <pre><code><span class="t">{"{{ livewire:checkout }}"}</span></code></pre>
+              </div>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="rates-title">
+      <div class="wrap split">
+        <div class="split-text">
+          <h2 id="rates-title">Availability and prices for every day</h2>
+          <p>
+            Each entry has its own calendar. Set how many units are free and what they cost, one day at a
+            time or in bulk by weekday.
+          </p>
+          <ul class="ticks">
+            <li><Icon name="check" size={16} /><span>Rates for room types or pricing tiers, with their own prices or a percentage off a base rate.</span></li>
+            <li><Icon name="check" size={16} /><span>Rates can share one inventory, so a room booked at one rate is gone from all of them.</span></li>
+            <li><Icon name="check" size={16} /><span>Minimum and maximum stays, plus early bird and last minute windows, for each rate.</span></li>
+            <li><Icon name="check" size={16} /><span>A free cancellation period for each rate, or none at all with a non-refundable rate.</span></li>
+          </ul>
+          <a class="more" href="/rates">Rates <Icon name="arrow-right" size={14} /></a>
+        </div>
+        <div class="split-visual pairing">
+          <div class="cp-card rates-card" aria-hidden="true">
+            <p class="cp-head"><span>Rates</span><span class="cp-btn">Add rate</span></p>
+            <div class="cp-body">
+              <p class="cp-label">Collection</p>
+              <p class="cp-field">Rooms <Icon name="chevron-down" size={12} /></p>
+              <ul class="rate-tree">
+                {
+                  rates.map((rate) => (
+                    <li class:list={{ "is-child": rate.child }}>
+                      <span class="grip" />
+                      <span class="live" />
+                      <strong>{rate.name}</strong>
+                      <span class="badges">
+                        {rate.badges.map((badge) => <span class="cp-badge">{badge}</span>)}
+                      </span>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+          </div>
+          <div class="window window-widget">
+            <img
+              src="/home/room-rates.webp"
+              width="800"
+              height="1450"
+              loading="lazy"
+              alt="The demo hotel's booking box for the Sea View Suite, 14 to 18 December: Best Flexible at €282 a night, Bed & Breakfast at €304, Advance Saver at €231 and non-refundable, and Last-Minute Escape with no availability."
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section tinted" aria-labelledby="checkout-title">
+      <div class="wrap split is-reversed">
+        <div class="split-text">
+          <h2 id="checkout-title">A checkout with extras, coupons and payments</h2>
+          <p>
+            The checkout component takes guests from extras to their details to payment. You build the
+            form in Statamic's form builder.
+          </p>
+          <ul class="ticks">
+            <li><Icon name="check" size={16} /><span>Extras priced per booking, per day or from the total, and shown, hidden or required by conditions.</span></li>
+            <li><Icon name="check" size={16} /><span>Options for choices like breakfast or bed type, and coupon codes for discounts.</span></li>
+            <li><Icon name="check" size={16} /><span>Take the full amount, a fixed deposit or a percentage up front.</span></li>
+            <li><Icon name="check" size={16} /><span>Offer several gateways at checkout, each with its own surcharge and order limits.</span></li>
+          </ul>
+          <ul class="gateways" aria-label="Payment gateways">
+            <li><a href="/stripe">Stripe</a></li>
+            <li><a href="/payment-gateways#the-offline-gateway">Bank transfer</a></li>
+            <li><a href="/mollie">Mollie <small>add-on</small></a></li>
+            <li><a href="/custom-payment-gateway">Your own</a></li>
+          </ul>
+          <a class="more" href="/checkout">Checkout <Icon name="arrow-right" size={14} /></a>
+        </div>
+        <div class="split-visual layered">
+          <div class="window window-paper">
+            <img
+              src="/home/checkout-extras.webp"
+              width="1400"
+              height="1243"
+              loading="lazy"
+              alt="The demo's checkout, step 1 of 3, Extras and options: Continental breakfast and a King bed chosen, and the airport transfer switched on."
+            />
+          </div>
+          <div class="window window-float window-summary">
+            <img
+              src="/home/checkout-summary.webp"
+              width="848"
+              height="1340"
+              loading="lazy"
+              alt="The checkout summary for the Sea View Suite, 14 to 18 December: the COASTAL10 coupon applied, breakfast, bed setup, airport transfer and champagne, and a €1,161.76 total."
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="manage-title">
+      <div class="wrap">
+        <div class="manage-head">
+          <div>
+            <h2 id="manage-title">Every booking in the control panel</h2>
+            <p>
+              Reservations live in Statamic next to your content, so your client manages them with the
+              login they already have.
+            </p>
+            <a class="more" href="/reservations">Reservations <Icon name="arrow-right" size={14} /></a>
+          </div>
+          <ul class="ticks">
+            <li><Icon name="check" size={16} /><span>Filter by entry, status and dates, and open any booking for its details.</span></li>
+            <li><Icon name="check" size={16} /><span>Refund through the gateway the guest paid with, and the availability comes back.</span></li>
+            <li><Icon name="check" size={16} /><span>Book for a guest on the phone and email them a link to pay. <a href="/manual-reservations">Manual reservations</a></span></li>
+            <li><Icon name="check" size={16} /><span>See revenue and best sellers in reports, and export to CSV.</span></li>
+          </ul>
+        </div>
+
+        <div class="viewer" data-viewer>
+          <div class="tabs" role="tablist" aria-label="Control panel screens">
+            {
+              screens.map((screen, i) => (
+                <button
+                  type="button"
+                  role="tab"
+                  id={`tab-${screen.id}`}
+                  aria-controls={`panel-${screen.id}`}
+                  aria-selected={i === 0 ? "true" : "false"}
+                  tabindex={i === 0 ? 0 : -1}
+                >
+                  {screen.label}
+                </button>
+              ))
+            }
+          </div>
+          {
+            screens.map((screen, i) => (
+              <div
+                class="window window-cp"
+                role="tabpanel"
+                id={`panel-${screen.id}`}
+                aria-labelledby={`tab-${screen.id}`}
+                hidden={i !== 0}
+              >
+                <div class="bar" aria-hidden="true">
+                  <span class="dots"><i></i><i></i><i></i></span>
+                  <span class="address">
+                    <Icon name="lock" size={11} /> {host(demoCpUrl)}/cp/resrv/{screen.path}
+                  </span>
+                </div>
+                <img
+                  class="is-light"
+                  src={`/home/cp-${screen.id}-light.webp`}
+                  width={screen.width}
+                  height={screen.height}
+                  loading="lazy"
+                  alt={screen.alt}
+                />
+                <img
+                  class="is-dark"
+                  src={`/home/cp-${screen.id}-dark.webp`}
+                  width={screen.width}
+                  height={screen.height}
+                  loading="lazy"
+                  alt={screen.alt}
+                />
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="section tinted" aria-labelledby="pricing-rules-title">
+      <div class="wrap split">
+        <div class="split-text">
+          <h2 id="pricing-rules-title">Discounts, coupons and affiliates</h2>
+          <p>
+            Change prices by the dates of a stay, its length, its price or how far ahead it's booked.
+            Rules apply one after another, in the order you set.
+          </p>
+          <ul class="ticks">
+            <li><Icon name="check" size={16} /><span>Raise or lower prices by a percentage or a fixed amount, on entries and extras.</span></li>
+            <li><Icon name="check" size={16} /><span>Set a minimum or a maximum price, applied after every other rule and coupon.</span></li>
+            <li><Icon name="check" size={16} /><span>Coupons take the same conditions, and guests enter them at checkout.</span></li>
+            <li><Icon name="check" size={16} /><span>Affiliate links credit partners for the bookings they send, with a fee you track.</span></li>
+          </ul>
+          <a class="more" href="/dynamic-pricing">Dynamic pricing <Icon name="arrow-right" size={14} /></a>
+          <a class="more more-gap" href="/affiliates">Affiliates <Icon name="arrow-right" size={14} /></a>
+        </div>
+        <div class="split-visual stack" aria-hidden="true">
+          <div class="cp-card">
+            <p class="cp-head"><span>Dynamic Pricing</span><span class="cp-btn">Add Dynamic Pricing</span></p>
+            <ul class="campaigns">
+              {
+                campaigns.map((c) => (
+                  <li>
+                    <span class="live"></span>
+                    <span class="cp-tag">#{c.n}</span>
+                    {c.title}
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+          <div class="pair">
+            <div class="cp-card">
+              <p class="cp-head">Summary</p>
+              <div class="cp-body summary">
+                <p class="summary-entry">
+                  <strong>Sea View Suite</strong>
+                  <span>Dec 14 to Dec 18, 2026, 4 nights</span>
+                </p>
+                <dl>
+                  <div><dt>Base price</dt><dd>€ 1280.00</dd></div>
+                  <div class="is-discount"><dt>Dynamic pricing discount</dt><dd>− € 153.60</dd></div>
+                  <div class="is-total"><dt>Total</dt><dd>€ 1126.40</dd></div>
+                </dl>
+              </div>
+            </div>
+            <div class="cp-card">
+              <p class="cp-head">Affiliate</p>
+              <div class="cp-body affiliate">
+                <strong>Mediterranean Travel Co</strong>
+                <code>?afid=MEDTRAVEL</code>
+                <dl>
+                  <div><dt>Fee</dt><dd>8%</dd></div>
+                  <div><dt>Cookie</dt><dd>30 days</dd></div>
+                  <div><dt>Sales</dt><dd>€ 720</dd></div>
+                  <div><dt>Commission</dt><dd>€ 57.60</dd></div>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="details-title">
+      <div class="wrap">
+        <header class="section-head">
+          <h2 id="details-title">The details</h2>
+          <p>The smaller things a booking site needs, already there.</p>
+        </header>
+        <ul class="details">
+          {
+            details.map((detail) => (
+              <li>
+                <span class="icon-tile">
+                  <Icon name={detail.icon} size={18} />
+                </span>
+                <h3>
+                  <a href={detail.href}>{detail.title}</a>
+                </h3>
+                <p>{detail.text}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <section class="section demo" id="demo" aria-labelledby="demo-title">
+      <div class="wrap">
+        <header class="section-head">
+          <h2 id="demo-title">Try it on the Resrv Hotel</h2>
+          <p>
+            The demo is a coastal hotel where rooms, spa treatments and restaurant tables are booked
+            through one checkout. Make a booking, then log in and find it.
+          </p>
+        </header>
+        <ol class="doors">
+          <li class="door door-site">
+            <a class="door-media" href={demoUrl} tabindex="-1" aria-hidden="true">
+              <img
+                src="/home/demo-hotel.webp"
+                width="1400"
+                height="875"
+                loading="lazy"
+                alt=""
+              />
+            </a>
+            <div class="door-body">
+              <p class="door-step">Step 1</p>
+              <h3>Book on the hotel site</h3>
+              <p>Pick your dates, choose a rate, add extras and go through checkout.</p>
+              <a class="btn btn-primary" href={demoUrl}>
+                Open the hotel site <Icon name="arrow-up-right" size={16} />
+              </a>
+            </div>
+          </li>
+          <li class="door door-cp">
+            <div class="door-media login" aria-hidden="true">
+              <div class="login-card">
+                <p class="login-title">Sign in with email</p>
+                <p class="login-label">Email</p>
+                <p class="login-input">{demoLogin.email}</p>
+                <p class="login-label">Password</p>
+                <p class="login-input is-secret">••••••••</p>
+                <p class="login-btn">Continue</p>
+              </div>
+            </div>
+            <div class="door-body">
+              <p class="door-step">Step 2</p>
+              <h3>Log into the control panel</h3>
+              <p>Find your booking under Reservations, then look around the calendar, rates and reports.</p>
+              <dl class="creds">
+                <div><dt>Email</dt><dd><code>{demoLogin.email}</code></dd></div>
+                <div><dt>Password</dt><dd><code>{demoLogin.password}</code></dd></div>
+              </dl>
+              <a class="btn btn-secondary" href={demoCpUrl}>
+                Open the control panel <Icon name="arrow-up-right" size={16} />
+              </a>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section tinted" aria-labelledby="pricing-title">
+      <div class="wrap pricing">
+        <div class="pricing-text">
+          <h2 id="pricing-title">One price, paid once</h2>
+          <p>
+            Resrv is free to use while you develop. Buy a license on the Statamic Marketplace before the
+            site goes live.
+          </p>
+          <dl class="reqs">
+            <div><dt>PHP</dt><dd>{requirements.php}</dd></div>
+            <div><dt>Laravel</dt><dd>{requirements.laravel}</dd></div>
+            <div><dt>Statamic</dt><dd>{requirements.statamic}</dd></div>
+            <div><dt>Livewire</dt><dd>{requirements.livewire}</dd></div>
+          </dl>
+          <a class="more" href="/installation">Installation <Icon name="arrow-right" size={14} /></a>
+        </div>
+        <div class="plan">
+          <p class="plan-name">{license}</p>
+          <p class="plan-price">{price}</p>
+          <p class="plan-terms">One-time purchase, no annual renewal</p>
+          <ul class="plan-list">
+            <li><Icon name="check" size={16} /> Free in development</li>
+            <li><Icon name="check" size={16} /><span>Help on <a href={issuesUrl}>GitHub</a> and by <a href={`mailto:${supportEmail}`}>email</a></span></li>
+            <li><Icon name="check" size={16} /><span><a href="/support">Paid support</a> for custom work</span></li>
+          </ul>
+          <a class="btn btn-primary" href={marketplaceUrl}>Buy on the Statamic Marketplace</a>
+          <p class="plan-foot">
+            Building for a non-profit or an open-source project? <a href={`mailto:${supportEmail}`}>Get in touch</a>.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="team-title">
+      <div class="wrap split team">
+        <div class="split-text">
+          <h2 id="team-title">Made by Reach in Kos, Greece</h2>
+          <p>
+            Reach Web Agency has built websites since 2012, and has worked only with Statamic since
+            2020. We're a Statamic Partner, and we make two more addons.
+          </p>
+          <a class="partner" href={partnerUrl}>
+            <img src="/statamic-partner.svg" width="112" height="96" alt="Statamic Partner" loading="lazy" />
+          </a>
+          <p class="team-links">
+            <a class="more" href={reachUrl}>About Reach <Icon name="arrow-right" size={14} /></a>
+            <a class="more" href={sellerUrl}>Our addons <Icon name="arrow-right" size={14} /></a>
+          </p>
+        </div>
+        <ul class="addons">
+          <li>
+            <h3><a href={easyFormsUrl}>Easy Forms</a></h3>
+            <p>Professional, accessible forms for your Statamic site.</p>
+          </li>
+          <li>
+            <h3><a href={livewireFiltersUrl}>Livewire Filters</a></h3>
+            <p>Live filters for Statamic collections. Pair it with Resrv to search for entries that are available.</p>
+          </li>
+          <li>
+            <h3><a href={githubUrl}>Resrv on GitHub</a></h3>
+            <p>Read the code, follow releases, and report issues.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="cta" aria-labelledby="cta-title">
+      <div class="wrap cta-inner">
+        <img class="cta-mark" src="/brand/resrv-icon-reversed.svg" alt="" width="72" height="74" />
+        <h2 id="cta-title">Book a room, then find it in the control panel</h2>
+        <p>Try both sides on the demo hotel. When you're ready, Resrv is {price} for one site, paid once.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href={demoUrl}>
+            Open the demo hotel <Icon name="arrow-up-right" size={16} />
+          </a>
+          <a class="btn btn-ghost" href={marketplaceUrl}>Buy on the Marketplace</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</PageLayout>
+
+<script>
+  // The control panel viewer: tabs swap the screenshot, with arrow keys between tabs.
+  for (const viewer of document.querySelectorAll<HTMLElement>("[data-viewer]")) {
+    const tabs = [...viewer.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const select = (tab: HTMLButtonElement) => {
+      for (const other of tabs) {
+        const selected = other === tab;
+        other.setAttribute("aria-selected", String(selected));
+        other.tabIndex = selected ? 0 : -1;
+        const panel = document.getElementById(other.getAttribute("aria-controls") ?? "");
+        if (panel) panel.hidden = !selected;
+      }
+    };
+    tabs.forEach((tab, i) => {
+      tab.addEventListener("click", () => select(tab));
+      tab.addEventListener("keydown", (event) => {
+        const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+        if (!step) return;
+        event.preventDefault();
+        const next = tabs[(i + step + tabs.length) % tabs.length];
+        next.focus();
+        select(next);
+      });
+    });
+  }
+</script>
+
+<style is:global>
+  /* Archivo with its width axis (brand/font, subset to Latin, widths 100-125%, weights 500-800).
+     Blume's display font is a normal-width cut, so the home page loads this one for headings. */
+  @font-face {
+    font-family: "Archivo Wide";
+    src: url("/home/fonts/archivo-wide.woff2") format("woff2");
+    font-weight: 500 800;
+    font-stretch: 100% 125%;
+    font-display: swap;
+  }
+</style>
+
+<style>
+  .home {
+    --ink: #171718;
+    --orange: #f56b3c;
+    --amber: #f8ad22;
+    --wide: "Archivo Wide", var(--blume-font-display);
+    --surface: color-mix(in oklab, var(--blume-foreground) 3%, var(--blume-background));
+    --tint: color-mix(in oklab, var(--blume-accent) 10%, transparent);
+    --radius: 14px;
+    --shadow: 0 1px 2px rgb(23 23 24 / 0.06), 0 28px 56px -28px rgb(23 23 24 / 0.32);
+    --third-bar: var(--ink);
+
+    /* Statamic's control panel look, for the redrawn panels */
+    --cp-bg: #ffffff;
+    --cp-page: #f5f5f5;
+    --cp-text: #262626;
+    --cp-muted: #737373;
+    --cp-border: #e5e5e5;
+    --cp-primary: #4f46e5;
+    --cp-green-bg: #dcfce7;
+    --cp-green: #15803d;
+    overflow-x: clip;
+  }
+
+  :global(:root[data-theme="dark"]) .home {
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 28px 56px -28px rgb(0 0 0 / 0.8);
+    --third-bar: #ffffff;
+    --cp-bg: #1f1f21;
+    --cp-page: #161618;
+    --cp-text: #e5e5e5;
+    --cp-muted: #a3a3a3;
+    --cp-border: #323235;
+    --cp-primary: #6366f1;
+    --cp-green-bg: #0f3a22;
+    --cp-green: #86efac;
+  }
+
+  /* Screenshots of the control panel come in two versions that follow the site's theme */
+  :global(:root:not([data-theme="dark"])) .home .is-dark,
+  :global(:root[data-theme="dark"]) .home .is-light {
+    display: none;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 74rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .wrap {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  h1,
+  h2,
+  h3 {
+    margin: 0;
+    color: var(--blume-foreground);
+    font-family: var(--wide);
+    text-wrap: balance;
+  }
+
+  h2 {
+    font-size: clamp(1.75rem, 3.6vw, 2.625rem);
+    font-stretch: 115%;
+    font-weight: 750;
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+  }
+
+  h3 {
+    font-stretch: 108%;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  a {
+    text-underline-offset: 3px;
+  }
+
+  /* Buttons */
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.875rem;
+    padding: 0.5rem 1.25rem;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    line-height: 1.2;
+    text-decoration: none;
+    transition:
+      background-color 0.15s,
+      border-color 0.15s;
+  }
+
+  .btn-primary {
+    background: var(--blume-accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: color-mix(in oklab, var(--blume-accent) 86%, #000);
+  }
+
+  :global(:root[data-theme="dark"]) .btn-primary {
+    color: var(--ink);
+  }
+
+  :global(:root[data-theme="dark"]) .btn-primary:hover {
+    background: color-mix(in oklab, var(--blume-accent) 86%, #fff);
+  }
+
+  .btn-secondary {
+    border-color: var(--blume-border);
+    background: var(--blume-background);
+    color: var(--blume-foreground);
+  }
+
+  .btn-secondary:hover {
+    border-color: color-mix(in oklab, var(--blume-foreground) 35%, transparent);
+  }
+
+  .btn-link {
+    padding-inline: 0.25rem;
+    color: var(--blume-foreground);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklab, var(--blume-foreground) 30%, transparent);
+  }
+
+  .btn-link:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .btn:focus-visible,
+  .tabs button:focus-visible,
+  .home a:focus-visible {
+    outline: 2px solid var(--blume-accent);
+    outline-offset: 3px;
+  }
+
+  .more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-top: 1.5rem;
+    color: var(--blume-accent);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    text-decoration: none;
+  }
+
+  .more:hover {
+    text-decoration: underline;
+  }
+
+  .more-gap {
+    margin-left: 1.25rem;
+  }
+
+  /* Hero */
+  .hero {
+    position: relative;
+    padding-top: clamp(2.5rem, 6vw, 4.5rem);
+    padding-bottom: clamp(3.5rem, 7vw, 6rem);
+    isolation: isolate;
+  }
+
+  /* A faint week grid behind the hero: seven columns, like the calendar in the logo */
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: linear-gradient(
+      to right,
+      color-mix(in oklab, var(--blume-foreground) 7%, transparent) 1px,
+      transparent 1px
+    );
+    background-size: calc(100% / 7) 100%;
+    mask-image: linear-gradient(to bottom, transparent, #000 25%, #000 60%, transparent);
+  }
+
+  .news {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    max-width: 100%;
+    padding: 0.3125rem 0.75rem 0.3125rem 0.3125rem;
+    border: 1px solid var(--blume-border);
+    border-radius: 999px;
+    background: var(--blume-background);
+    color: var(--blume-muted-foreground);
+    font-size: 0.875rem;
+    text-decoration: none;
+  }
+
+  .news:hover {
+    color: var(--blume-foreground);
+  }
+
+  .news-tag {
+    flex: none;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    background: var(--tint);
+    color: var(--blume-accent);
+    font-weight: 600;
+    font-size: 0.8125rem;
+  }
+
+  .news-text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .hero h1 {
+    max-width: 15ch;
+    margin-top: 1.5rem;
+    font-size: clamp(2.375rem, 7.4vw, 5.75rem);
+    font-stretch: 125%;
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+  }
+
+  .hero-row {
+    display: grid;
+    gap: 1.75rem;
+    margin-top: 2rem;
+  }
+
+  @media (min-width: 960px) {
+    .hero-row {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: start;
+      gap: 4rem;
+    }
+  }
+
+  .lead {
+    max-width: 36rem;
+    color: var(--blume-muted-foreground);
+    font-size: clamp(1.0625rem, 1.6vw, 1.1875rem);
+    line-height: 1.6;
+  }
+
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    margin: 1.25rem 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--blume-muted-foreground);
+    font-size: 0.875rem;
+  }
+
+  .facts li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .facts :global(svg) {
+    color: var(--blume-accent);
+  }
+
+  /* Hero stage: the demo site behind, the control panel in front */
+  .stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    margin-top: clamp(2.5rem, 6vw, 4.5rem);
+  }
+
+  .shot {
+    position: relative;
+    margin: 0;
+  }
+
+  .shot-site {
+    grid-column: 1 / span 11;
+    grid-row: 1;
+  }
+
+  .shot-cp {
+    grid-column: 2 / -1;
+    grid-row: 2;
+    margin-top: 0.75rem;
+  }
+
+  @media (min-width: 900px) {
+    .shot-site {
+      grid-column: 1 / span 8;
+    }
+
+    .shot-cp {
+      grid-column: 7 / -1;
+      grid-row: 1;
+      align-self: end;
+      margin: 0 0 -4rem;
+    }
+  }
+
+  .frame,
+  .window {
+    overflow: hidden;
+    border: 1px solid var(--blume-border);
+    border-radius: var(--radius);
+    background: var(--blume-background);
+    box-shadow: var(--shadow);
+  }
+
+  .frame img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .shot figcaption {
+    position: absolute;
+    left: 0.75rem;
+    bottom: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 8px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    box-shadow: 0 6px 16px -8px rgb(0 0 0 / 0.5);
+  }
+
+  .shot-cp figcaption {
+    left: auto;
+    right: 0.75rem;
+  }
+
+  :global(:root[data-theme="dark"]) .shot figcaption {
+    border: 1px solid #3a3a3e;
+  }
+
+  @media (max-width: 559px) {
+    .shot figcaption {
+      left: 0.5rem;
+      bottom: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+    }
+
+    .shot-cp figcaption {
+      right: 0.5rem;
+    }
+  }
+
+  .dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 2px;
+  }
+
+  .dot.is-orange {
+    background: var(--orange);
+  }
+
+  .dot.is-amber {
+    background: var(--amber);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--blume-border);
+    background: var(--surface);
+  }
+
+  .dots {
+    display: flex;
+    gap: 0.3125rem;
+  }
+
+  .dots i {
+    width: 0.5625rem;
+    height: 0.5625rem;
+    border-radius: 50%;
+    background: color-mix(in oklab, var(--blume-foreground) 16%, transparent);
+  }
+
+  .address {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 0;
+    margin-inline: auto;
+    padding: 0.1875rem 0.75rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--blume-background);
+    color: var(--blume-muted-foreground);
+    font-size: 0.6875rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .address :global(svg) {
+    flex: none;
+  }
+
+  /* Sections */
+  .section {
+    padding-block: clamp(4rem, 9vw, 6.5rem);
+  }
+
+  .tinted {
+    border-block: 1px solid var(--blume-border);
+    background: var(--surface);
+  }
+
+  .section-head {
+    max-width: 42rem;
+    margin-bottom: 3rem;
+  }
+
+  .section-head p {
+    margin-top: 1rem;
+    color: var(--blume-muted-foreground);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+
+  /* Who it's for */
+  .who {
+    display: grid;
+    gap: 2.5rem;
+  }
+
+  @media (min-width: 960px) {
+    .who {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: 5rem;
+    }
+  }
+
+  .who-text p {
+    margin-top: 1rem;
+    color: var(--blume-muted-foreground);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+  }
+
+  .uses {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--blume-border);
+  }
+
+  @media (min-width: 640px) {
+    .uses {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 2rem;
+    }
+  }
+
+  .uses li {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--blume-border);
+  }
+
+  .use-icon {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 10px;
+    background: var(--tint);
+    color: var(--blume-accent);
+  }
+
+  .uses h3 {
+    font-size: 1.0625rem;
+  }
+
+  .uses p {
+    margin-top: 0.375rem;
+    color: var(--blume-muted-foreground);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+
+  .uses p a {
+    color: var(--blume-accent);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* How it works: three staggered bars, as in the logo, mark the three steps */
+  .track {
+    display: none;
+  }
+
+  @media (min-width: 960px) {
+    .track {
+      position: relative;
+      display: block;
+      height: 3.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .track i {
+      position: absolute;
+      height: 0.75rem;
+      border-radius: 999px;
+    }
+
+    .track i:nth-child(1) {
+      top: 0;
+      left: 0;
+      width: 44%;
+      background: var(--orange);
+    }
+
+    .track i:nth-child(2) {
+      top: 1.25rem;
+      left: calc(100% / 3 + 0.5rem);
+      width: 44%;
+      background: var(--amber);
+    }
+
+    .track i:nth-child(3) {
+      top: 2.5rem;
+      left: calc(200% / 3 + 1rem);
+      width: calc(100% / 3 - 1rem);
+      background: var(--third-bar);
+    }
+  }
+
+  .steps {
+    display: grid;
+    gap: 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--blume-border);
+    border-radius: var(--radius);
+    background: var(--blume-background);
+  }
+
+  @media (min-width: 960px) {
+    .steps {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    /* Subgrid lines the three panels up, whatever the length of the text above them */
+    .step {
+      display: grid;
+      grid-row: span 2;
+      grid-template-rows: subgrid;
+      gap: 0;
+    }
+  }
+
+  .step-text {
+    padding: 1.5rem 1.5rem 1.75rem;
+  }
+
+  .step-num {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 8px;
+    background: var(--orange);
+    color: var(--ink);
+    font-family: var(--wide);
+    font-stretch: 112%;
+    font-weight: 800;
+  }
+
+  .step:nth-child(2) .step-num {
+    background: var(--amber);
+  }
+
+  .step:nth-child(3) .step-num {
+    background: var(--third-bar);
+    color: var(--blume-background);
+  }
+
+  .step h3 {
+    margin-top: 1rem;
+    font-size: 1.25rem;
+  }
+
+  .step-text p {
+    margin-top: 0.5rem;
+    color: var(--blume-muted-foreground);
+    line-height: 1.6;
+  }
+
+  .step-text .more {
+    margin-top: 1rem;
+  }
+
+  .step-visual {
+    display: flex;
+    align-items: center;
+    min-height: 15rem;
+    padding: 1.25rem;
+    border-top: 1px solid var(--blume-border);
+    background: var(--surface);
+  }
+
+  .step-visual > * {
+    width: 100%;
+  }
+
+  /* Control panel redraws */
+  .cp-card {
+    overflow: hidden;
+    border: 1px solid var(--cp-border);
+    border-radius: 10px;
+    background: var(--cp-bg);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 14px 30px -20px rgb(0 0 0 / 0.35);
+    color: var(--cp-text);
+    font-family: var(--blume-font-body);
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+
+  .cp-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.625rem 0.875rem;
+    border-bottom: 1px solid var(--cp-border);
+    background: var(--cp-page);
+    font-weight: 600;
+  }
+
+  .cp-body {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .cp-search {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.625rem;
+    border: 1px solid var(--cp-border);
+    border-radius: 8px;
+    color: var(--cp-text);
+  }
+
+  .cp-search :global(svg) {
+    color: var(--cp-muted);
+  }
+
+  .cp-group {
+    margin-top: 0.75rem;
+    color: var(--cp-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .fieldtypes {
+    display: grid;
+    gap: 0.25rem;
+    margin: 0.375rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .fieldtypes li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.5rem;
+    border-radius: 6px;
+    color: var(--cp-muted);
+  }
+
+  .fieldtypes li.is-active {
+    background: color-mix(in oklab, var(--cp-primary) 12%, var(--cp-bg));
+    color: var(--cp-text);
+    font-weight: 600;
+  }
+
+  .fieldtypes li.is-active :global(svg) {
+    color: var(--cp-primary);
+  }
+
+  .cp-select {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    border: 1px solid var(--cp-border);
+    border-radius: 6px;
+    background: var(--cp-bg);
+    font-weight: 500;
+    font-size: 0.75rem;
+  }
+
+  .cal {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--cp-border);
+  }
+
+  .cal-dow {
+    padding: 0.25rem 0;
+    background: var(--cp-bg);
+    color: var(--cp-muted);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .cal-day {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0.25rem 0.1875rem 0.375rem;
+    background: var(--cp-bg);
+    font-size: 0.6875rem;
+  }
+
+  .cal-day b {
+    font-weight: 500;
+  }
+
+  .cal-day i {
+    border-radius: 3px;
+    background: var(--cp-green-bg);
+    color: var(--cp-green);
+    font-style: normal;
+    font-weight: 600;
+    font-size: 0.625rem;
+    text-align: center;
+  }
+
+  .cal-day small {
+    font-size: 0.625rem;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .code {
+    overflow: hidden;
+    border: 1px solid var(--blume-border);
+    border-radius: 10px;
+    background: var(--blume-code-background, var(--blume-background));
+  }
+
+  .code-file {
+    padding: 0.5rem 0.875rem;
+    border-bottom: 1px solid var(--blume-border);
+    color: var(--blume-muted-foreground);
+    font-family: var(--blume-font-mono);
+    font-size: 0.6875rem;
+  }
+
+  .code pre {
+    margin: 0;
+    padding: 0.75rem 0.875rem;
+    overflow-x: auto;
+    font-family: var(--blume-font-mono);
+    font-size: 0.75rem;
+    line-height: 1.7;
+  }
+
+  .code pre + .code-file {
+    border-top: 1px solid var(--blume-border);
+  }
+
+  .code .t {
+    color: var(--blume-foreground);
+  }
+
+  .code .a {
+    color: var(--blume-accent);
+  }
+
+  .code .s {
+    color: color-mix(in oklab, var(--blume-foreground) 60%, var(--amber));
+  }
+
+  /* Feature splits */
+  .split {
+    display: grid;
+    gap: 3rem;
+    align-items: center;
+  }
+
+  @media (min-width: 960px) {
+    .split {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      gap: 4.5rem;
+    }
+
+    .split.is-reversed .split-text {
+      order: 2;
+    }
+  }
+
+  .split-text > p {
+    margin-top: 1rem;
+    color: var(--blume-muted-foreground);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+  }
+
+  .ticks {
+    display: grid;
+    gap: 0.875rem;
+    margin: 1.75rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .ticks li {
+    display: flex;
+    gap: 0.625rem;
+    color: var(--blume-muted-foreground);
+    line-height: 1.55;
+  }
+
+  .ticks :global(svg) {
+    flex: none;
+    margin-top: 0.2rem;
+    color: var(--blume-accent);
+  }
+
+  .ticks a {
+    color: var(--blume-accent);
+    font-weight: 600;
+  }
+
+  .gateways {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .gateways a {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid var(--blume-border);
+    border-radius: 8px;
+    background: var(--blume-background);
+    color: var(--blume-foreground);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .gateways a:hover {
+    border-color: var(--blume-accent);
+  }
+
+  .gateways small {
+    color: var(--blume-muted-foreground);
+    font-weight: 500;
+  }
+
+  /* Two panels in one grid cell: the main one behind, a smaller one in front and lower */
+  .layered {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .layered > :first-child {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .window-float {
+    grid-column: 5 / -1;
+    grid-row: 2;
+    margin-top: -2.5rem;
+  }
+
+  @media (min-width: 560px) {
+    .layered > :first-child {
+      grid-column: 1 / span 9;
+    }
+
+    .window-float {
+      grid-row: 1;
+      margin-top: 3.5rem;
+    }
+
+    .window-summary {
+      grid-column: 8 / -1;
+    }
+  }
+
+  /* The rates screen and the booking box they produce, side by side */
+  .pairing {
+    display: grid;
+    gap: 1.25rem;
+    align-items: center;
+  }
+
+  @media (min-width: 560px) {
+    .pairing {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    }
+
+    .window-widget {
+      margin-top: 3rem;
+    }
+  }
+
+  @media (max-width: 559px) {
+    .window-widget {
+      width: min(100%, 18rem);
+      margin-inline: auto;
+    }
+  }
+
+  .window img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .window-paper {
+    background: #f3eee6;
+  }
+
+  .rates-card {
+    font-size: 0.875rem;
+  }
+
+  .cp-label {
+    font-weight: 600;
+  }
+
+  .cp-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.375rem;
+    padding: 0.4375rem 0.625rem;
+    border: 1px solid var(--cp-border);
+    border-radius: 6px;
+  }
+
+  .rate-tree {
+    display: grid;
+    gap: 0.5rem;
+    margin: 1rem 0 0.25rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .rate-tree li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem 0.5rem;
+    padding: 0.5625rem 0.75rem;
+    border: 1px solid var(--cp-border);
+    border-radius: 8px;
+    background: var(--cp-bg);
+  }
+
+  .rate-tree li.is-child {
+    margin-left: 1.25rem;
+  }
+
+  .rate-tree strong {
+    font-weight: 600;
+  }
+
+  .grip {
+    width: 0.375rem;
+    height: 0.75rem;
+    background-image: radial-gradient(var(--cp-muted) 1px, transparent 1.2px);
+    background-size: 3px 3px;
+    opacity: 0.7;
+  }
+
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-left: auto;
+  }
+
+  .cp-badge {
+    padding: 0 0.375rem;
+    border: 1px solid var(--cp-border);
+    border-radius: 4px;
+    color: var(--cp-muted);
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+
+  /* Managing reservations */
+  .manage-head {
+    display: grid;
+    gap: 1.5rem 4rem;
+    margin-bottom: 2.5rem;
+  }
+
+  @media (min-width: 960px) {
+    .manage-head {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: end;
+    }
+
+    .manage-head .ticks {
+      margin-top: 0;
+    }
+  }
+
+  .manage-head > div > p {
+    margin-top: 1rem;
+    color: var(--blume-muted-foreground);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 0.25rem;
+    width: max-content;
+    max-width: 100%;
+    margin-bottom: 1rem;
+    padding: 0.25rem;
+    overflow-x: auto;
+    border: 1px solid var(--blume-border);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+
+  .tabs button {
+    flex: none;
+    padding: 0.5rem 0.875rem;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--blume-muted-foreground);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @media (max-width: 559px) {
+    .tabs button {
+      padding: 0.5rem 0.5625rem;
+      font-size: 0.8125rem;
+    }
+  }
+
+  .tabs button[aria-selected="true"] {
+    background: var(--blume-background);
+    color: var(--blume-foreground);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  }
+
+  :global(:root[data-theme="dark"]) .tabs button[aria-selected="true"] {
+    background: color-mix(in oklab, var(--blume-foreground) 10%, var(--blume-background));
+  }
+
+  .window-cp[hidden] {
+    display: none;
+  }
+
+  /* Dynamic pricing panels */
+  .stack {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .pair {
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (min-width: 560px) {
+    .pair {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      align-items: start;
+    }
+  }
+
+  .cp-btn {
+    padding: 0.1875rem 0.625rem;
+    border-radius: 6px;
+    background: var(--cp-primary);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .campaigns {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.75rem;
+    list-style: none;
+  }
+
+  .campaigns li {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--cp-border);
+    border-radius: 8px;
+    font-weight: 500;
+  }
+
+  .live {
+    flex: none;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #22c55e;
+  }
+
+  .cp-tag {
+    padding: 0 0.375rem;
+    border: 1px solid var(--cp-border);
+    border-radius: 4px;
+    background: var(--cp-page);
+    color: var(--cp-muted);
+    font-size: 0.6875rem;
+  }
+
+  .summary-entry {
+    display: grid;
+    gap: 0.125rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--cp-border);
+  }
+
+  .summary-entry span {
+    color: var(--cp-muted);
+  }
+
+  .summary dl,
+  .affiliate dl {
+    display: grid;
+    gap: 0.375rem;
+    margin: 0.75rem 0 0;
+  }
+
+  .summary dl div,
+  .affiliate dl div {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .summary dt,
+  .affiliate dt {
+    color: var(--cp-muted);
+  }
+
+  .summary dd,
+  .affiliate dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .summary .is-discount dd {
+    color: var(--cp-green);
+    font-weight: 600;
+  }
+
+  .summary .is-total {
+    margin-top: 0.25rem;
+    padding-top: 0.625rem;
+    border-top: 1px solid var(--cp-border);
+    font-weight: 700;
+    font-size: 0.9375rem;
+  }
+
+  .summary .is-total dt {
+    color: var(--cp-text);
+  }
+
+  .affiliate {
+    display: grid;
+    gap: 0.375rem;
+  }
+
+  .affiliate code {
+    justify-self: start;
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    background: var(--cp-page);
+    font-family: var(--blume-font-mono);
+    font-size: 0.6875rem;
+  }
+
+  .affiliate dl {
+    margin-top: 0.25rem;
+  }
+
+  /* Details */
+  .details {
+    display: grid;
+    gap: 2.25rem 2rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 640px) {
+    .details {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1000px) {
+    .details {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .details li {
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--blume-border);
+  }
+
+  .icon-tile {
+    display: inline-grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9px;
+    background: var(--tint);
+    color: var(--blume-accent);
+  }
+
+  .details h3 {
+    margin-top: 0.875rem;
+    font-size: 1.0625rem;
+  }
+
+  .details h3 a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .details h3 a:hover {
+    color: var(--blume-accent);
+    text-decoration: underline;
+  }
+
+  .details p {
+    margin-top: 0.375rem;
+    color: var(--blume-muted-foreground);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  /* Demo */
+  .demo {
+    position: relative;
+    scroll-margin-top: 4rem;
+    border-top: 1px solid var(--blume-border);
+    background: color-mix(in oklab, var(--orange) 7%, var(--blume-background));
+  }
+
+  :global(:root[data-theme="dark"]) .demo {
+    background: color-mix(in oklab, var(--orange) 4%, var(--blume-background));
+  }
+
+  .doors {
+    display: grid;
+    gap: 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 860px) {
+    .doors {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+  }
+
+  .door {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--blume-border);
+    border-radius: var(--radius);
+    background: var(--blume-background);
+    box-shadow: var(--shadow);
+  }
+
+  /* The first two bars of the logo: orange for the site, amber for the control panel */
+  .door::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 62%;
+    height: 0.5rem;
+    border-bottom-right-radius: 999px;
+    background: var(--orange);
+  }
+
+  .door-cp::before {
+    left: 20%;
+    border-bottom-left-radius: 999px;
+    background: var(--amber);
+  }
+
+  .door-media {
+    display: block;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-bottom: 1px solid var(--blume-border);
+  }
+
+  .door-media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top left;
+  }
+
+  .login {
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+    background: var(--cp-page);
+  }
+
+  @media (max-width: 559px) {
+    .door-media.login {
+      aspect-ratio: auto;
+      padding-block: 1.75rem;
+    }
+  }
+
+  .login-card {
+    width: min(100%, 17rem);
+    padding: 1.125rem;
+    border: 1px solid var(--cp-border);
+    border-radius: 12px;
+    background: var(--cp-bg);
+    box-shadow: 0 12px 28px -18px rgb(0 0 0 / 0.4);
+    color: var(--cp-text);
+    font-size: 0.75rem;
+  }
+
+  .login-title {
+    margin-bottom: 0.625rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-align: center;
+  }
+
+  .login-label {
+    margin-top: 0.5rem;
+    font-weight: 600;
+  }
+
+  .login-input {
+    margin-top: 0.25rem;
+    padding: 0.375rem 0.5rem;
+    border: 1px solid var(--cp-border);
+    border-radius: 6px;
+  }
+
+  .login-input.is-secret {
+    letter-spacing: 0.1em;
+  }
+
+  .login-btn {
+    margin-top: 0.875rem;
+    padding: 0.4375rem;
+    border-radius: 6px;
+    background: var(--cp-primary);
+    color: #fff;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .door-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.5rem;
+  }
+
+  .door-step {
+    color: var(--blume-accent);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .door h3 {
+    margin-top: 0.25rem;
+    font-size: 1.375rem;
+  }
+
+  .door-body > p:not(.door-step) {
+    margin-top: 0.5rem;
+    color: var(--blume-muted-foreground);
+    line-height: 1.6;
+  }
+
+  .door-body .btn {
+    margin-top: auto;
+  }
+
+  .door-body > p + .btn,
+  .creds + .btn {
+    margin-top: 1.25rem;
+  }
+
+  .creds {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin: 1rem 0 0;
+  }
+
+  .creds div {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .creds dt {
+    color: var(--blume-muted-foreground);
+    font-size: 0.875rem;
+  }
+
+  .creds dd {
+    margin: 0;
+  }
+
+  .creds code {
+    padding: 0.125rem 0.375rem;
+    border-radius: 6px;
+    background: var(--blume-code-background, var(--surface));
+    font-family: var(--blume-font-mono);
+    font-size: 0.8125rem;
+  }
+
+  /* Pricing */
+  .pricing {
+    display: grid;
+    gap: 2.5rem;
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .pricing {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+      gap: 5rem;
+    }
+  }
+
+  .pricing-text > p {
+    max-width: 32rem;
+    margin-top: 1rem;
+    color: var(--blume-muted-foreground);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+  }
+
+  .reqs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 1.5rem;
+    max-width: 30rem;
+    margin: 2rem 0 0;
+  }
+
+  .reqs div {
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--blume-border);
+  }
+
+  .reqs dt {
+    color: var(--blume-muted-foreground);
+    font-size: 0.875rem;
+  }
+
+  .reqs dd {
+    margin: 0.125rem 0 0;
+    color: var(--blume-foreground);
+    font-weight: 600;
+  }
+
+  .plan {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.75rem 1.75rem;
+    overflow: hidden;
+    border: 1px solid var(--blume-border);
+    border-radius: var(--radius);
+    background: var(--blume-background);
+    box-shadow: var(--shadow);
+  }
+
+  .plan::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+    background: linear-gradient(to right, var(--orange), var(--amber));
+  }
+
+  .plan-name {
+    color: var(--blume-muted-foreground);
+    font-weight: 600;
+  }
+
+  .plan-price {
+    margin-top: 0.5rem;
+    color: var(--blume-foreground);
+    font-family: var(--wide);
+    font-size: 4rem;
+    font-stretch: 125%;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .plan-terms {
+    margin-top: 0.75rem;
+    color: var(--blume-foreground);
+    font-weight: 600;
+  }
+
+  .plan-list {
+    display: grid;
+    gap: 0.625rem;
+    margin: 1.5rem 0;
+    padding: 1.25rem 0 0;
+    border-top: 1px solid var(--blume-border);
+    list-style: none;
+    color: var(--blume-muted-foreground);
+  }
+
+  .plan-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .plan-list :global(svg) {
+    flex: none;
+    color: var(--blume-accent);
+  }
+
+  .plan-list a,
+  .plan-foot a {
+    color: var(--blume-accent);
+    font-weight: 600;
+  }
+
+  .plan-foot {
+    margin-top: 1rem;
+    color: var(--blume-muted-foreground);
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  /* Made by Reach */
+  .partner {
+    display: inline-block;
+    margin-top: 1.75rem;
+  }
+
+  .partner img {
+    display: block;
+    width: 112px;
+    height: auto;
+  }
+
+  :global(:root[data-theme="dark"]) .partner img {
+    padding: 0.5rem;
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .team-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+  }
+
+  .addons {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--blume-border);
+  }
+
+  .addons li {
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--blume-border);
+  }
+
+  .addons h3 {
+    font-size: 1.125rem;
+  }
+
+  .addons h3 a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .addons h3 a::after {
+    content: " ↗";
+    color: var(--blume-accent);
+    font-family: var(--blume-font-body);
+  }
+
+  .addons h3 a:hover {
+    color: var(--blume-accent);
+  }
+
+  .addons p {
+    margin-top: 0.375rem;
+    color: var(--blume-muted-foreground);
+    line-height: 1.6;
+  }
+
+  /* Closing band: ink in both themes, like the brand's dark images */
+  .cta {
+    padding-block: clamp(4rem, 9vw, 6rem);
+    background: var(--ink);
+    color: #fff;
+  }
+
+  :global(:root[data-theme="dark"]) .cta {
+    border-top: 1px solid var(--blume-border);
+    background: #0d0d0e;
+  }
+
+  .cta-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .cta-mark {
+    width: 72px;
+    height: auto;
+  }
+
+  .cta h2 {
+    max-width: 22ch;
+    margin-top: 1.75rem;
+    color: #fff;
+  }
+
+  .cta p {
+    max-width: 34rem;
+    margin-top: 1rem;
+    color: #c8c8cc;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+
+  .cta .actions {
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  .cta .btn-primary {
+    background: var(--orange);
+    color: var(--ink);
+  }
+
+  .cta .btn-primary:hover {
+    background: #f7835a;
+  }
+
+  .btn-ghost {
+    border-color: rgb(255 255 255 / 0.28);
+    color: #fff;
+  }
+
+  .btn-ghost:hover {
+    border-color: rgb(255 255 255 / 0.6);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn {
+      transition: none;
+    }
+  }
+</style>
