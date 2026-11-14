@@ -18,9 +18,12 @@ h6 {
   letter-spacing: -0.02em;
 }
 
-/* Header logo: Blume draws logos at 20px, too small for the horizontal lockup's wordmark */
+/* Header logo: Blume draws logos at 20px, too small for the horizontal lockup's wordmark. The
+   SVG carries the brand's clear space as padding (16.5% of its height on every side), so a 40px
+   image shows a 27px tall, 110px wide logo; the negative margin lines it up with the sidebar. */
 [data-blume-header] a > img[src^="/brand/resrv-logo"] {
-  height: 1.75rem;
+  height: 2.5rem;
+  margin-inline-start: -0.4125rem;
 }
 
 /* Installation's steps hold the page's own h2s: keep them in the heading colour */

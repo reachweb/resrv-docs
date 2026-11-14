@@ -781,7 +781,7 @@ const details = [
 
     <section class="cta" aria-labelledby="cta-title">
       <div class="wrap cta-inner">
-        <img class="cta-mark" src="/brand/resrv-icon-reversed.svg" alt="" width="72" height="74" />
+        <img class="cta-logo" src="/brand/resrv-logo-horizontal-reversed.svg" alt="Resrv" width="1785" height="579" loading="lazy" />
         <h2 id="cta-title">Book a room, then find it in the control panel</h2>
         <p>Try both sides on the demo hotel. When you're ready, Resrv is {price} for one site, paid once.</p>
         <div class="actions">
@@ -2538,9 +2538,14 @@ const details = [
     text-align: center;
   }
 
-  .cta-mark {
-    width: 72px;
+  /* The whole logo, its icon as tall as the old lone mark. The SVG carries the brand's clear
+     space (16.5% of its height on every side): the negative margins trim it top and bottom so
+     the gap to the heading stays as set, while the image shows a 300px wide logo. */
+  .cta-logo {
+    width: 21rem;
+    max-width: 100%;
     height: auto;
+    margin-block: -1.125rem;
   }
 
   .cta h2 {

@@ -28,7 +28,7 @@ Keep a clear space around the logo equal to the height of the capital R in the n
 
 | Version | Smallest on screen | Smallest in print |
 | --- | --- | --- |
-| Horizontal | 100 px wide (24 px tall, the docs header size) | 30 mm wide |
+| Horizontal | 100 px wide (24 px tall) | 30 mm wide |
 | Stacked | 80 px wide | 20 mm wide |
 | Wordmark | 70 px wide | 18 mm wide |
 | Icon, `color` or `reversed` | 24 px tall | 8 mm tall |
@@ -101,7 +101,7 @@ Copy the files in `favicon/` to the site's root and add:
 
 `favicon.svg` and `favicon-16.png` are the simplified 16 px cut; `favicon-32.png` and the 32 and 48 px sizes inside `favicon.ico` are the full mark. The mark works on light and dark browser tabs as it is, so the favicon has no dark-mode variant. `android-chrome-192.png` and `android-chrome-512.png` are for a web app manifest. They keep the mark inside the safe zone, so they also work as maskable icons.
 
-For the docs (VitePress), the header logo takes `logo/svg/resrv-logo-horizontal-color.svg` as `logo-light.svg` and `logo/svg/resrv-logo-horizontal-reversed.svg` as `logo-dark.svg`.
+The site (resrv.dev) uses copies of `logo/svg/resrv-logo-horizontal-color.svg` and `-reversed.svg` in `public/brand/`: in the header on every page, 27 px tall (110 px wide), and reversed in the dark closing band of the home page, 300 px wide. The SVGs include the clear space, so the site sizes them 12% larger than the logo they show.
 
 ## Social media
 
