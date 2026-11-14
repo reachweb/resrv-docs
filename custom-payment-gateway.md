@@ -272,23 +272,24 @@ public function handleRedirectBack(): array
 }
 ```
 
-`handlePaymentPending()` returns a pending state when `?payment_pending=<id>` is present, for async methods like bank transfer, and `false` otherwise:
+`handlePaymentPending()` returns a pending state when `?payment_pending=<id>` is present, for async methods like bank transfer, and `false` otherwise. Return Resrv's `PendingPayment` helper, available from v6.5.1:
 
 ```php
+use Reach\StatamicResrv\Http\Payment\PendingPayment;
+
 public function handlePaymentPending(): bool|array
 {
-    if (! request()->has('payment_pending')) {
-        return false;
-    }
-
-    $reservation = Reservation::find(request()->input('payment_pending'));
-
-    return [
-        'status' => 'pending',
-        'reservation' => $reservation ? $reservation->toArray() : [],
-    ];
+    return PendingPayment::fromRequest();
 }
 ```
+
+The helper includes the reservation data only when the id belongs to the visitor's own checkout session. For any other id the customer still sees the pending message, with an empty `reservation`.
+
+::: warning Don't look the reservation up yourself
+Earlier versions of this page used `Reservation::find(request()->input('payment_pending'))` here. The id comes from the URL and reservation ids are sequential, so that lookup returned any booking's data to anyone who asked for it. If your gateway has that code, update Resrv to v6.5.1 and replace the method body with the one above. From v6.5.1 the <code v-pre>{{ resrv_checkout_redirect }}</code> tag also removes the data for an id the session doesn't own, but update your gateway anyway.
+
+The same goes for `handleRedirectBack()`: find the reservation from a value your provider issued, like the payment id in `findByPaymentId()`, never from a reservation id in the query string.
+:::
 
 The checkout-completed page shows a success, failure or pending message based on `status`.
 
@@ -605,6 +606,7 @@ use Reach\StatamicResrv\Enums\ReservationStatus;
 use Reach\StatamicResrv\Events\ReservationConfirmed;
 use Reach\StatamicResrv\Exceptions\RefundFailedException;
 use Reach\StatamicResrv\Http\Payment\PaymentInterface;
+use Reach\StatamicResrv\Http\Payment\PendingPayment;
 use Reach\StatamicResrv\Models\Reservation;
 use Statamic\Facades\Entry;
 
@@ -699,16 +701,8 @@ class PayPalPaymentGateway implements PaymentInterface
 
     public function handlePaymentPending(): bool|array
     {
-        if (! request()->has('payment_pending')) {
-            return false;
-        }
-
-        $reservation = Reservation::find(request()->input('payment_pending'));
-
-        return [
-            'status' => 'pending',
-            'reservation' => $reservation ? $reservation->toArray() : [],
-        ];
+        // Never look the id up yourself: it comes from the URL.
+        return PendingPayment::fromRequest();
     }
 
     // --- Cancellation ---
@@ -799,7 +793,7 @@ Before deploying a custom gateway:
 - [ ] `paymentIntent()` returns `->id` with `->client_secret` (inline) or `->redirectTo` (redirect), and stores `reservation_id` in the provider metadata.
 - [ ] Redirect gateways build the return URL from `$returnUrl`, fall back to the page with <code v-pre>{{ resrv_checkout_redirect }}</code> when it's `null`, and use `&` when there's already a query string.
 - [ ] `retrievePaymentIntent()` maps statuses to Stripe's names, returns `null` only for a missing intent, throws on transient failures, and reports `canceled` after a void.
-- [ ] `handleRedirectBack()` checks `handlePaymentPending()` first.
+- [ ] `handleRedirectBack()` checks `handlePaymentPending()` first, and `handlePaymentPending()` returns `PendingPayment::fromRequest()`.
 - [ ] `verifyPayment()` verifies the signature, confirms through `transitionTo(CONFIRMED, tolerant: true)` with no `pending`-only check, and dispatches `ReservationConfirmed` with `ReservationConfirmed::VIA_WEBHOOK` only when that succeeds.
 - [ ] `verifyPayment()` handles stale intents and orphans (with `notifyIfOrphaned()`), leaves failed attempts alone, and never ends an `awaiting_payment` reservation on a failed or cancelled intent.
 - [ ] `supportsWebhooks()` is `true` if you confirm through webhooks. Online gateways that return `false` can't be used for manual reservations.
