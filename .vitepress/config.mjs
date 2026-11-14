@@ -5,6 +5,31 @@ import {readFileSync} from "fs"
 
 const antlersDef = JSON.parse(readFileSync(path.resolve(__dirname, './languages/antlers.tmLanguage.json'), 'utf8'))
 
+// Render "- [ ] item" list items as checkboxes readers can tick while they work.
+function taskLists(md) {
+  md.core.ruler.push('task_lists', (state) => {
+    const tokens = state.tokens
+    for (let i = 2; i < tokens.length; i++) {
+      const item = tokens[i - 2]
+      const text = tokens[i].children?.[0]
+      if (tokens[i].type !== 'inline' || item.type !== 'list_item_open' || text?.type !== 'text') continue
+      const match = /^\[([ xX])\] /.exec(text.content)
+      if (!match) continue
+      text.content = text.content.slice(4)
+      const box = new state.Token('html_inline', '', 0)
+      box.content = `<input type="checkbox" class="task-list-item-checkbox"${match[1] === ' ' ? '' : ' checked'}>`
+      tokens[i].children.unshift(box)
+      item.attrJoin('class', 'task-list-item')
+      for (let j = i - 3; j >= 0; j--) {
+        if (tokens[j].type === 'bullet_list_open' && tokens[j].level === item.level - 1) {
+          tokens[j].attrSet('class', 'contains-task-list')
+          break
+        }
+      }
+    }
+  })
+}
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "Statamic Resrv",
@@ -136,6 +161,7 @@ export default defineConfig({
     ],
   },
   markdown: {
+    config: (md) => md.use(taskLists),
     shikiSetup: async (highlighter) => {
       // Shiki v3 no longer auto-resolves embeddedLangs — load the embedded
       // `html` grammar before registering Antlers, which embeds it.

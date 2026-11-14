@@ -55,3 +55,24 @@
         line-height: 38px !important;
     }
 }
+
+.vp-doc ul.contains-task-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.vp-doc li.task-list-item {
+    position: relative;
+    padding-left: 1.75em;
+}
+
+.vp-doc .task-list-item-checkbox {
+    position: absolute;
+    left: 0;
+    top: 0.375em;
+    width: 1em;
+    height: 1em;
+    margin: 0;
+    accent-color: var(--vp-c-brand-1);
+    cursor: pointer;
+}
