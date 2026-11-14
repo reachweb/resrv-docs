@@ -44,3 +44,9 @@ In the [reservation details](./reservations#reservation-details) page, you can s
 <Image src="./img/resrv-reservation-affiliate-credit.webp" alt="What appears in the reservations details page when an affiliate is credited." />
 
 The fees displayed here are for your convienience only, the affiliate does not see this information.
+
+### Crediting reservations you create <Badge type="tip" text="NEW" />
+
+When you [create a reservation in the Control Panel](./manual-reservations#creating-a-reservation), you can credit it to an affiliate with the **Affiliate** field under **Advanced**. The field appears only when affiliates are enabled, and it lists your published affiliates. The commission is recorded the same way as for a booking made through the affiliate link, and if the affiliate has **Send reservation email** enabled, they receive the reservation email once the booking is confirmed.
+
+If the reservation is cancelled before it is paid, either by you or because its payment deadline passed, the commission is cancelled too, and the reservation details page shows **Commission cancelled**.

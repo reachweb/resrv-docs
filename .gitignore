@@ -1,4 +1,9 @@
-.vitepress/cache/*
+# Dependencies
+node_modules/
+
+# VitePress build output and cache
+.vitepress/dist/
+.vitepress/cache/
+
+# OS files
 .DS_Store
-public/.DS_Store
-public/img/.DS_Store

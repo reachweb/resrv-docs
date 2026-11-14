@@ -22,7 +22,7 @@ You can also set an expiry date, after which the dynamic pricing will no longer 
 
 Enabling the **Overrides all other dynamic pricing** option ensures that **only** this dynamic pricing will be applied if the conditions match. If multiple campaigns are set as overriding, the system will apply only the first one in order. This is useful if you want to create non-combining discounts.
 
-<Image src="./img/resrv-dynamic-pricing-off.webp" alt="A dynamic pricing that applies a discount of 10% for reservations that are for August 2025." />
+<Image src="./img/resrv-dynamic-pricing-off.webp" alt="A dynamic pricing that applies a discount of 10% for reservations that are for August 2026." />
 
 ## Conditions
 

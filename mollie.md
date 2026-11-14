@@ -4,6 +4,12 @@ You can use Mollie to receive payments from your customers. Mollie is a **redire
 
 Mollie ships as a separate, maintained add-on (`reachweb/resrv-payment-mollie`) that is updated for Resrv v6 and implements the v6 `PaymentInterface`. This page covers the setup required for it to work.
 
+::: warning Upgrading to Resrv v6.5
+Resrv v6.5.0 changes the `PaymentInterface` (a 4th `paymentIntent()` parameter and the new required `retrievePaymentIntent()` method, see [Writing a custom payment gateway](./custom-payment-gateway)). Update the Mollie add-on to a release that implements both **in the same deploy** as Resrv v6.5. Otherwise, while Mollie is configured, every request that loads Resrv's payment gateways fails with a fatal error, including checkout, webhooks and the Control Panel reservation pages. Before upgrading, check that the `MolliePaymentGateway` class in the add-on version you will install declares `retrievePaymentIntent()`. If no such release is available yet, hold the Resrv upgrade.
+:::
+
+If you offer Mollie for [manual reservations](./manual-reservations), customers pay from the [payment page](./payment-page), and only Mollie's webhook can confirm the booking, so make sure the webhook route below is configured.
+
 ::: warning
 Even though this payment gateway is tested, it's suggested that you test it in test mode before going live.
 :::

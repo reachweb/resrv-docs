@@ -28,7 +28,7 @@ adding a Resrv Availability field to your Collection.
 
 A single Entry can also offer multiple [Rates](./rates): for example different room types or pricing tiers that share or own their own inventory. Rates are scoped per Collection, so you set them up once and reuse them across all the Entries in that Collection.
 
-Also in the control panel, you can find a wealth of extra tools, like a list of all the Reservations, a Calendar, Reports, CSV Export, [Rates](./rates), [Dynamic Pricing](./dynamic-pricing) (discounts & coupons), an [Affiliate](./affiliates) system, and more.
+Also in the control panel, you can find a wealth of extra tools, like a list of all the Reservations, [Manual Reservations](./manual-reservations) with payment links, a Calendar, Reports, CSV Export, [Rates](./rates), [Dynamic Pricing](./dynamic-pricing) (discounts & coupons), an [Affiliate](./affiliates) system, and more.
 
 In the **frontend**, we provide a number of Laravel Livewire components that handle availability search, showing the 
 results, the checkout process, and more.
@@ -48,7 +48,3 @@ to follow to get started:
 8. Set up your [payment gateways](./payment-gateways) and configure the webhooks. [Stripe](./stripe) is supported out of the box, an offline / bank-transfer gateway is bundled, you can run multiple gateways at once, and [Mollie](./mollie) is available as a separate add-on.
 9. Add the [frontend](./frontend-setup) assets and use the Livewire components to add availability search to your site.
 10. Profit!
-
-::: tip Upgrading from v5?
-If you already run Resrv v5, follow the [Upgrading to v6](./upgrading) guide. The old "advanced availability" and "connected availabilities" features have been replaced by the new [Rates](./rates) system.
-:::

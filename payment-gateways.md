@@ -71,6 +71,10 @@ Add it to your `payment_gateways` array like any other gateway:
 The offline description, amount label, and button text are translation keys (`offlinePaymentDescription`, `offlinePaymentAmount`, `confirmReservation`, and others). You can override all of them, see [Languages](./languages).
 :::
 
+Because the booking is confirmed before any money arrives, Resrv can't know whether the customer has paid. From v6.5.0, the Control Panel shows the amount of these bookings as **Payment** rather than as paid. Refunding one only records the refund: if the customer did pay, you return the money yourself.
+
+The offline gateway also works for [manual reservations](./manual-reservations). There it shows your **Offline Payment Instructions** (**Resrv → Settings → Checkout → Manual reservations**) on the [payment page](./payment-page) and in the payment request email, and you confirm the booking with **Mark as paid** once the money arrives. See [Gateways for manual reservations](#gateways-for-manual-reservations).
+
 ## Surcharges
 
 A surcharge adds an extra amount on top of the payment when a customer picks a particular gateway, useful for passing on card-processing fees. Configure it per gateway with a `type` and an `amount`:
@@ -133,6 +137,27 @@ When more than one gateway survives amount filtering, the customer reaches a **g
 
 See [Checkout](./checkout) for the full step-by-step flow and how to customise the checkout views.
 
+## Gateways for manual reservations <Badge type="tip" text="NEW" />
+
+From v6.5.0, you can [create reservations from the Control Panel](./manual-reservations) and ask the customer to pay for them. The same configured gateways collect those payments, with a few differences from checkout:
+
+- **One gateway per reservation.** You pick the **Payment method** when you create the reservation, and it can't be changed afterwards. The customer gets no picker: they pay with that method.
+- **Every gateway is listed.** The **Create reservation** page shows all configured gateways, each with a short note on how the customer pays. Gateways that can't take the payment are disabled with the reason, instead of being hidden.
+- **Online gateways need a payment page.** The customer pays from the link in the payment request email, which opens your [payment page](./payment-page#setting-up-the-page). Until you select a published entry under **Resrv → Settings → Checkout → Manual reservations → Payment Page Entry**, online gateways are disabled for manual reservations.
+- **Online gateways need webhooks.** The gateway's webhook is the only thing that confirms the payment, exactly as in checkout, so set up its [webhook route](#webhook-routes). A gateway whose `supportsWebhooks()` returns `false` can't be used to collect a payment.
+- **Manual-confirmation gateways always work.** The [Offline gateway](#the-offline-gateway) (or any gateway whose `supportsManualConfirmation()` returns `true`) needs no payment page, but it must be registered in `payment_gateways`: the default config only has Stripe. The customer pays you directly, following your **Offline Payment Instructions**, and you confirm the booking with [**Mark as paid**](./manual-reservations#mark-as-paid).
+- **Bookings that collect nothing need no gateway.** When the amount to request is zero, the **Payment method** field is hidden and the reservation is confirmed straight away.
+- **[Amount limits](#amount-limits) apply** to the amount you request, before any surcharge. A gateway outside its limits is disabled for that booking.
+- **[Surcharges](#surcharges) apply.** The surcharge is calculated on the amount you request and stored on the reservation when you create it. The payment page and the payment request email show the **Amount to pay** with the surcharge included, and that is what the gateway charges. **Mark as paid** records the same amount as received.
+
+<Image src="./img/resrv-manual-create-payment.webp" alt="Each payment method on the Create reservation page explains how the customer pays. The choice can't be changed later." />
+
+::: warning NO MANUAL-ONLY GATEWAYS
+Every gateway in `payment_gateways` is offered both at checkout (within its amount limits) and on the **Create reservation** page. There is no manual-only option. Adding the Offline gateway for manual bookings also lets website customers choose it at checkout, where it [confirms the booking immediately](#the-offline-gateway) without payment.
+:::
+
+Refunds follow how the money was paid. A manual reservation paid online from the payment page refunds through its gateway, like any checkout booking. A reservation you marked as paid was paid outside Resrv, so refunding it doesn't return that money through a gateway: the Control Panel records the refund and shows "Refund recorded — return the payment to the customer manually", and returning the money is up to you. If the reservation kept an online payment reference because the customer's online payment also went through, Resrv refunds that charge through its gateway. See [Refunds and reconciliation](./manual-reservations#refunds-and-reconciliation).
+
 ## Webhook routes
 
 Each gateway has its own webhook URL so providers can notify Resrv independently:
@@ -143,6 +168,8 @@ Each gateway has its own webhook URL so providers can notify Resrv independently
 | `/resrv/api/webhook` | The default gateway (single-gateway sites only) |
 
 Both `GET` and `POST` are available on each route, and all are exempt from CSRF protection.
+
+The same routes confirm payments made from the [payment page](./payment-page) of a manual reservation. There is nothing extra to register.
 
 ::: warning MULTIPLE GATEWAYS REQUIRE THE PER-GATEWAY URL
 As soon as you configure `payment_gateways` with more than one gateway, the **bare** `/resrv/api/webhook` URL returns a **404**: Resrv refuses to guess which gateway a notification belongs to. You must point each provider at its specific `/resrv/api/webhook/{gateway}` URL (for example `/resrv/api/webhook/stripe`).
@@ -161,9 +188,13 @@ A gateway is either **inline** or **redirect**:
 
 When the customer returns, your checkout-complete page (the one rendering the <code v-pre>{{ resrv_checkout_redirect }}</code> tag) resolves which gateway handled the payment, preferring the reservation's stored gateway, then the `resrv_gateway` query parameter, then the default. It then reports a `success`, `failed`, or `pending` status. See [Checkout](./checkout) for the redirect page details.
 
+Customers paying for a [manual reservation](./manual-reservations) from the [payment page](./payment-page) come back to the payment page instead, because Resrv gives the gateway the payment link as the return URL (see [The return URL](./custom-payment-gateway#the-return-url)). While the payment completes, the page shows a "Payment processing" message, and the gateway's webhook then confirms the booking. Inline gateways render their payment form on the payment page itself.
+
 ## Cancelling abandoned payments
 
 When a customer backs out of payment, switches to a different gateway at the picker, or reopens an expired checkout, Resrv cancels the abandoned payment intent at the provider so no stale authorisation lingers. It clears the recorded payment id and gateway first, then asks the gateway to cancel the old intent; any error from the provider during cancellation is logged and ignored so it can never block checkout.
+
+Manual reservations do it the other way round, because the customer may still be paying from the link. When you cancel an awaiting-payment reservation, when the lapsed-hold sweep cancels one, or when you mark one as paid after the customer started an online payment, Resrv cancels the intent at the gateway and checks the result with the provider, and it forgets the payment reference only once the provider confirms the intent is dead. If the intent has already taken money, the reference stays and your admins get a reconciliation alert email with a recommended action. If Resrv can't confirm the intent is dead, the reference stays too: after **Mark as paid** your admins are alerted straight away; after a cancellation Resrv flags the reservation in the Control Panel and logs a warning, and your admins are emailed only if a payment later lands on the cancelled reservation (the orphaned-payment alert), or straight away if the reservation's gateway is no longer configured.
 
 The offline gateway has nothing to cancel, so its cancellation is a no-op. If you build your own gateway, this behaviour is part of the `PaymentInterface` you implement, see the [Custom payment gateway](./custom-payment-gateway) guide.
 
@@ -173,5 +204,7 @@ The offline gateway has nothing to cancel, so its cancellation is a no-op. If yo
 - [Mollie](./mollie): a maintained redirect gateway add-on.
 - [Custom payment gateway](./custom-payment-gateway): build your own gateway against `PaymentInterface`.
 - [Checkout](./checkout): where gateways appear in the booking flow.
+- [Manual reservations](./manual-reservations): create bookings in the Control Panel and request a payment.
+- [Payment page](./payment-page): where customers pay for manual reservations.
 - [Configuration](./configuration): the rest of the developer config keys.
 - [Languages](./languages): translate payment-related labels and messages.

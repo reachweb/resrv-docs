@@ -48,3 +48,13 @@ When an Entry has more than one [rate](./rates), a **Rate** selector appears abo
 Rates that share their inventory with a base rate don't own availability of their own: edit the inventory on the **base rate**, and the shared rate draws from the same pool. (Independent prices for a shared rate are still entered here on the calendar.)
 
 Rates themselves, creating them, choosing pricing and availability modes, restrictions, and assigning them to entries, are managed in the **Rates** section of the Control Panel. See [Rates](./rates) for the full reference.
+
+## Editing dates that already have bookings
+
+Confirmed bookings don't stop you from changing the price or the availability count of their dates. Only checkouts that are still in progress hold back a change to the count, because an unfinished checkout returns its quantity when it expires and would throw off the number you set. In that case the save is refused with "Cannot edit availability while checkouts are in progress for this date range (…). Try again once they complete or expire." From v6.5.0, the message lists the references of the checkouts that are in the way.
+
+**Awaiting payment** reservations created in the Control Panel don't block the change either (see [Manual reservations](./manual-reservations)). If one of them is later cancelled, or its payment deadline passes, its quantity is added back on top of the value you set, the same as when a confirmed booking is refunded.
+
+Deleting availability is stricter. It is refused while any active reservation that took availability overlaps those dates, including **Awaiting payment** ones: "Cannot delete availability while active reservations exist for this date range." An entry that still has an **Awaiting payment** reservation can't be deleted either, just like one with pending or confirmed reservations.
+
+Reservations created with **Decrease availability** turned off (see [Overbooking](./manual-reservations#overbooking-and-view-only-reservations)) never took availability, so they don't block editing or deleting availability.

@@ -38,6 +38,8 @@ You'll need to include Stripe's Javascript in your layout page:
 </html>
 ```
 
+If you create [manual reservations](./manual-reservations), customers pay for them on the [payment page](./payment-page), which renders the same Stripe payment form. Make sure the layout of your payment page entry loads Stripe's JavaScript too, together with Livewire and the Resrv frontend assets shown above.
+
 ## Adding your keys to .env
 
 For security reasons, your Stripe keys are not stored in the addon's configuration but are instead stored in your `.env` file. You need to add the following keys to your `.env` file:
@@ -102,8 +104,10 @@ RESRV_STRIPE_WEBHOOK_SECRET=whsec_.....
 ```
 
 ::: info Webhook hardening
-The v6 Stripe gateway rejects webhooks signed against an empty secret, confirms a reservation only when the amount received matches the booking amount (plus any surcharge), and emails admins about orphaned payments that can't be matched to a reservation, so you can reconcile them manually.
+The v6 Stripe gateway rejects webhooks signed against an empty secret, confirms a reservation only when the amount received matches the booking amount (plus any surcharge), and emails admins about orphaned payments that can't be matched to a reservation, so you can reconcile them manually. From v6.5.0, that includes payments that arrive after the reservation was cancelled, for example a manual reservation whose payment hold lapsed.
 :::
+
+From v6.5.0, the same webhook also confirms payments customers make from the [payment page](./payment-page) of a [manual reservation](./manual-reservations). You don't need any extra events. If the webhook isn't working, those reservations stay **Awaiting payment** even after the customer has paid. A failed or cancelled card payment doesn't end an awaiting-payment reservation: the customer can try again from the same link.
 
 ## Next steps
 

@@ -6,11 +6,7 @@ Here you can find the installation and first-time setup instructions for Resrv.
 
 Statamic Resrv v6 requires **PHP 8.4+**, **Laravel 12 or 13**, **Statamic 6**, and **Livewire 3.6.4+ or 4**.
 
-A database is required. You can use SQLite for development and for production if you expect to have a low number of concurrent users. MySQL is recommended for production in most cases. Laravel 12 and 13 ship with SQLite support out of the box.
-
-::: tip Upgrading from v5?
-If you have an existing v5 site, follow the [Upgrading to v6](./upgrading) guide instead. This page covers fresh installs only.
-:::
+A database is required. You can use SQLite for development and for production if you expect to have a low number of concurrent users. MySQL or PostgreSQL are recommended for production in most cases.
 
 ## Composer
 
@@ -22,7 +18,7 @@ composer require reachweb/statamic-resrv
 
 ## Migration
 
-After you've set up [your database](https://laravel.com/docs/12.x/database#configuration), you need to run the migrations to create the tables:
+After you've set up [your database](https://laravel.com/docs/13.x/database#configuration), you need to run the migrations to create the tables:
 
 ```bash
 php artisan migrate
@@ -78,7 +74,7 @@ Here's what each prompt does, and the recommended answer:
 In v6, all user-facing settings (business information, reservation rules, currency, checkout, emails) are managed in the Control Panel under **Resrv → Settings** and stored on your site at `resources/addons/statamic-resrv.yaml`.
 :::
 
-The published `config/resrv-config.php` holds only **developer keys**: `payment_gateway`, `payment_gateways`, the `stripe_*` env lookups, and optional nested `checkout_forms` / `reservation_emails` blocks. (These mirror the checkout-form and reservation-email settings you can already manage in the **Control Panel** — the file version just lets you define the same mapping in code.) Answer **no** to this prompt unless you need to register multiple [payment gateways](./payment-gateways) or hand-edit [Stripe](./stripe) keys. You can publish it later at any time with:
+The published `config/resrv-config.php` holds only **developer keys**: `payment_gateway`, `payment_gateways`, the `stripe_*` env lookups. It's required if you need to register multiple [payment gateways](./payment-gateways) or hand-edit [Stripe](./stripe) keys. You can publish it later at any time with:
 
 ```bash
 php artisan vendor:publish --tag=resrv-config
@@ -86,7 +82,7 @@ php artisan vendor:publish --tag=resrv-config
 
 See [Configuration](./configuration) for the full settings model.
 
-It is recommended to publish the checkout form and the Livewire views so you have total control over what Resrv displays.
+It is recommended to publish the checkout form and the Livewire views, especially since the views are needed for Tailwind to create the styles required.
 
 ## Where to go from here?
 

@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitepress'
-import { createHighlighter } from 'shiki'
+import { bundledLanguages } from 'shiki'
 import path from 'path'
 import {readFileSync} from "fs"
 
@@ -9,6 +9,7 @@ const antlersDef = JSON.parse(readFileSync(path.resolve(__dirname, './languages/
 export default defineConfig({
   title: "Statamic Resrv",
   cleanUrls: true,
+  srcExclude: ['scripts/**'],
   sitemap: {
     hostname: 'https://resrv.dev'
   },
@@ -40,14 +41,14 @@ export default defineConfig({
       alt: 'Statamic Resrv' 
     },
     footer: {
-      copyright: 'Copyright © 2025 Reach Web Agency'
+      copyright: 'Copyright © 2026 Reach Web Agency'
     },
     siteTitle: false,
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Documentation', link: '/installation' },
       {
-        text: 'v6.0.0',
+        text: 'v6.5.0',
         items: [
           {
             items: [
@@ -77,11 +78,14 @@ export default defineConfig({
           { text: 'Rates', link: '/rates' },
           { text: 'Extras', link: '/extras' },
           { text: 'Options', link: '/options' },
+          { text: 'Surcharges', link: '/surcharges' },
           { text: 'Dynamic Pricing', link: '/dynamic-pricing' },
           { text: 'Fixed Pricing', link: '/fixed-pricing' },
           { text: 'Cutoff', link: '/cutoff' },
           { text: 'Reservations', link: '/reservations' },
+          { text: 'Manual Reservations', link: '/manual-reservations' },
           { text: 'Affiliates', link: '/affiliates' },
+          { text: 'Activity Log', link: '/activity-log' },
         ]
       },
       {
@@ -100,6 +104,8 @@ export default defineConfig({
           { text: 'Cart Booking', link: '/cart-booking' },
           { text: 'Checkout', link: '/checkout' },
           { text: 'Guests', link: '/guests' },
+          { text: 'Reservation Status', link: '/reservation-status' },
+          { text: 'Payment Page', link: '/payment-page' },
         ]
       },
       {
@@ -131,6 +137,9 @@ export default defineConfig({
   },
   markdown: {
     shikiSetup: async (highlighter) => {
+      // Shiki v3 no longer auto-resolves embeddedLangs — load the embedded
+      // `html` grammar before registering Antlers, which embeds it.
+      await highlighter.loadLanguage(bundledLanguages.html)
       await highlighter.loadLanguage({        
         scopeName: 'text.html.statamic',
         embeddedLangs: ['html'],

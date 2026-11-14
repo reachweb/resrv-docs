@@ -121,7 +121,7 @@ The checkout form used at step 2 is resolved per reservation, so different colle
 3. **Collection mapping**: a form mapped to the entry's collection.
 4. **Default form**: the global default checkout form.
 
-You configure the default form and the optional collection / entry mappings in **Resrv → Settings → Checkout** (`checkout_forms_default`, `checkout_forms_collections`, `checkout_forms_entries`). Developers who prefer to define these mappings in code rather than the Control Panel can instead set the nested `checkout_forms` array (`default` / `collections` / `entries`) in `config/resrv-config.php`, which takes precedence over the Control Panel keys when present.
+You configure the default form and the optional collection / entry mappings in **Resrv → Settings → Checkout** (`checkout_forms_default`, `checkout_forms_collections`, `checkout_forms_entries`).
 
 See the [Configuration](./configuration) page for the full list of settings.
 
@@ -153,6 +153,8 @@ The dictionary *Countries* will display an AlpineJS filtered select box. Resrv a
 ## Cancellation policy
 
 When a [rate](./rates) declares a cancellation policy, a *Cancellation policy* label is shown in the checkout sidebar (for example *"Free cancellation until Mon 03 Jun 2026"* or *"Non-refundable"*). The label is snapshotted onto the reservation at booking time, so later changes to the rate never alter the terms an existing booking was made under.
+
+Within that free-cancellation window, customers can cancel the booking themselves from the [Reservation Status](./reservation-status) page, which issues an automatic refund through the original gateway.
 
 **Non-refundable bookings are always charged in full** at checkout, even after a coupon is applied or removed, regardless of the global free-cancellation settings.
 

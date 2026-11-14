@@ -16,6 +16,8 @@ More often than not, you'll also want to include the [AvailabilityResults](./ava
 
 ::: tip
 Each search that the user makes is saved in the session (under the key `resrv-search`), so that their search persists between page loads.
+
+Because that session is shared, a [rate](./rates) selected on one page might not exist on another. From v6.1.0, every availability component reconciles this for you: a rate that doesn't apply to the current entry or collection is dropped automatically, and when only one valid rate exists it is auto-selected. You don't need to clear a stale search manually.
 :::
 
 <Image src="./img/resrv-availability-search.webp" alt="A very simple AvailabilitySearch component with its pal, AvailabilityResults" />
@@ -32,15 +34,16 @@ Of course, there are quite a few properties that you can set depending on the us
 | anyRate | boolean | false | **Usable when searching for multiple entries.** When enabled, an unselected rate is sent as "any" and the results return the cheapest rate that is available. Search is also allowed without dates. Pass `:any-rate="true"`. |
 | enableQuantity | boolean | false | When enabled, a quantity control is added so that the user can book more than one product at once. |
 | redirectTo | string | null | If live mode is disabled, the page to redirect to when the user clicks "Search". |
-| resetOnBoot | boolean | false | When enabled, on mount the component resets the quantity to `1` and the rate to `null`, ignoring whatever is saved in the session. Useful to discard a stale search on a landing page. |
 | overrideRates | array | [] | A `rate_id => label` map that overrides the rates resolved from the database for this entry/collection. |
 | showAvailabilityOnCalendar | boolean | false | Show availability & pricing information on the calendar. Usable only when browsing [a specific entry](./availability-search-single#display-availability-in-the-calendar). |
 | entry | string | null | **Needs to be a Statamic Entry ID.** Used to resolve the per-entry rate labels and required when *showAvailabilityOnCalendar* is enabled. Optional for collection-wide search. |
 | ratesBlueprint | string | null | Optional. Carries the `collection.blueprint` reference when needed (mainly for the Livewire Filters path). Not required for normal single/collection search, since rates are now collection-scoped database records. |
 | view | string | "availability-search" | Override the view that's used to render the component. Really useful when you want different versions of the AvailabilitySearch component on different pages. Expects a `name.blade.php` file in the `/resources/views/vendor/statamic-resrv/livewire` folder. |
 
-::: warning UPGRADING FROM v5
-Several properties were renamed in v6 as part of the move to the [Rates](./rates) system: `advanced` → `rates`, `anyAdvanced` → `anyRate`, `overrideProperties` → `overrideRates`. The boot-reset property is `resetOnBoot` (the v5 docs mistakenly called it `resetAdvancedOnBoot`). See [Upgrading to v6](./upgrading) for the full list.
+::: warning UPGRADING FROM v5 OR v6.0.0
+Several properties were renamed in v6 as part of the move to the [Rates](./rates) system: `advanced` → `rates`, `anyAdvanced` → `anyRate`, `overrideProperties` → `overrideRates`. See [Upgrading to v6](./upgrading) for the full list.
+
+The boot-reset property (`resetAdvancedOnBoot` in v5, `resetOnBoot` in v6.0.0) was **removed in v6.1.0** — passing `:resetOnBoot` now throws a Livewire "property does not exist" error, so remove it from your templates. You no longer need it: the component reconciles stale rates on its own, dropping a rate that doesn't apply to the current entry or collection and auto-selecting when only one valid rate exists. See [Upgrading from v6.0.0 to v6.1.0](./upgrading#upgrading-from-v6-0-0-to-v6-1-0).
 :::
 
 ## Customizing
@@ -59,6 +62,31 @@ This is something that you'd probably use on the homepage of a site. To use it t
 When you want your user to search for a single Entry, usually on the aforementioned Entry's page. Follow along at [single entry](./availability-search-single) for examples.
 3. **As a search form on an index page.**
 When you want the user to input their search and list all available Entries. You can find your options on the [multiple entries](./availability-search-multiple) page.
+
+## Setting the search via URL parameters
+
+From v6.2.0, you can seed the search using URL query parameters. This lets you link directly to a page with the calendar prefilled and the results already loaded. It comes in handy for links in newsletters, campaigns or banners.
+
+```
+https://yoursite.com/villa-blue?date_start=2026-08-20&date_end=2026-08-25&rate=3
+```
+
+The following parameters are supported:
+
+| Parameter | Example | Description |
+| --------- | ------- | ----------- |
+| date | `?date=2026-08-20` | Sets the starting date. The ending date is calculated automatically using the `minimum_reservation_period_in_days` setting (1 day minimum). |
+| date_start & date_end | `?date_start=2026-08-20&date_end=2026-08-25` | Sets an exact date range. Both parameters must be present. If `date` is also present, the explicit range wins. |
+| rate | `?rate=3` | Preselects a [rate](./rates) by its numeric ID. The string `any` is also accepted when `anyRate` is enabled. |
+
+A few things to keep in mind:
+
+- Dates must use the `YYYY-MM-DD` format.
+- The parameters are read once, when the page loads, and they override any previous search saved in the session.
+- Invalid values are ignored silently. A date in the past, a malformed value or a range that violates your reservation settings will never throw an error; the component simply behaves as if the parameter was not there.
+- A rate ID that does not exist for the current entry or collection is dropped by the same reconciliation described above.
+- Passing only `rate` preselects it in the dropdown, but a search only runs if dates are also available (either in the URL or in the session).
+- On a standalone search form that redirects (`live` set to false with `redirectTo`), the parameters fill the form and the session but the visitor is not redirected automatically. The search carries over to the results page once they click "Search".
 
 ## Passing data to checkout
 

@@ -12,10 +12,13 @@ hero:
     alt: Statamic Resrv
   actions:
     - theme: brand
-      text: Getting Started
+      text: Get Started
       link: /installation
     - theme: alt
-      text: Get it at the Statamic Marketplace
+      text: Live Demo
+      link: https://demo.example.com # TODO: replace with your live demo URL
+    - theme: alt
+      text: Statamic Marketplace
       link: https://statamic.com/addons/reach/resrv
 
 features:
@@ -46,16 +49,3 @@ features:
   - title: Automated Emails
     details: Send confirmation emails to your users and notify your admins.
 ---
-
-## Perfect for Hotels, Restaurants, Rental Services, Appointments, and More
-
-As a developer, Resrv gives you the flexibility to build tailored booking solutions for a wide range of industries, from hotels and restaurants to car rentals, boat charters, and appointment-based businesses. You can provide your clients with a fully customizable booking engine that **integrates seamlessly into their websites**. Whether they need to manage reservations for rooms, tables, or services, Resrv gives you the tools to create a system that fits their specific needs and workflows.
-
-## Offer Self-Hosted Solutions and Save Your Clients on Platform Fees
-
-With Resrv, you can provide your clients with a **self-hosted booking solution** that keeps them in control of their data and saves them from the high fees charged by third-party platforms. Used by ourselves to successfully process thousands of bookings and generating millions in revenue over the past 3 years, Resrv has proven its reliability and scalability. By offering a self-hosted option, you can help your clients avoid percentage-based fees from booking platforms, delivering a cost-effective, high-performance system that they fully own and control.
-
-
-## Built for Laravel, Whether You Know Statamic or Not
-
-Resrv is built following **Laravel best practices**, allowing you to leverage all the power the framework provides while adding your own enhancements and improvements. For those unfamiliar with Statamic, it’s an excellent CMS option that’s also built on Laravel. Do yourself a favor and give it a try! Statamic’s flexibility, combined with Resrv’s robust booking engine, equips you with the tools to deliver a full-featured, easy-to-manage solution for your clients.

@@ -18,6 +18,8 @@ Each Extra has a name, a description, and a price. The price can be calculated i
 
 - **Relative to a checkout form item**: You can select a field in the [checkout form](./checkout) (should be a numerical field) and calculate the price based on the value of that field. For example, if you set the field to `adults` and the price to `10`, and the user selects `3` adults, the Extra will cost `30`.
 
+**Fixed**, **Per day** and **Relative to a checkout form item** prices are multiplied by the reservation quantity (two rooms pay for the Extra twice), unless **Ignore quantity for prices** is enabled in your [configuration](./configuration). A rate can change what counts as one unit for this purpose with **[Booked units per add-on](./rates#booked-units-per-add-on)**, which is handy when a booked unit is smaller than what a guest actually reserves.
+
 The min/max [dynamic pricing](./dynamic-pricing) clamp rules also apply to Extras, clamping the per-day total of the Extra after any other adjustments.
 
 If you enable the **Can add more than one** option, the user can use a quantity field on the frontend to order more than one of that extra, up to the max amount you set with "Maximum number for 1 reservation".
@@ -48,7 +50,9 @@ For example, here we only show the `Late Checkout` Extra if the reservation is a
 
 <Image src="./img/resrv-extras-conditions.webp" alt="Extra conditions." />
 
-Required extras display on the frontend as enabled and cannot be disabled by the user, so we suggest you add a note about it in that Extra's description.
+Required extras display on the frontend as enabled and cannot be disabled by the user, so we suggest you add a note about it in that Extra's description. Checkout checks the conditions again when the customer submits it, so a booking can't go through without its required extras.
+
+When you [create a reservation in the Control Panel](./manual-reservations#creating-a-reservation), extras that a condition makes required for the selected stay are marked **Required**, along with the reason (for example "Required for these dates." or "Required because Late Checkout is selected."). The reservation can't be created until you add them.
 
 ## Extras or Options?
 

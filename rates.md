@@ -14,6 +14,7 @@ Each rate carries:
 
 - A **pricing type**: its own prices, or prices derived from another rate.
 - An **availability type**: its own inventory pool, or a pool shared with another rate.
+- An optional **booked units per add-on** divisor, which changes how many booked units count as one when pricing [extras](./extras) and [options](./options).
 - Optional **restrictions**: date window, booking lead time, and minimum/maximum stay.
 - An optional **cancellation policy**.
 - A **published** flag and a sort **order**.
@@ -118,6 +119,35 @@ The **Restrictions** section lets you limit when a rate can be booked. Every fie
 | Max days before | Last-minute: bookable only at most this many days before the reservation starts. Use **0** for same-day bookings only. Leave empty for no restriction. |
 | Min stay | Minimum number of nights. |
 | Max stay | Maximum number of nights. |
+
+## Booked units per add-on
+
+[Extras](./extras) and [option values](./options) are normally priced **per booked unit**: a Fixed or Per day price is multiplied by the reservation quantity, so two rooms pay for two breakfasts. That is right when a unit is a room or a car, but not when a unit is smaller than what a guest actually books.
+
+The **Booked units per add-on** field, in the rate's **Availability** section next to **Max available** (it is shown for every rate type), tells Resrv how many booked units count as **one** unit when pricing add-ons for that rate. Leave it empty to keep pricing add-ons per booked unit.
+
+Take a cruise where cabins are sold as berths, so a 2-berth cabin is quantity `2`. A single-occupancy rate books the whole cabin for one guest, and a fixed `350` port tax should be charged once, not twice. Set **Booked units per add-on** to `2` on that rate:
+
+| Rate | Booked units per add-on | Booked quantity | Add-on quantity |
+| ------------- | ------------- | ------------- | ------------- |
+| Double cabin | *(empty)* | 2 | 2 |
+| Single cabin | 2 | 2 | 1 |
+| Single cabin (two solo cabins) | 2 | 4 | 2 |
+| Single cabin | 2 | 3 | 2 |
+
+The single cabin now pays `350` for the port tax instead of `700`, and two solo cabins pay `2 × 350`. The add-on quantity is the booked quantity divided by the field, **rounded up**, so a partial unit is never free: quantity `3` with the field set to `2` prices add-ons for 2 units.
+
+A few things to keep in mind:
+
+- **Only add-ons are affected.** The cabin price, the inventory that is decremented and the quantity stored on the reservation do not change.
+- **The global flag wins.** When **Ignore quantity for prices** is enabled in your [configuration](./configuration), add-ons are never multiplied by quantity and this field has no effect.
+- **It applies to every Extra price type and to Fixed and Per day option values.** Extras priced *relative to the reservation price* are not divided again: their base is the reservation price, which already scales with the booked quantity.
+- **Multi-cabin bookings apply it per cabin line**, using that line's rate. A party of three in a double cabin (quantity `2`, field empty) plus a single (quantity `2`, field `2`) pays `3 × 350`, where it used to pay `4 × 350`.
+- **The value is read from the rate whenever add-ons are priced**, including after the rate is deleted, so an existing reservation keeps pricing its add-ons under the rate it was booked with. Add-on prices are stored on the reservation at booking time, so changing the field later only affects new bookings.
+
+::: tip ADD-ONS SHOWN NEXT TO THE RESULTS
+When Extras or Options are rendered next to the availability results and the search itself carries no rate (rates disabled, which is the default), they are priced against the rate the results resolved, the one the reservation will be booked with. The results component passes it to the two components as `effectiveRateId` and broadcasts it on the `availability-results-updated` event, so a selection is re-priced whenever the search or the resolved rate changes. A selection restored from the session, for example when the two components are rendered again after a rate switch, is re-priced before it is broadcast whenever the search has dates (a cleared calendar keeps the last derived prices until the next search), and the results component re-prices the whole selection once more under the rate it books, so booking a rate straight from the all-rates listing carries the right amounts into the checkout. If you have published and customised `availability-results.blade.php`, pass `:effectiveRateId="$this->effectiveRateId()"` to `<livewire:extras>` and `<livewire:options>` so the first render is right too; without it the prices correct themselves right after the page loads. With rates enabled and several rates on offer, add-ons cannot be priced until a rate is picked, which is why the stock results view only renders them once one is.
+:::
 
 ## Cancellation policy
 

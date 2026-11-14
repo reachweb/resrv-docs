@@ -68,3 +68,39 @@ Used by the [cart booking](./cart-booking) flow when booking multiple items in o
 | `addToBooking` | Add to booking |
 | `yourBooking` | Your booking |
 | `clear` | Clear |
+
+### Payment page keys <Badge type="tip" text="NEW" />
+
+From v6.5.0, `frontend.php` has 23 new keys for the [payment page](./payment-page), the page customers open from the payment request email of a [manual reservation](./manual-reservations). If you published or translated `frontend.php` before v6.5.0, your copies don't have these keys: add them to every locale folder you created in `lang/vendor/statamic-resrv/`. Only English ships with Resrv, and keys missing from your translations fall back to English, so the payment page shows English text until you translate them.
+
+| Key | Default value |
+| --- | --- |
+| `completeYourPayment` | Complete your payment |
+| `paymentHeadingInstructions` | How to pay |
+| `paymentHeadingProcessing` | Payment processing |
+| `paymentHeadingConfirmed` | Reservation confirmed |
+| `paymentHeadingExpired` | Payment link expired |
+| `paymentHeadingUnavailable` | Reservation unavailable |
+| `amountToPay` | Amount to pay |
+| `paymentDeadline` | Payment deadline (defined, but not currently used by the page) |
+| `paymentDueBy` | Please pay by :date |
+| `paymentDueByArrival` | Please pay by the end of your arrival day: :date |
+| `remainingBalance` | Remaining balance |
+| `remainingBalanceNote` | Not included in this payment. |
+| `paymentMethodIs` | Payment method: :method |
+| `contactPhone` | Phone |
+| `paymentLinkFailed` | We couldn't open your reservation from that link. Please check the link in your email or contact us for assistance. |
+| `paymentLinkExpired` | This payment link has expired. Please contact us to arrange your booking. |
+| `paymentArrivalPassed` | The arrival date for this reservation has passed, so it can no longer be paid online. Please contact us to arrange your booking. |
+| `paymentAlreadyCompleted` | This reservation has already been paid and confirmed. Thank you! |
+| `paymentProcessing` | Your payment is being processed. You will receive a confirmation email as soon as it completes. |
+| `paymentUnavailable` | This reservation is no longer available for payment. Please contact us for assistance. |
+| `paymentOfflineInstructions` | Please include your booking reference :reference with your payment. We will confirm your reservation as soon as the payment arrives. |
+| `paymentOfflineNoInstructions` | This reservation is not paid online: payment is arranged directly with us. Please contact us for the payment details and quote your booking reference :reference. We will confirm your reservation as soon as the payment arrives. |
+| `paymentMountFailed` | We could not start the payment process. Please try again or contact us for assistance. |
+
+Keep the `:date`, `:method` and `:reference` placeholders in your translations: Resrv replaces them with the payment deadline, the payment method's label and the booking reference. The page also reuses existing keys you may have translated already: `pay`, `bookingReference`, `emailAddress`, `reservationPeriod`, `to`, `extras`, `options`, `total`, `paymentSurcharge` and `reservationItemUnavailable`.
+
+::: info EMAIL AND CONTROL PANEL TEXT
+Most email and Control Panel text isn't in `frontend.php`. Those sentences go through Laravel's `__()` helper, so you translate them with JSON files such as `lang/el.json`. v6.5.0 adds new email and Control Panel sentences for manual reservations; if you translate Resrv this way, add them to your JSON files.
+:::
