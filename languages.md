@@ -21,12 +21,12 @@ When using multisite, you can simply create a new folder with the handle of your
 ## Updated keys in v6 <Badge type="tip" text="NEW" />
 
 ::: warning RE-PUBLISH OR MERGE
-v6 changes the wording of several keys and adds new ones. If you already translated `frontend.php` in v5, the new keys won't exist in your published copy. Re-publish the file (and re-apply your translations) or merge the new keys into your existing file.
+v6 rewords several keys and adds new ones that your v5 copy of `frontend.php` won't have. Re-publish the file and re-apply your translations, or merge the new keys in.
 :::
 
 ### "Property" keys now read "Rate"
 
-The v5 "advanced availability" feature has been replaced by the collection-scoped [Rates](./rates) system. The existing `property`-themed keys were kept for backward compatibility, but their English values now read "rate":
+[Rates](./rates) replace v5's advanced availability. The old `property`-themed keys still exist, but their English values now say "rate":
 
 | Key | v5 value | v6 value |
 | --- | --- | --- |
@@ -36,7 +36,7 @@ The v5 "advanced availability" feature has been replaced by the collection-scope
 | `pleaseSelectProperty` | Please select a property… | Please select a rate from the search form to check prices and continue. |
 | `pleaseSelectPropertyToBook` | Please select a property to book | Please select a rate to book |
 
-Because the old keys still exist, a v5 translation file keeps working, but the rate selector now reads the new `selectRate` key (and the cart results read `pleaseSelectRateToBook`), so update the new keys below to translate the rate UI.
+A v5 translation file keeps working, but the rate selector now uses the new `selectRate` key and the cart results use `pleaseSelectRateToBook`. Add the keys below to your translations.
 
 ### New rate keys
 
@@ -49,7 +49,7 @@ Because the old keys still exist, a v5 translation file keeps working, but the r
 
 ### Cancellation policy keys
 
-Used by the [cancellation policy](./rates#cancellation-policy) label rendered on availability results, the checkout sidebar, reservation details and the confirmation email.
+Used by the [cancellation policy](./rates#cancellation-policy) label in availability results, the checkout sidebar, reservation details and the confirmation email.
 
 | Key | Default value |
 | --- | --- |
@@ -57,11 +57,11 @@ Used by the [cancellation policy](./rates#cancellation-policy) label rendered on
 | `nonRefundable` | Non-refundable |
 | `freeCancellationUntilDate` | Free cancellation until :date |
 
-The `:date` placeholder is replaced with the resolved free-cancellation date.
+The `:date` placeholder becomes the free cancellation date.
 
 ### Cart keys
 
-Used by the [cart booking](./cart-booking) flow when booking multiple items in one go.
+Used by [cart booking](./cart-booking).
 
 | Key | Default value |
 | --- | --- |
@@ -71,7 +71,7 @@ Used by the [cart booking](./cart-booking) flow when booking multiple items in o
 
 ### Payment page keys <Badge type="tip" text="NEW" />
 
-From v6.5.0, `frontend.php` has 23 new keys for the [payment page](./payment-page), the page customers open from the payment request email of a [manual reservation](./manual-reservations). If you published or translated `frontend.php` before v6.5.0, your copies don't have these keys: add them to every locale folder you created in `lang/vendor/statamic-resrv/`. Only English ships with Resrv, and keys missing from your translations fall back to English, so the payment page shows English text until you translate them.
+v6.5.0 adds 23 keys to `frontend.php` for the [payment page](./payment-page), where customers pay for a [manual reservation](./manual-reservations). If you published or translated `frontend.php` before v6.5.0, add them to every locale folder in `lang/vendor/statamic-resrv/`. Missing keys fall back to English, the only language Resrv ships with.
 
 | Key | Default value |
 | --- | --- |
@@ -99,8 +99,8 @@ From v6.5.0, `frontend.php` has 23 new keys for the [payment page](./payment-pag
 | `paymentOfflineNoInstructions` | This reservation is not paid online: payment is arranged directly with us. Please contact us for the payment details and quote your booking reference :reference. We will confirm your reservation as soon as the payment arrives. |
 | `paymentMountFailed` | We could not start the payment process. Please try again or contact us for assistance. |
 
-Keep the `:date`, `:method` and `:reference` placeholders in your translations: Resrv replaces them with the payment deadline, the payment method's label and the booking reference. The page also reuses existing keys you may have translated already: `pay`, `bookingReference`, `emailAddress`, `reservationPeriod`, `to`, `extras`, `options`, `total`, `paymentSurcharge` and `reservationItemUnavailable`.
+Keep the `:date`, `:method` and `:reference` placeholders in your translations. Resrv replaces them with the payment deadline, the payment method's label and the booking reference. The page also reuses these existing keys: `pay`, `bookingReference`, `emailAddress`, `reservationPeriod`, `to`, `extras`, `options`, `total`, `paymentSurcharge` and `reservationItemUnavailable`.
 
 ::: info EMAIL AND CONTROL PANEL TEXT
-Most email and Control Panel text isn't in `frontend.php`. Those sentences go through Laravel's `__()` helper, so you translate them with JSON files such as `lang/el.json`. v6.5.0 adds new email and Control Panel sentences for manual reservations; if you translate Resrv this way, add them to your JSON files.
+Most email and Control Panel text goes through Laravel's `__()` helper instead of `frontend.php`, so you translate it with JSON files such as `lang/el.json`. v6.5.0 adds new sentences there for manual reservations.
 :::

@@ -19,7 +19,7 @@ So, let's say you have a cruise named "Three Islands Cruise" and you want to all
 </div>
 ```
 
-Here, we have an AvailabilitySearch component with [rates](./rates) and quantity enabled. Passing `:entry="id"` lets the search resolve the per-entry rate labels for the dropdown. The results are displayed in a separate [AvailabilityResults](./availability-results) component, which must also receive `:rates="true"` to show the rate-based UI.
+Here, we have an AvailabilitySearch component with [rates](./rates) and quantity enabled. Passing `:entry="id"` lets the dropdown show this entry's rate labels. The results are displayed in a separate [AvailabilityResults](./availability-results) component, which also needs `:rates="true"`.
 
 <Image src="./img/resrv-availability-search-single.webp" alt="What the above example displays with some minimal changes" />
 
@@ -36,7 +36,7 @@ Resrv takes care of the rest for you:
 <Image src="./img/resrv-availability-search-with-prices.webp" alt="The calendar with availability displayed." />
 
 ::: info
-When [rates](./rates) are also enabled, the calendar shows availability only after a specific rate is picked, since pricing and availability depend on the selected rate.
+With [rates](./rates) enabled, the calendar shows availability only after the user picks a rate, because pricing and availability depend on the rate.
 :::
 
 ## Error handling

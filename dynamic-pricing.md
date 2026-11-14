@@ -48,33 +48,26 @@ Please note that coupons **always** get applied, even if there are overriding dy
 
 ## Minimum and maximum prices <Badge type="tip" text="NEW" />
 
-In addition to **Increase** and **Decrease**, the Operation field offers two more values that let you set a price floor or cap:
+Besides **Increase** and **Decrease**, the Operation field has two values that clamp the price:
 
 | Operation | Effect |
 | --------- | ------ |
-| **Minimum** | If the computed price falls below this amount, it is raised up to this amount (a floor). |
-| **Maximum** | If the computed price rises above this amount, it is lowered down to this amount (a cap). |
+| **Minimum** | Raises the price to this amount if it's lower (a floor). |
+| **Maximum** | Lowers the price to this amount if it's higher (a cap). |
 
-When you choose **Minimum** or **Maximum**, the **Type** is forced to **Fixed**: a clamp is always a fixed monetary amount (e.g. floor at `150`, cap at `250`). Percentage clamps are not supported.
+A clamp is always a fixed amount, so choosing **Minimum** or **Maximum** sets the **Type** to **Fixed**.
 
 ### When clamps are evaluated
 
-Clamps are special: they always run **after** everything else, regardless of where you drag them in the list. The price is computed in two phases:
-
-1. All **Increase** and **Decrease** rules run first, one by one, in their drag-and-drop order (exactly as described above).
-2. The **Minimum** and **Maximum** clamps run last, against the final computed price.
-
-This means a clamp also runs **after** an "Overrides all other dynamic pricing" rule and **after** any coupon has been applied, so it always evaluates the truly final price.
+Clamps always run last, wherever they sit in the list. All **Increase** and **Decrease** rules run first, in order, and then the **Minimum** and **Maximum** clamps run on the result. Clamps also run after coupons and after campaigns with **Overrides all other dynamic pricing**.
 
 ::: info
-For example, a base price of $200 with a 50% discount becomes $100. A **Minimum** clamp of `150` then lifts it back up to $150. The clamp still wins even if the discount came from an overriding campaign or a coupon.
+For example, a $200 price with a 50% discount becomes $100. A **Minimum** of `150` lifts it back to $150, even if the discount came from an overriding campaign or a coupon.
 :::
 
-A few more details worth knowing:
+A price never drops below `0`, even if a **Decrease** would push it there.
 
-- A **Minimum** only raises the price when it is below the floor, and a **Maximum** only lowers it when it is above the cap, otherwise the price is left untouched.
-- If a misconfigured **Decrease** would drive the price below zero, the result is floored at `0`. This safety floor is applied after the min/max clamps, so a configured minimum still takes precedence.
-- Clamps also apply to [Extra](./extras) prices. For a per-day extra, the clamp is evaluated against the extra's total for the booking (price × days), not the per-unit price.
+Clamps also apply to [Extra](./extras) prices. For a per-day Extra, the clamp checks the Extra's total for the booking (daily price times days), not the daily price.
 
 ## Applied Dynamic Pricing
 

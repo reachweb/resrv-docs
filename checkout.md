@@ -2,7 +2,7 @@
 
 The `Checkout` component handles the whole checkout process: it allows the user to select extras or options, lets them add a coupon for a discount, gets the user's personal details, and handles the payment.
 
-In v6 the checkout supports **multiple payment gateways**. When more than one gateway is enabled, the user is shown a payment-method picker before paying; with a single gateway it is auto-selected, and when the price is zero the payment step is skipped entirely.
+In v6 the checkout supports **multiple payment gateways**.
 
 In this page, we'll go over the setup required for the `Checkout` component to function correctly and how to customize it to fit your needs.
 
@@ -13,7 +13,7 @@ Before using this component, let's go through the required steps to get it worki
 1. You need to create an Entry that will be used as the checkout page. This Entry can follow your website's design but must have a different template that will include the `Checkout` component.
 2. You also need to create a "Checkout complete" page. Again, this page can be like any page on your site, but in its template, you must include the `resrv_checkout_redirect` tag.
 3. You need to create the checkout form. If you used the installer, a sample checkout form is already published for you to edit.
-4. You must configure and enable at least one payment gateway in order to accept payments. See the [Payment gateways](./payment-gateways) overview, plus the [Stripe](./stripe) and [Mollie](./mollie) pages.
+4. You must configure and enable at least one payment gateway to accept payments. See [Payment gateways](./payment-gateways), [Stripe](./stripe) and [Mollie](./mollie).
 
 ## Checkout Component
 
@@ -27,11 +27,11 @@ As simple as that! The component has a few properties that you can set to custom
 
 | Property | Type | Default | Description |
 | -------- | ---- | ------- | ----------- |
-| enableExtrasStep | boolean | true | By default the component starts with a step that allows the user to select Extras / Options. If you don't use them, you can disable it by setting this to false and the step is skipped. |
-| enableCoupon | boolean | true | By default the component allows the user to add a discount coupon, you can disable this here if you don't use them. In v6 this is locked: it is set once when the component mounts and can no longer be toggled client-side. |
+| enableExtrasStep | boolean | true | By default the component starts with a step that allows the user to select Extras / Options. If you don't use them, you can disable it by setting this to false. |
+| enableCoupon | boolean | true | By default the component allows the user to add a discount coupon, you can disable this here if you don't use them. From v6 it's set once on mount and can't be changed client-side. |
 | view | string | "checkout" | You can override the view that is used to render the component. Expects a `name.blade.php` file in the `/resources/views/vendor/statamic-resrv/livewire` folder. |
 
-You set these as attributes on the tag (note the snake_case casing):
+Set them as snake_case attributes on the tag:
 
 ```antlers
 {{ livewire:checkout enable_extras_step="false" enable_coupon="false" view="my-checkout" }}
@@ -41,42 +41,33 @@ You set these as attributes on the tag (note the snake_case casing):
 
 ## Checkout steps
 
-The checkout is organized into three internal steps:
+The checkout has three steps:
 
-1. **Extras & options**: The user picks any [Extras](./extras) and [Options](./options) for the reservation. This step is skipped when `enableExtrasStep` is `false` (any extras or options already stored in the session are still applied).
-2. **Personal details**: The user fills in the checkout form with their details. The submit button reads *"Continue to payment"*, or *"Confirm reservation"* when the amount due is zero.
-3. **Payment**: What renders here depends on how many gateways are available:
-   - **More than one gateway** → a payment-method picker is shown first (see below).
-   - **Exactly one gateway** → it is auto-selected and the payment view is shown directly.
-   - **Zero price** → the whole payment step is skipped and the reservation is confirmed (see [Skip Payment](#skip-payment)).
+1. **Extras & options**: The user picks any [Extras](./extras) and [Options](./options). Skipped when `enableExtrasStep` is `false` (extras or options already in the session still apply).
+2. **Personal details**: The user fills in the checkout form. The button reads *"Continue to payment"*, or *"Confirm reservation"* when nothing is due.
+3. **Payment**: With more than one gateway, the user picks one first (see below). With a single gateway, it's selected automatically. With a zero price, this step is skipped and the reservation is confirmed (see [Skip Payment](#skip-payment)).
 
-The step indicator adjusts automatically: the *Extras & options* row is hidden when `enableExtrasStep` is `false`, and the *Payment* row is hidden entirely for zero-price reservations.
+The step indicator hides any skipped steps.
 
 ## Selecting a payment method
 
-When more than one payment gateway is enabled and survives the amount filtering for the reservation total, the user is shown a **Select payment method** picker before they pay. Each option displays the gateway label, and if a surcharge is configured for that gateway, a suffix is appended:
+When more than one gateway is available for the reservation total, the user picks one under **Select payment method**. Each option shows the gateway label and any surcharge, for example `(+10% surcharge)` or `(+€ 5 surcharge)`.
 
-- Percentage surcharge: `(+10% surcharge)`
-- Fixed surcharge: `(+€ 5 surcharge)`
-
-When the user selects a gateway, the surcharge is added to the amount, a payment intent is created, and the matching payment view is rendered (or, for redirect gateways such as Mollie, the user is sent to the gateway and back).
+Once they choose, the surcharge is added and the gateway's payment form is shown. Redirect gateways such as Mollie send the user to the gateway and back.
 
 <Image src="./img/resrv-checkout-gateway-picker.webp" alt="The checkout payment method picker with multiple gateways." />
 
-A few behaviours to keep in mind:
+If the amount limits leave no gateway for the reservation total, the user stays on the details step and sees an error. Make sure your amount limits cover every total you expect.
 
-- **Single gateway:** the picker is never shown; the only available gateway is selected automatically.
-- **No gateway for the amount:** if no enabled gateway accepts the reservation amount (for example, every gateway has a minimum/maximum limit that excludes it), the user stays on the details step and an error is shown. Make sure your gateway amount limits cover the totals you expect.
-
-See [Payment gateways](./payment-gateways) for how to enable gateways and configure surcharges and amount limits.
+See [Payment gateways](./payment-gateways) to set up gateways, surcharges and amount limits.
 
 ## Offline / pay-later
 
-Resrv ships with an **Offline** gateway (`OfflinePaymentGateway`) for bookings you collect payment for manually: bank transfer, pay on arrival, and so on. Enable it like any other gateway (see [Payment gateways](./payment-gateways)).
+Resrv ships with an **Offline** gateway (`OfflinePaymentGateway`) for payments you collect yourself, such as bank transfers. Enable it like any other gateway (see [Payment gateways](./payment-gateways)).
 
-When the user reaches the offline gateway, they see the amount due and a **Confirm reservation** button instead of a card form. Clicking it confirms the booking server-side without taking a real payment. If more than one gateway is available, a *Change payment method* button lets the user go back to the picker.
+The user sees the amount due and a **Confirm reservation** button instead of a card form. If there are other gateways, *Change payment method* takes them back to the picker.
 
-Because no real payment is captured, the customer is redirected to the checkout-complete page with the *pending* status (see below): a message telling them the booking has been received and payment is still to be settled. The reservation itself is already confirmed server-side (availability is secured and the confirmation email is sent); you simply collect and record the payment outside Resrv.
+Confirming books the reservation and sends the confirmation email, but takes no payment. The checkout complete page shows the `pending` status, telling the customer that payment is still to be settled. You collect the payment outside Resrv.
 
 ## Checkout Complete
 
@@ -95,7 +86,7 @@ After the checkout is complete, the user is redirected to the "Checkout complete
 {{ /resrv_checkout_redirect }}
 ```
 
-The tag is gateway-aware: it resolves the gateway from the current reservation (or from the `resrv_gateway` query parameter that redirect gateways append on the way back) and asks it how the payment went. It exposes the following variables:
+The tag asks the reservation's gateway how the payment went (redirect gateways pass it back in the `resrv_gateway` query parameter). It exposes these variables:
 
 | Variable | Description |
 | -------- | ----------- |
@@ -106,22 +97,22 @@ The tag is gateway-aware: it resolves the gateway from the current reservation (
 
 The three statuses are:
 
-- **`success`**: *"Payment successful."* The payment was processed and the reservation is confirmed.
-- **`failed`**: *"Payment failed."* The payment was not successful; the customer is asked to retry or get in touch.
-- **`pending`**: *"Reservation received."* The reservation has been received and held, and will be confirmed once payment is settled. This is what offline / pay-later bookings and other held bookings return.
+- **`success`** (*"Payment successful."*): the payment went through and the reservation is confirmed.
+- **`failed`** (*"Payment failed."*): the customer is asked to retry or get in touch.
+- **`pending`** (*"Reservation received."*): the reservation was received and payment is still to be settled. Offline and other held bookings return this.
 
 Inside the tag you can access the `reservation` variable that contains the reservation data. This is the correct place to add any goal-based events, like Analytics.
 
 ## Choosing the checkout form
 
-The checkout form used at step 2 is resolved per reservation, so different collections or entries can use different forms. Resrv picks the first matching form in this precedence order:
+Different collections or entries can use different checkout forms. Resrv uses the first match in this order:
 
-1. **Entry mapping**: a form mapped to that specific entry.
-2. **Legacy `resrv_override_form`**: the per-entry field from v5, kept for backwards compatibility.
+1. **Entry mapping**: a form mapped to the entry.
+2. **Legacy `resrv_override_form`**: the v5 per-entry field, kept for backwards compatibility.
 3. **Collection mapping**: a form mapped to the entry's collection.
 4. **Default form**: the global default checkout form.
 
-You configure the default form and the optional collection / entry mappings in **Resrv → Settings → Checkout** (`checkout_forms_default`, `checkout_forms_collections`, `checkout_forms_entries`).
+Set the default form and the mappings in **Resrv → Settings → Checkout** (`checkout_forms_default`, `checkout_forms_collections`, `checkout_forms_entries`).
 
 See the [Configuration](./configuration) page for the full list of settings.
 
@@ -152,11 +143,11 @@ The dictionary *Countries* will display an AlpineJS filtered select box. Resrv a
 
 ## Cancellation policy
 
-When a [rate](./rates) declares a cancellation policy, a *Cancellation policy* label is shown in the checkout sidebar (for example *"Free cancellation until Mon 03 Jun 2026"* or *"Non-refundable"*). The label is snapshotted onto the reservation at booking time, so later changes to the rate never alter the terms an existing booking was made under.
+When a [rate](./rates) has a cancellation policy, the checkout sidebar shows it, for example *"Free cancellation until Mon 03 Jun 2026"*. The reservation keeps the policy it was booked with, even if you change the rate later.
 
-Within that free-cancellation window, customers can cancel the booking themselves from the [Reservation Status](./reservation-status) page, which issues an automatic refund through the original gateway.
+Within the free-cancellation window, customers can cancel from the [Reservation Status](./reservation-status) page and are refunded automatically through the original gateway.
 
-**Non-refundable bookings are always charged in full** at checkout, even after a coupon is applied or removed, regardless of the global free-cancellation settings.
+**Non-refundable bookings are always charged in full** at checkout, whatever your global free-cancellation settings.
 
 ## Required Configuration
 
@@ -166,6 +157,4 @@ Finally, you must also set up and enable at least one [payment gateway](./paymen
 
 ## Skip Payment
 
-If the price of the reservation is zero (either because you set the price to zero, or because dynamic pricing brings it to zero), the checkout is completed without any payment. The payment step is never shown, the *Payment* row is hidden from the step indicator, and the step-2 button reads *"Confirm reservation"*. This means you can use only the reservation part of Resrv. For example, if you have a restaurant that takes reservations but doesn't charge for them, you can simply set the price to zero.
-
-This is distinct from the **offline / pay-later** gateway (a real gateway that confirms the booking immediately but shows the customer a "payment pending" message) and from the affiliate "pay later" flow used by partners: both of those still go through step 2 with a non-zero amount.
+If the price of the reservation is zero, or if dynamic pricing makes it zero, the checkout is completed without any payment. This means you can use only the reservation part of Resrv. For example, if you have a restaurant that takes reservations but doesn't charge for them, you can simply set the price to zero.

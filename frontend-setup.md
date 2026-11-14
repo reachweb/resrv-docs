@@ -29,11 +29,11 @@ Even though it's not strictly necessary, it's recommended to add the Livewire st
 
 ## Other required assets
 
-Besides the Livewire scripts, Resrv's date picker is built on [@reachweb/alpine-calendar](https://github.com/reachweb/alpine-calendar), an AlpineJS-native calendar component, and uses [Day.js](https://day.js.org/) for date handling.
+Besides the Livewire scripts, Resrv also requires [@reachweb/alpine-calendar](https://github.com/reachweb/alpine-calendar), an AlpineJS calendar, and [Day.js](https://day.js.org/).
 
-AlpineJS ships with Livewire 3, so it is already on the page once you add <code v-pre>{{ livewire:scripts }}</code>. The calendar plugin registers itself on Alpine's `alpine:init` event, and Day.js is bundled into the precompiled JS and exposed as `window.dayjs`.
+AlpineJS comes with Livewire 3, so <code v-pre>{{ livewire:scripts }}</code> already loads it. The precompiled JS registers the calendar on Alpine's `alpine:init` event and exposes Day.js as `window.dayjs`.
 
-You can install these via npm and include them in your own build process, but the simplest supported path is to include the precompiled version that ships with Resrv directly in your layout file. These files are published to `public/vendor/statamic-resrv/frontend/` during [installation](./installation).
+You can install them via npm and add them to your build, but we suggest including the precompiled version that ships with Resrv in your layout file. [Installation](./installation) publishes it to `public/vendor/statamic-resrv/frontend/`.
 
 ```antlers{11,17}
 <!-- resources/views/layout.antlers.html -->
@@ -60,9 +60,9 @@ You can install these via npm and include them in your own build process, but th
 
 ## Frontend styles & TailwindCSS
 
-Resrv's Livewire components are styled using TailwindCSS. Statamic 6 ships with **Tailwind v4**, which is configured CSS-first: there is no `tailwind.config.js`.
+Resrv's Livewire components are styled using TailwindCSS. Statamic 6 ships with **Tailwind v4**, which you configure in CSS instead of a `tailwind.config.js` file.
 
-So that Tailwind doesn't purge the utility classes used by Resrv's components, point it at the published Resrv blade views with the `@source` directive in your main CSS file:
+Add an `@source` directive for Resrv's Blade views to your main CSS file, so Tailwind keeps the classes they use:
 
 ```css
 @import "tailwindcss";
@@ -71,7 +71,7 @@ So that Tailwind doesn't purge the utility classes used by Resrv's components, p
 ```
 
 ::: tip
-Adjust the relative path in `@source` to match where your CSS lives relative to the `vendor/` directory.
+Adjust the `@source` path to match where your CSS file sits relative to `vendor/`.
 :::
 
 It's highly recommended to install the TailwindCSS Forms plugin, since Resrv's inputs use the `form-input`, `form-select`, `form-checkbox` and `form-radio` classes:
@@ -80,7 +80,7 @@ It's highly recommended to install the TailwindCSS Forms plugin, since Resrv's i
 npm install -D @tailwindcss/forms
 ```
 
-In Tailwind v4 the plugin is registered in CSS with the `@plugin` directive instead of a JS config:
+Then register it with the `@plugin` directive:
 
 ```css
 @import "tailwindcss";
@@ -97,9 +97,7 @@ The `resrv-tailwind.css` file should only be included if you don't use TailwindC
 
 ## CSS Variables
 
-The calendar is themed with CSS custom properties. The defaults are declared at zero specificity, so any override you set in your own stylesheet wins regardless of load order. You do **not** need `!important`.
-
-The accent color (selected days and active states) is `--color-calendar-primary`.
+You can style the calendar with these CSS variables. The defaults have zero specificity, so your own values always win and you don't need `!important`. The accent color for selected and active days is `--color-calendar-primary`.
 
 ### Color tokens
 
@@ -139,7 +137,7 @@ The accent color (selected days and active states) is `--color-calendar-primary`
 | `--shadow-calendar` | `0 10px 15px -3px #0000001a, 0 4px 6px -4px #0000001a` | Calendar box shadow |
 | `--font-calendar` | `system-ui, -apple-system, sans-serif` | Calendar font family |
 
-Override only what you need in your own stylesheet:
+Override only what you need:
 
 ```css
 :root {
@@ -161,4 +159,4 @@ Override only what you need in your own stylesheet:
 
 ## Next steps
 
-With the assets in place, you're ready to add the reservation components to your templates. Start with the [Availability Search component](./availability-search-component) to let visitors pick dates and check availability.
+With the assets in place, start adding components to your templates with the [Availability Search component](./availability-search-component).

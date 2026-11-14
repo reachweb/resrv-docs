@@ -1,11 +1,9 @@
 # Writing a custom payment gateway
 
-Resrv ships with Stripe and an offline (bank transfer / pay-at-premises) gateway out of the box. If you need a different provider (PayPal, Square, Adyen, Braintree, or anything else), you write a class that implements `Reach\StatamicResrv\Http\Payment\PaymentInterface` and register it in the `payment_gateways` config array.
-
-This page walks through the full interface, the two gateway types (inline and redirect), and the races you must handle for a production-grade integration. For multi-gateway concepts (the picker, surcharges, amount limits), see [Payment gateways](./payment-gateways).
+To use a provider other than Stripe or the built-in offline gateway, write a class that implements `Reach\StatamicResrv\Http\Payment\PaymentInterface` and register it in the `payment_gateways` config array.
 
 ::: tip
-A custom gateway slots straight into the multi-gateway machinery. Surcharges and amount limits are purely config-time concerns handled by `PaymentGatewayManager`, so they work with your gateway without any code changes.
+Surcharges and amount limits need no gateway code, because `PaymentGatewayManager` handles them from config. See [Payment gateways](./payment-gateways).
 :::
 
 ::: warning Updating a gateway for v6.5
@@ -15,17 +13,15 @@ Resrv v6.5.0 changes `PaymentInterface` to support [manual reservations](./manua
 - `retrievePaymentIntent()` is a new required method. See [Retrieving a payment intent](#retrieving-a-payment-intent).
 - `verifyPayment()` must also confirm reservations in the new `awaiting_payment` status. See [Verifying webhooks](#verifying-webhooks).
 
-PHP enforces the first two when your class loads ("Declaration of …::paymentIntent() must be compatible with …"). Resrv checks every configured gateway class when it builds its gateway list, so a gateway that misses either one breaks checkout, webhooks and the Control Panel reservation pages, not just its own payments. Update your gateway before, or in the same deploy as, the Resrv upgrade.
+A gateway missing either of the first two fails to load with a PHP error ("Declaration of …::paymentIntent() must be compatible with …"). Resrv loads every configured gateway, so this breaks checkout, webhooks and the Control Panel reservation pages for all of them. Update your gateway before the Resrv upgrade or in the same deploy.
 :::
 
 ## The two gateway types
 
-Every gateway is either **inline** or **redirect**, decided by `redirectsForPayment()`:
+A gateway is either inline or redirect:
 
-- **Inline gateways** (e.g. Stripe, Square) render a payment form directly on the checkout page via a Blade view. `redirectsForPayment()` returns `false`.
-- **Redirect gateways** (e.g. PayPal, Mollie, iDEAL) send the customer to the provider's hosted page, then back to your site. `redirectsForPayment()` returns `true`.
-
-Both types implement the same interface; only a handful of methods behave differently.
+- Inline gateways, like Stripe, render a payment form on the checkout page with a Blade view. `redirectsForPayment()` returns `false`.
+- Redirect gateways, like PayPal, send the customer to the provider's hosted page and back. `redirectsForPayment()` returns `true`.
 
 ## The PaymentInterface
 
@@ -53,31 +49,29 @@ interface PaymentInterface
 }
 ```
 
-Five methods are new in v6.0. If you are porting a v5 gateway, start with these:
+If you're porting a v5 gateway, start with the five methods added in v6.0:
 
 | Method | Returns | Role |
 |--------|---------|------|
-| `name()` | `string` | Machine-readable slug: lowercase, no spaces (e.g. `paypal`). Fallback identifier. |
-| `label()` | `string` | Default human label shown in the gateway picker. Overridable per-install via the config `label` key. |
-| `paymentView()` | `string` | The Blade view rendering the inline payment UI. Redirect gateways return the default view as a never-rendered fallback. |
-| `supportsManualConfirmation()` | `bool` | `true` only for offline/non-provider-verified gateways. Stripe and other provider-backed gateways return `false`. |
-| `cancelPaymentIntent()` | `void` | Voids an abandoned provider-side intent. See [Cancelling abandoned intents](#cancelling-abandoned-intents). |
+| `name()` | `string` | Lowercase slug, like `paypal`. Used as a fallback identifier. |
+| `label()` | `string` | Default picker label. The config `label` key overrides it. |
+| `paymentView()` | `string` | Blade view for the inline payment form. Redirect gateways return the default, which never renders. |
+| `supportsManualConfirmation()` | `bool` | `true` only for offline gateways. |
+| `cancelPaymentIntent()` | `void` | Voids an abandoned intent. See [Cancelling abandoned intents](#cancelling-abandoned-intents). |
 
-Later v6 releases changed the interface again. A v5 port needs these too, and so does any gateway written for an earlier v6 release:
+Later releases added these, which both v5 ports and older v6 gateways need:
 
 | Change | Since | Role |
 |--------|-------|------|
 | `supportsAutomaticRefunds()` | v6.2 | `true` when `refund()` returns money through the provider's API. See [Refunds](#refunds). |
-| `retrievePaymentIntent()` | v6.5 | Reads the current state of an intent you created earlier. See [Retrieving a payment intent](#retrieving-a-payment-intent). |
+| `retrievePaymentIntent()` | v6.5 | Reads the current state of an intent. See [Retrieving a payment intent](#retrieving-a-payment-intent). |
 | `paymentIntent()` 4th parameter, `?string $returnUrl = null` | v6.5 | The base URL a redirect gateway sends the customer back to. See [The return URL](#the-return-url). |
 
 ::: warning Implement every method
-Every method in the interface is required, and `paymentIntent()` must declare the 4th parameter even if your gateway ignores it. A gateway that misses one fatals as soon as Resrv loads it, even though some methods can be no-ops for some providers (`cancelPaymentIntent()` for offline-style gateways, or `retrievePaymentIntent()` returning `null` for gateways that never create a provider intent).
+Every method is required, and `paymentIntent()` must declare the 4th parameter even if you ignore it. A missing method is a fatal error as soon as Resrv loads the gateway. Methods your provider doesn't need can be no-ops, like `cancelPaymentIntent()` in an offline gateway or `retrievePaymentIntent()` returning `null`.
 :::
 
 ## Identity methods
-
-`name()`, `label()`, `paymentView()` and `supportsManualConfirmation()` identify your gateway and tell Resrv how to render it.
 
 ```php
 public function name(): string
@@ -105,9 +99,9 @@ public function supportsManualConfirmation(): bool
 }
 ```
 
-`supportsManualConfirmation()` returns `true` only when the customer confirms without a provider verifying the transaction in real time (bank transfer, pay-on-premises). When `true`, the checkout UI shows a "Confirm Reservation" button that confirms the reservation immediately. For any provider-backed gateway, confirmation comes from a webhook or redirect callback instead, so this must be `false`.
+Return `true` from `supportsManualConfirmation()` only when no provider verifies the payment, as with bank transfer. Checkout then shows a "Confirm Reservation" button that confirms the booking straight away. Gateways that confirm through a webhook or redirect callback return `false`.
 
-For reference, the bundled Stripe gateway returns:
+The bundled Stripe gateway returns:
 
 ```php
 public function name(): string { return 'stripe'; }
@@ -118,7 +112,7 @@ public function supportsManualConfirmation(): bool { return false; }
 
 ## Creating the payment intent
 
-`paymentIntent()` creates the provider-side session and returns an object Resrv reads to drive the rest of checkout, or of the [payment page](./payment-page) when a customer pays for a manual reservation. `$amount` is a `Price` object holding the payment plus any surcharge: call `$amount->raw()` for the numeric string in minor units (cents). The 4th parameter, `$returnUrl`, tells redirect gateways where to send the customer back (see [The return URL](#the-return-url)). The return value differs by gateway type.
+`paymentIntent()` creates the session at the provider and returns an object Resrv uses for the rest of checkout or the [payment page](./payment-page). `$amount` is a `Price` object that includes any surcharge. `$amount->raw()` gives it in minor units (cents) as a numeric string. Redirect gateways use `$returnUrl` (see [The return URL](#the-return-url)).
 
 ### Inline gateways
 
@@ -162,17 +156,17 @@ public function paymentIntent($amount, Reservation $reservation, $data, ?string 
 }
 ```
 
-Always stash `reservation_id` in the intent metadata as shown above. The stale-intent fallback in `verifyPayment()` relies on it.
+Always store `reservation_id` in the intent metadata. The stale-intent fallback in `verifyPayment()` needs it.
 
 ### The return URL
 
-A redirect gateway tells the provider where to send the customer after paying. Build that URL from `$returnUrl`:
+Redirect gateways build the provider's return URL from `$returnUrl`:
 
-- In checkout, Resrv passes the absolute URL of your checkout-complete entry (the page with the <code v-pre>{{ resrv_checkout_redirect }}</code> tag).
-- On the [payment page](./payment-page), Resrv passes the customer's payment link, so they come back to the page they paid from. That URL already carries `?ref=…&hash=…`, which is how the page identifies the customer.
-- When `$returnUrl` is `null` (a caller that doesn't set one), fall back to the checkout-complete entry, as before.
+- In checkout, it's the absolute URL of your checkout-complete entry (the page with the <code v-pre>{{ resrv_checkout_redirect }}</code> tag).
+- On the [payment page](./payment-page), it's the customer's payment link, which already carries `?ref=…&hash=…`.
+- When it's `null`, fall back to the checkout-complete entry.
 
-Then append your own return parameters, choosing the separator based on whether the base already has a query string:
+Then append your own parameters, with `&` as the separator when the base already has a query string:
 
 ```php
 use Statamic\Facades\Entry;
@@ -191,26 +185,24 @@ protected function buildReturnUrl(Reservation $reservation, ?string $returnUrl =
 }
 ```
 
-Appending a bare `?` to the payment link produces a malformed URL with two `?`, and the customer's way back breaks. In normal checkout the result is the same URL as before, because Resrv passes the checkout-complete entry as `$returnUrl`.
-
 ::: info
-In checkout, Resrv also appends `resrv_gateway=<config_key>` to your `redirectTo` URL before redirecting. On the payment page it sends the customer to `redirectTo` unchanged and adds `resrv_gateway` to `$returnUrl` instead, so you may find it on the base already. Keep appending your own parameters anyway: a duplicate `resrv_gateway` is harmless. The <code v-pre>{{ resrv_checkout_redirect }}</code> tag reads it to resolve your gateway, and the payment page checks for it to know the customer is coming back from your provider.
+In checkout, Resrv adds `resrv_gateway=<config_key>` to your `redirectTo` URL. On the payment page it adds it to `$returnUrl` instead. Append it yourself anyway, since a duplicate does no harm. The <code v-pre>{{ resrv_checkout_redirect }}</code> tag and the payment page use it to identify your gateway.
 :::
 
 ## The inline payment view
 
-Inline gateways render a Blade view (returned from `paymentView()`) inside the `CheckoutPayment` Livewire component at checkout, and inside the `reservation-payment` component on the [payment page](./payment-page). Both components expose these to your view:
+The view from `paymentView()` renders inside the `CheckoutPayment` Livewire component at checkout and the `reservation-payment` component on the [payment page](./payment-page). Both pass these to it:
 
 | Property | Type | Description |
 |----------|------|-------------|
 | `$wire.clientSecret` | string | From `paymentIntent()->client_secret` |
 | `$wire.publicKey` | string | From `getPublicKey()` |
-| `$wire.checkoutCompletedUrl` | string | Where to send the customer after paying: the checkout-completed Statamic entry at checkout, the customer's payment link on the payment page |
-| `$amount` | float | Formatted payment amount, available as a Blade variable |
+| `$wire.checkoutCompletedUrl` | string | Where to send the customer after paying (the payment link on the payment page) |
+| `$amount` | float | Formatted payment amount, as a Blade variable |
 
-Because the same view renders on the payment page, the layout of your payment page entry must load your provider's JavaScript too, just like your checkout layout.
+Load your provider's JavaScript in your payment page layout too.
 
-On the payment page, Resrv shows **Payment processing** to a returning customer only when the return URL carries `redirect_status=succeeded` or `redirect_status=processing` (or Stripe's `payment_intent` / `payment_intent_client_secret` parameters), while `redirect_status=failed` shows the **Pay** button again so the customer can retry. Without any of them, a customer who has just paid lands back on **Complete your payment** with the **Pay** button until the webhook confirms the booking. So append `redirect_status` when you send the customer to `checkout_completed_url`, and use `&` as the separator when the URL already has a query string: on the payment page it always does (`?ref=…&hash=…`).
+After payment, send the customer to `checkout_completed_url` with `redirect_status` appended, using `&` when the URL already has a query string (the payment link always does). The payment page shows **Payment processing** only for `redirect_status=succeeded` or `redirect_status=processing` (or Stripe's `payment_intent` / `payment_intent_client_secret` parameters). `redirect_status=failed` shows the **Pay** button again. Without them, a customer who just paid sees **Complete your payment** until the webhook confirms the booking.
 
 A minimal view at `resources/views/livewire/paypal-payment.blade.php`:
 
@@ -247,13 +239,11 @@ Alpine.data('paypalPayment', () => ({
 @endscript
 ```
 
-Make the view publishable so installs can customize it, and have `paymentView()` return the namespaced path (e.g. `'your-package::livewire.paypal-payment'`). Laravel resolves published views first, so an overridden copy wins automatically.
-
-Redirect gateways skip this entirely: return the default `statamic-resrv::livewire.checkout-payment` view as a fallback that is never rendered.
+Make the view publishable and return its namespaced path from `paymentView()`, like `'your-package::livewire.paypal-payment'`, so a published copy overrides it.
 
 ## Handling the redirect back
 
-Redirect gateways must implement `handleRedirectBack()`. When the customer returns, the <code v-pre>{{ resrv_checkout_redirect }}</code> tag resolves your gateway (via the `resrv_gateway` query param) and calls this method. It must return an array with a `status` key of `true`, `false`, or `'pending'`:
+When a customer returns from a redirect gateway, the <code v-pre>{{ resrv_checkout_redirect }}</code> tag finds your gateway from the `resrv_gateway` query parameter and calls `handleRedirectBack()`. It must return an array with a `status` of `true`, `false` or `'pending'`:
 
 ```php
 public function handleRedirectBack(): array
@@ -282,7 +272,7 @@ public function handleRedirectBack(): array
 }
 ```
 
-`handlePaymentPending()` returns a pending state when `?payment_pending=<id>` is present (useful for async methods like bank transfers), and `false` otherwise:
+`handlePaymentPending()` returns a pending state when `?payment_pending=<id>` is present, for async methods like bank transfer, and `false` otherwise:
 
 ```php
 public function handlePaymentPending(): bool|array
@@ -300,27 +290,28 @@ public function handlePaymentPending(): bool|array
 }
 ```
 
-The three `status` values map to the success, failure, and pending messages the customer sees on the checkout-completed page.
+The checkout-completed page shows a success, failure or pending message based on `status`.
 
-The [payment page](./payment-page) calls `handleRedirectBack()` too, when a customer comes back from your provider with `resrv_gateway` in the URL. It resolves your gateway from the reservation and uses the `status` only for an interim message: `true` or `'pending'` shows "Payment processing", and `false` lets the customer try again. It never confirms the booking (your webhook does), so your `handleRedirectBack()` needs no changes for it.
+The [payment page](./payment-page) also calls `handleRedirectBack()`, but only to pick a message: `true` or `'pending'` shows "Payment processing" and `false` lets the customer try again. The webhook still confirms the booking, so `handleRedirectBack()` needs no changes for the payment page.
 
 ## Verifying webhooks
 
-Gateways that confirm via webhook (`supportsWebhooks()` returns `true`) implement `verifyPayment()`. Register each provider's webhook at the per-gateway route; the segment must match the config key:
+Gateways that confirm through a webhook return `true` from `supportsWebhooks()` and implement `verifyPayment()`. Register the webhook at your gateway's own route, where the last segment matches the config key:
 
 ```text
 POST https://yoursite.com/resrv/api/webhook/paypal
 POST https://yoursite.com/resrv/api/webhook/stripe
 ```
 
-The bare `/resrv/api/webhook` route still resolves to the default gateway for single-gateway sites, but returns a 404 when multiple gateways are configured. See [Payment gateways](./payment-gateways#webhook-routes) for routing details.
+The bare `/resrv/api/webhook` route still goes to the default gateway on single-gateway sites, but returns a 404 when you configure more than one. See [Payment gateways](./payment-gateways#webhook-routes).
 
-A production `verifyPayment()` does four things:
+`verifyPayment()` should:
 
-1. **Verify the signature** against the webhook secret. Reject if it doesn't match.
-2. **Find the reservation** by `payment_id`, with a metadata fallback for stale intents.
-3. **Confirm on success**, but route it through `transitionTo(CONFIRMED, tolerant: true)` and gate `ReservationConfirmed` on the result. Don't check for `pending` first: the transition confirms both `pending` checkouts and `awaiting_payment` [manual reservations](./manual-reservations), and returns `false` for anything else. Leave a failed *attempt* as it is (a declined card is retryable; don't cancel it or release the hold).
-4. **Return a 200 response** so the provider stops retrying.
+1. Verify the signature against the webhook secret and reject the request if it doesn't match.
+2. Find the reservation by `payment_id`, with a metadata fallback for stale intents.
+3. On success, call `transitionTo(CONFIRMED, tolerant: true)` and dispatch `ReservationConfirmed` only if it returns `true`. Don't check for `pending` first. The transition confirms both `pending` checkouts and `awaiting_payment` [manual reservations](./manual-reservations), and returns `false` for anything else.
+4. Leave a failed attempt alone. A declined card can be retried, so don't cancel or release the hold.
+5. Return a 200 response so the provider stops retrying.
 
 ```php
 public function verifyPayment($request)
@@ -387,19 +378,19 @@ public function verifyPayment($request)
 }
 ```
 
-Dispatch `ReservationConfirmed` with `ReservationConfirmed::VIA_WEBHOOK` and the gateway and payment id, as above, so the [activity log](./activity-log) records the booking as "Confirmed by payment webhook".
+Pass `ReservationConfirmed::VIA_WEBHOOK`, the gateway and the payment id, as above, so the [activity log](./activity-log) shows "Confirmed by payment webhook".
 
-A failed or cancelled intent must never end an **Awaiting payment** reservation: the customer can try again from the same link, and an admin can cancel the booking. `expire()` already ignores anything that isn't `pending`, so don't call any other transition from those events.
+A failed or cancelled intent must never end an **Awaiting payment** reservation, since the customer can still pay from the same link. `expire()` only touches `pending` reservations, so don't call any other transition for these events.
 
 ::: warning Log and ignore stale successes
-The policy above guarantees Resrv never confirms a reservation against an amount or gateway the customer has since walked away from, at the cost of you manually reconciling the orphan charge at the provider. Resrv ships this trade-off for Stripe; adopt the same for any provider that confirms asynchronously.
+Logging a stale success instead of confirming it means Resrv never confirms a reservation against an amount or gateway the customer abandoned. You then reconcile the orphan charge at the provider by hand. The Stripe gateway does this, and we suggest the same for any provider that confirms asynchronously.
 :::
 
 ### The orphan-payment race
 
-A second, subtler race remains even for a *live* intent. `ExpireReservations` runs on every availability search and can flip a still-`PENDING` reservation to `EXPIRED` in the window between your webhook's in-memory checks and the moment it writes the confirmation. From v6.5.0, the lapsed-hold sweep (`resrv:cancel-lapsed-holds`) can likewise cancel an `awaiting_payment` manual reservation while its payment is still going through.
+A live intent can still lose a race. `ExpireReservations` runs on every availability search and can move a `PENDING` reservation to `EXPIRED` between your webhook's checks and its confirmation. From v6.5.0, the lapsed-hold sweep (`resrv:cancel-lapsed-holds`) can also cancel an `awaiting_payment` manual reservation while its payment is going through.
 
-Resrv's state changes go through `Reservation::transitionTo()`, which re-reads the row under a `lockForUpdate`. Called with `tolerant: true`, it returns `false` (instead of throwing) when the row moved to an incompatible state. **Gate `ReservationConfirmed` on its return, and re-read on `false`** to surface a terminal state as an orphaned charge:
+`Reservation::transitionTo()` re-reads the row under a `lockForUpdate`. With `tolerant: true` it returns `false` instead of throwing when the row has moved to an incompatible state. On `false`, refresh the reservation and report the orphaned charge:
 
 ```php
 $reservation->refresh();
@@ -412,26 +403,32 @@ $reservation->refresh();
 return response()->json([], 200);
 ```
 
-If your gateway checks the terminal statuses by hand and calls `dispatchFor()`, switch to `notifyIfOrphaned()`: a hand-written list of `EXPIRED`, `REFUNDED` and `PARTNER` misses a late payment on a cancelled hold.
+If your gateway checks the terminal statuses by hand and calls `dispatchFor()`, switch to `notifyIfOrphaned()`. A hand-written list of `EXPIRED`, `REFUNDED` and `PARTNER` misses a late payment on a cancelled hold.
 
-Returning `200` stops provider retries; the logged/notified orphan is the single source of truth for manual reconciliation. The bundled `StripePaymentGateway` does exactly this, and Resrv's webhook regression tests cover the race.
+Return `200` either way and reconcile from the logged orphan. The bundled `StripePaymentGateway` does the same.
 
 ::: info Manual-confirmation gateways
-Offline-style gateways (`supportsManualConfirmation()` returns `true`) confirm through Resrv's built-in `CheckoutPayment::confirmPayment()`, which already performs this re-read and shows the customer an "expired" error instead of a false success. You don't add anything for that path; it lives in Resrv core.
+Offline gateways (`supportsManualConfirmation()` returns `true`) confirm through Resrv's `CheckoutPayment::confirmPayment()`, which already does this re-read and shows the customer an "expired" error. You don't need to add anything.
 :::
 
 `verifyWebhook()` is a health check for the GET webhook route. Built-in gateways return `true`.
 
 ## Cancelling abandoned intents
 
-`cancelPaymentIntent()` voids an intent the customer abandoned after it was already created at the provider. Resrv calls it when the customer:
+Resrv calls `cancelPaymentIntent()` to void an intent at the provider when the customer:
 
 1. Navigates back from step 3 to step 1 or 2.
 2. Switches gateway at the picker on step 3.
-3. Re-enters step 2 with a stale intent still persisted from an earlier pass.
-4. Reopens a time-expired PENDING checkout.
+3. Re-enters step 2 with a stale intent from an earlier pass.
+4. Reopens a PENDING checkout whose time ran out.
 
-For [manual reservations](./manual-reservations), Resrv also calls it when an admin cancels an awaiting-payment reservation, when the lapsed-hold sweep cancels one, when an admin marks one as paid while an online payment the customer started is still open, and when the payment page has to replace an intent it can't resume. In each of these cases Resrv then reads the intent back with [`retrievePaymentIntent()`](#retrieving-a-payment-intent) to check the void worked.
+For [manual reservations](./manual-reservations), Resrv also calls it when:
+
+- An admin or the lapsed-hold sweep cancels an awaiting-payment reservation.
+- An admin marks a reservation as paid while the customer's online payment is still open.
+- The payment page has to replace an intent it can't resume.
+
+Resrv then checks the void with [`retrievePaymentIntent()`](#retrieving-a-payment-intent).
 
 ```php
 public function cancelPaymentIntent(string $paymentId, Reservation $reservation): void
@@ -451,14 +448,11 @@ public function cancelPaymentIntent(string $paymentId, Reservation $reservation)
 }
 ```
 
-Key points:
+- Only cancel intents that can be cancelled. Cancelling a `succeeded` or already `canceled` intent usually throws.
+- Log provider errors and don't re-throw them (Resrv would log and swallow them anyway). In checkout, Resrv has already cleared `reservation.payment_id`, so a failed cancellation only leaves an orphan at the provider. For manual reservations, Resrv keeps the reference until `retrievePaymentIntent()` shows the intent is dead.
+- Don't try to rescue a succeeded intent here. The stale-intent fallback in `verifyPayment()` handles that.
 
-- **Only cancel intents in a cancellable state.** Trying to cancel a `succeeded` or already-`canceled` intent usually throws.
-- **Swallow provider errors** (log them, don't re-throw). In checkout, by the time Resrv calls you, it has already cleared `reservation.payment_id` in the database: a failed cancellation only leaves an orphan at the provider, not inconsistent Resrv state. In the manual-reservation flows Resrv keeps the reference until `retrievePaymentIntent()` confirms the intent is dead, so a failed cancellation is caught there. Exceptions you throw are logged and swallowed anyway.
-- **Don't try to rescue a succeeded intent here.** If a race confirms an intent you're cancelling, the recovery path lives in the stale-intent fallback in `verifyPayment()`.
-- This path runs whenever `payment_id` is non-empty; it is **not** gated on surcharge. Even single-gateway setups left abandoned intents behind before; implementing this fixes that regardless of surcharge configuration.
-
-For providers that never create a remote resource needing cleanup (offline / bank-transfer / test gateways), make it a no-op. `OfflinePaymentGateway` and `FakePaymentGateway` both do:
+Offline and test gateways have nothing to clean up, so `OfflinePaymentGateway` and `FakePaymentGateway` make it a no-op:
 
 ```php
 public function cancelPaymentIntent(string $paymentId, Reservation $reservation): void
@@ -469,27 +463,30 @@ public function cancelPaymentIntent(string $paymentId, Reservation $reservation)
 
 ## Retrieving a payment intent <Badge type="tip" text="NEW" />
 
-From v6.5.0, `retrievePaymentIntent()` is required. It reads the current state of an intent your gateway created earlier. Checkout never calls it: every caller belongs to [manual reservations](./manual-reservations).
+`retrievePaymentIntent()`, required from v6.5.0, reads the current state of an intent your gateway created. Checkout never calls it. [Manual reservations](./manual-reservations) use it to:
 
-1. **Resuming a payment.** When a customer comes back to the [payment page](./payment-page) after an interrupted payment, Resrv reads the stored intent instead of creating a second one.
-2. **Verifying a void.** When an admin cancels an awaiting-payment reservation, or the lapsed-hold sweep cancels one, Resrv calls `cancelPaymentIntent()` and then reads the intent back. It drops the reference only when the intent reads `canceled` or `null`.
-3. **Reconciling Mark as paid.** When an admin marks a reservation as paid, Resrv reads any intent the customer started, to decide whether to void it or keep it because it already took money.
-4. **Refunding only real charges.** A reservation marked as paid that kept an intent reference is refunded through `refund()` only when the intent reads `succeeded` or `processing`.
+1. Resume an interrupted payment on the [payment page](./payment-page) instead of creating a second intent.
+2. Check a void after `cancelPaymentIntent()`. Resrv drops the reference only when the intent reads `canceled` or `null`.
+3. Decide whether to void or keep the customer's intent when an admin marks the reservation as paid. An intent that took money is kept.
+4. Refund a reservation marked as paid only when its intent reads `succeeded` or `processing`.
 
 ```php
 public function retrievePaymentIntent(string $paymentId, Reservation $reservation): ?object
 ```
 
-Every caller branches on what you return, so get the contract right:
+Return an object with a `->status` property, using Stripe's status names. Map your provider's statuses to these:
 
-- **Return an object with a `->status` property** in Stripe's vocabulary. If your provider uses other names, map them:
-  - `succeeded`, `processing`, `requires_capture`: money is captured, settling or held. Resrv won't create another intent and keeps the reference. (When an admin marks the reservation as paid, an uncaptured `requires_capture` hold is voided instead.)
-  - `canceled`: the intent is dead, so Resrv may replace it or forget it.
-  - Anything else (e.g. `requires_payment_method`, `requires_action`): still payable, so Resrv resumes it.
-- **Include `->redirectTo` (redirect gateways) or `->client_secret` (inline gateways)** while the intent is still payable. Resrv uses it to send the customer back to the same payment. Without it, Resrv voids the intent and creates a replacement through `paymentIntent()`, which works but burns an intent on every resume.
-- **Return `null` only when the intent definitively doesn't exist**, for example an HTTP 404 or Stripe's `resource_missing`. Resrv treats `null` as "gone".
-- **Throw on any transient failure**: timeouts, rate limits (429), 5xx responses, authentication or connection errors. Never wrap the call in a catch-all that returns `null`. Resrv would then create a second chargeable intent next to a live one, drop the reference to a charge that later captures, or skip the refund of a real charge.
-- **Report `canceled` for an intent your `cancelPaymentIntent()` just voided.** Before it creates a replacement, Resrv voids the old intent and checks it reads `canceled` (or `null`). If it still looks payable, the payment attempt stops with a retryable error rather than leaving two chargeable intents.
+- `succeeded`, `processing` or `requires_capture`: the money is captured, settling or held. Resrv keeps the reference and won't create another intent. Marking the reservation as paid voids an uncaptured `requires_capture` hold instead.
+- `canceled`: the intent is dead, and Resrv may replace or forget it.
+- Anything else, such as `requires_payment_method` or `requires_action`: still payable, so Resrv resumes it.
+
+While the intent is payable, include `->redirectTo` (redirect gateways) or `->client_secret` (inline gateways) so Resrv can resume the same payment. Otherwise Resrv voids it and creates a new one through `paymentIntent()` on every resume.
+
+Return `null` only when the intent definitely doesn't exist, such as an HTTP 404 or Stripe's `resource_missing`. Resrv treats `null` as gone.
+
+Throw on transient failures: timeouts, rate limits (429), 5xx responses, authentication and connection errors. Never catch everything and return `null`, or Resrv may create a second chargeable intent, lose a charge that captures later, or skip a real refund.
+
+After `cancelPaymentIntent()` voids an intent, report it as `canceled`. Resrv checks for `canceled` or `null` before it creates a replacement. If the old intent still looks payable, the payment attempt stops with a retryable error.
 
 The bundled Stripe gateway returns the Stripe intent itself, which already has `->status` and `->client_secret`:
 
@@ -510,7 +507,7 @@ public function retrievePaymentIntent(string $paymentId, Reservation $reservatio
 }
 ```
 
-Gateways that never create a provider intent (offline, bank transfer) have nothing to retrieve, so they return `null`. That's safe because they also return `true` from `supportsManualConfirmation()`, and Resrv never relies on a retrieved status for them:
+Offline gateways have no provider intent and return `null`. That's safe, because they return `true` from `supportsManualConfirmation()` and Resrv never relies on a retrieved status for them:
 
 ```php
 public function retrievePaymentIntent(string $paymentId, Reservation $reservation): ?object
@@ -522,7 +519,7 @@ public function retrievePaymentIntent(string $paymentId, Reservation $reservatio
 
 ## Refunds
 
-`refund()` is called from the Control Panel when an admin refunds a reservation. Resrv resolves the correct gateway from the reservation's stored `payment_gateway` column, so a PayPal booking refunds through PayPal, a Stripe booking through Stripe. Throw `RefundFailedException` on failure; the CP controller catches it and returns an error.
+Resrv calls `refund()` when an admin refunds a reservation in the Control Panel, using the gateway stored in the reservation's `payment_gateway` column. Throw `RefundFailedException` on failure and the Control Panel shows an error.
 
 ```php
 public function refund($reservation)
@@ -537,7 +534,7 @@ public function refund($reservation)
 }
 ```
 
-`refund()` also runs when a customer cancels their own reservation from the [reservation status page](./reservation-status#cancelling-a-reservation), but only if your gateway says it returns money automatically:
+`refund()` also runs when a customer cancels their own reservation from the [reservation status page](./reservation-status#cancelling-a-reservation), but only if your gateway returns money automatically:
 
 ```php
 public function supportsAutomaticRefunds(): bool
@@ -546,13 +543,13 @@ public function supportsAutomaticRefunds(): bool
 }
 ```
 
-Return `false` only when your `refund()` is a bookkeeping no-op. Customers then can't cancel bookings paid through your gateway themselves, and an admin still refunds them from the Control Panel after returning the money.
+With `false`, customers can't cancel those bookings themselves. An admin returns the money and then refunds the reservation in the Control Panel.
 
-Resrv skips `refund()` for a reservation an admin [marked as paid](./manual-reservations#mark-as-paid): the money was collected outside Resrv, so the admin returns it by hand. If such a reservation kept an online intent reference for reconciliation, Resrv reads it with [`retrievePaymentIntent()`](#retrieving-a-payment-intent) first and calls `refund()` only when it reads `succeeded` or `processing`.
+Resrv skips `refund()` for a reservation an admin [marked as paid](./manual-reservations#mark-as-paid), since the admin returns that money by hand. If it kept an online intent reference, Resrv calls `refund()` only when [`retrievePaymentIntent()`](#retrieving-a-payment-intent) reads `succeeded` or `processing`.
 
 ## Provider keys
 
-The three key methods supply the public, secret, and webhook-signing keys. Each receives the `$reservation`, so you can return per-collection keys based on the reserved entry's collection (the same per-collection pattern Stripe uses, see [Stripe](./stripe#per-collection-stripe-accounts)).
+These three methods return the public, secret and webhook signing keys. Each receives the `$reservation`, so you can return different keys per collection, as the [Stripe](./stripe#per-collection-stripe-accounts) gateway does.
 
 ```php
 public function getPublicKey($reservation)
@@ -573,7 +570,7 @@ public function getWebhookSecret($reservation)
 
 ## Registering the gateway
 
-Add your gateway to the application's `config/resrv-config.php` under `payment_gateways`:
+Add your gateway to `config/resrv-config.php` under `payment_gateways`:
 
 ```php
 'payment_gateways' => [
@@ -588,16 +585,14 @@ Add your gateway to the application's `config/resrv-config.php` under `payment_g
 ],
 ```
 
-- **The config key** (`'paypal'`) is stored in the reservation's `payment_gateway` column and used to resolve the gateway for refunds, webhooks, and redirect callbacks. Choose a stable slug and don't change it once reservations exist under it.
-- **`label`** is optional; omit it to use the gateway's `label()`.
-- **The first entry** is the default gateway, used as a fallback for old reservations with a null `payment_gateway`.
-- The legacy singular `payment_gateway` key still works as the fallback when `payment_gateways` is empty; you don't need to remove it.
-
-For surcharges and amount limits per gateway, see [Payment gateways](./payment-gateways).
+- The config key (`'paypal'`) is stored in the reservation's `payment_gateway` column and used for refunds, webhooks and redirect callbacks. Don't change it once reservations use it.
+- `label` is optional and defaults to the gateway's `label()`.
+- The first entry is the default gateway, used for old reservations with a null `payment_gateway`.
+- The old singular `payment_gateway` key still works as a fallback when `payment_gateways` is empty.
 
 ## Complete redirect-gateway skeleton
 
-A full starting point for a redirect-based gateway (PayPal, Mollie, iDEAL):
+A starting point for a redirect gateway:
 
 ```php
 <?php
@@ -788,36 +783,34 @@ class PayPalPaymentGateway implements PaymentInterface
 }
 ```
 
-An inline gateway (Square, Braintree) is identical apart from a few things: `redirectsForPayment()` returns `false`, `paymentIntent()` and `retrievePaymentIntent()` return `->client_secret` instead of `->redirectTo`, `paymentIntent()` can ignore `$returnUrl` (so it needs no `buildReturnUrl()`), and `paymentView()` returns a custom Blade view (see [The inline payment view](#the-inline-payment-view)).
+For an inline gateway, change these:
+
+- `redirectsForPayment()` returns `false`.
+- `paymentIntent()` and `retrievePaymentIntent()` return `->client_secret` instead of `->redirectTo`.
+- `paymentIntent()` can ignore `$returnUrl`, so you don't need `buildReturnUrl()`.
+- `paymentView()` returns your Blade view (see [The inline payment view](#the-inline-payment-view)).
 
 ## Checklist
 
 Before deploying a custom gateway:
 
-- [ ] Class implements `Reach\StatamicResrv\Http\Payment\PaymentInterface`.
-- [ ] `name()` returns a unique lowercase slug.
-- [ ] `label()` returns a human-readable string.
-- [ ] `paymentView()` returns a valid Blade view path (or the default for redirect gateways).
-- [ ] `supportsManualConfirmation()` returns `true` only for offline/non-provider-verified gateways.
-- [ ] `paymentIntent()` returns an object with `->id` and either `->client_secret` (inline) or `->redirectTo` (redirect), and stashes `reservation_id` in the provider metadata.
-- [ ] `paymentIntent()` declares the 4th parameter, `?string $returnUrl = null`. Redirect gateways build their return URL from `$returnUrl`, fall back to the checkout-complete entry when it's `null`, and append their parameters with the right separator (`&` when the base already has a query string).
-- [ ] `retrievePaymentIntent()` returns an object with `->status` in Stripe's vocabulary (plus `->redirectTo` or `->client_secret` while the intent is payable), returns `null` only when the intent definitively doesn't exist, throws on transient failures, and reports `canceled` after `cancelPaymentIntent()` voided it. Offline-style gateways return `null`.
-- [ ] `redirectsForPayment()` returns the correct boolean for your gateway type.
-- [ ] `handleRedirectBack()` checks `handlePaymentPending()` first, then returns the correct status array.
-- [ ] `verifyPayment()` verifies the signature, routes success through `transitionTo(CONFIRMED, tolerant: true)`, gates `ReservationConfirmed` on the result, handles the stale-intent and orphan-payment races (with `notifyIfOrphaned()`), and leaves failed attempts as they are.
-- [ ] `verifyPayment()` confirms `awaiting_payment` reservations too: no `pending`-only check before `transitionTo()`, `ReservationConfirmed` dispatched with `ReservationConfirmed::VIA_WEBHOOK`, and no failed or cancelled intent ends an awaiting-payment reservation.
-- [ ] `supportsWebhooks()` returns `true` if your gateway confirms through webhooks. Online gateways that return `false` can't be used for manual reservations.
-- [ ] `cancelPaymentIntent()` voids an intent at the provider (or is a no-op for offline-style gateways).
-- [ ] `supportsAutomaticRefunds()` returns `true` only when `refund()` moves money through the provider.
-- [ ] `refund()` throws `RefundFailedException` on failure.
-- [ ] Gateway is registered in `config/resrv-config.php` under `payment_gateways`.
-- [ ] Webhook URL is configured in the provider's dashboard with the correct config-key segment.
-- [ ] For inline gateways: the custom Blade view works and is publishable.
-- [ ] For redirect gateways: the return URL falls back to the Statamic page with <code v-pre>{{ resrv_checkout_redirect }}</code> when `$returnUrl` is `null`.
+- [ ] Every method is implemented, including `paymentIntent()`'s 4th parameter, `?string $returnUrl = null`.
+- [ ] `name()` is a unique lowercase slug, and `supportsManualConfirmation()` is `true` only for offline gateways.
+- [ ] `paymentIntent()` returns `->id` with `->client_secret` (inline) or `->redirectTo` (redirect), and stores `reservation_id` in the provider metadata.
+- [ ] Redirect gateways build the return URL from `$returnUrl`, fall back to the page with <code v-pre>{{ resrv_checkout_redirect }}</code> when it's `null`, and use `&` when there's already a query string.
+- [ ] `retrievePaymentIntent()` maps statuses to Stripe's names, returns `null` only for a missing intent, throws on transient failures, and reports `canceled` after a void.
+- [ ] `handleRedirectBack()` checks `handlePaymentPending()` first.
+- [ ] `verifyPayment()` verifies the signature, confirms through `transitionTo(CONFIRMED, tolerant: true)` with no `pending`-only check, and dispatches `ReservationConfirmed` with `ReservationConfirmed::VIA_WEBHOOK` only when that succeeds.
+- [ ] `verifyPayment()` handles stale intents and orphans (with `notifyIfOrphaned()`), leaves failed attempts alone, and never ends an `awaiting_payment` reservation on a failed or cancelled intent.
+- [ ] `supportsWebhooks()` is `true` if you confirm through webhooks. Online gateways that return `false` can't be used for manual reservations.
+- [ ] `cancelPaymentIntent()` voids the intent at the provider, or is a no-op for offline gateways.
+- [ ] `supportsAutomaticRefunds()` is `true` only when `refund()` moves money, and `refund()` throws `RefundFailedException` on failure.
+- [ ] The gateway is registered under `payment_gateways` in `config/resrv-config.php`, and the provider's webhook URL ends in its config key.
+- [ ] Inline gateways have a working, publishable Blade view.
 
 ## Related
 
-- [Payment gateways](./payment-gateways): the multi-gateway picker, surcharges, amount limits, and webhook routes.
+- [Payment gateways](./payment-gateways): the gateway picker, surcharges, amount limits and webhook routes.
 - [Stripe](./stripe): the bundled inline gateway, including per-collection accounts.
 - [Mollie](./mollie): maintained as a separate add-on.
 - [Manual reservations](./manual-reservations): bookings created in the Control Panel and paid through your gateway.

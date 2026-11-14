@@ -33,9 +33,9 @@ features:
   - title: Flexible Checkout Form
     details: Leverage Statamic's form builder to create your own checkout form.
   - title: Rates
-    details: Offer multiple rates or room types per Entry, with relative pricing and shared inventory.
+    details: Multiple rates or room types per Entry, with relative pricing and shared inventory.
   - title: Cart & Multi-Rate Booking
-    details: Let customers add several rates to a cart and book them together in one checkout.
+    details: Customers add several rates to a cart and book them in one checkout.
   - title: Dynamic Pricing
     details: Configure discounts (or increases) based on various reservation conditions.
   - title: Coupon Support
@@ -43,9 +43,9 @@ features:
   - title: Affiliate System
     details: Cookie-based affiliate system lets you track who sends you clients.
   - title: Online Payments
-    details: Stripe out of the box, multiple gateways, offline / bank transfer, plus a Mollie add-on.
+    details: Stripe and bank transfer built in, Mollie as an add-on. Offer more than one at checkout.
   - title: Fully Tested
-    details: Hundreds of automated tests keep every release dependable.
+    details: Covered by hundreds of automated tests.
   - title: Automated Emails
     details: Send confirmation emails to your users and notify your admins.
 ---

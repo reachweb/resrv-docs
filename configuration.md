@@ -1,23 +1,23 @@
 # Configuration
 
-Resrv splits its configuration between **two owners**, and it helps to know which is which before you start:
+Resrv keeps its configuration in two places:
 
-- **CP-managed settings**: business information, the reservation engine, checkout, emails, and currency. You edit these in the Control Panel under **Resrv → Settings**, and Statamic stores them on your site at `resources/addons/statamic-resrv.yaml`. Commit that file to version control.
-- **Developer keys**: the payment gateway(s) and Stripe credentials. These live in the publishable `config/resrv-config.php` file.
+- **CP-managed settings**: business information, the reservation engine, checkout, emails and currency. You edit these under **Resrv → Settings** in the Control Panel. Statamic saves them to `resources/addons/statamic-resrv.yaml`, which you should commit to version control.
+- **Developer keys**: the payment gateways and Stripe credentials, in the publishable `config/resrv-config.php` file.
 
-At boot, Resrv merges all three layers (blueprint defaults, then `config/resrv-config.php`, then your CP-saved values) into a single `resrv-config.*` config. The order matters: **the Control Panel value always wins** over the same key defined in the config file.
+At boot, Resrv merges the blueprint defaults, then `config/resrv-config.php`, then your CP-saved values into a single `resrv-config.*` config. **The Control Panel value always wins** over the same key in the config file.
 
 ::: info Migrating from v5
-In v5 every setting lived in `config/resrv-config.php`. In v6 the business and engine settings moved to the Control Panel. If you are upgrading, run `php please resrv:settings:migrate` to move your existing values across, see [Migrating from a published config](#migrating-from-a-published-config) below and the [upgrade guide](./upgrading).
+In v5 every setting lived in `config/resrv-config.php`. In v6 the business and engine settings moved to the Control Panel. If you're upgrading, run `php please resrv:settings:migrate` to move your values across. See [Migrating from a published config](#migrating-from-a-published-config) and the [upgrade guide](./upgrading).
 :::
 
 ## Settings reference
 
-Open **Resrv → Settings** in the Control Panel. The settings are organised into five tabs: **General**, **Engine**, **Checkout**, **Emails**, and **Currency**.
+**Resrv → Settings** has five tabs: **General**, **Engine**, **Checkout**, **Emails** and **Currency**.
 
 ### General
 
-Business information that is used in the reservation email templates.
+Business information used in the reservation emails.
 
 | Field | Default | Description |
 |---|---|---|
@@ -30,49 +30,47 @@ Business information that is used in the reservation email templates.
 | Logo | *(empty)* | Leave empty to use your business name, or enter an **absolute URL** (including `https://`) to an image. |
 
 ::: tip The Logo field now works
-In v6 the Logo field is functional. Paste an absolute `https://…` URL and the email header renders it automatically as an image. No template editing required. Leave it empty to fall back to your business name. See [Emails](./emails) for details.
+In v6 the email header shows the Logo image (an absolute `https://…` URL) with no template changes. See [Emails](./emails).
 :::
 
 ### Engine
 
-Controls how the reservation engine behaves.
-
 | Field | Default | Description |
 |---|---|---|
-| Enable time | `false` | Require an explicit pick-up and drop-off time for each reservation. *Not yet implemented in the frontend.* |
-| Enable affiliates | `true` | Enable the [affiliate system](./affiliates). Also controls whether the **Affiliates** nav item appears. |
-| Enable cutoff rules | `false` | Enable per-entry [cutoff times](./cutoff) based on starting times and schedules. |
-| Enable activity log | `false` | Record availability changes and reservation status changes in the [Activity Log](./activity-log). Also controls whether the **Activity Log** nav item appears. |
-| Minimum days before | `0` | Minimum number of days allowed between today and the reservation start date. Useful to block last-minute bookings. |
-| Minimum reservation period (in days) | `1` | Minimum number of days a reservation must span. |
-| Maximum reservation period (in days) | `30` | Maximum number of days a reservation may span. |
-| Free cancellation (in days) | `0` | Days before the start date the customer may cancel. Drives the displayed cancellation label and enables self-service cancellation from the [Reservation Status](./reservation-status) page. `0` means *unconfigured*: no window, so nothing is self-cancellable. |
-| Require full payment if free cancellation has passed | `false` | Require full payment when the free-cancellation window has already passed at booking time. |
-| Maximum quantity | `8` | Maximum quantity allowed in one reservation. |
-| Ignore quantity for prices | `false` | Track quantity without multiplying the price by it (e.g. seats at a restaurant). |
+| Enable time | `false` | Require a pick-up and drop-off time for each reservation. *Not yet implemented in the frontend.* |
+| Enable affiliates | `true` | Enables the [affiliate system](./affiliates) and the **Affiliates** nav item. |
+| Enable cutoff rules | `false` | Enables per-entry [cutoff times](./cutoff) based on starting times and schedules. |
+| Enable activity log | `false` | Records availability and reservation status changes in the [Activity Log](./activity-log), and shows the **Activity Log** nav item. |
+| Minimum days before | `0` | Minimum days between today and the reservation start date. Use it to block last-minute bookings. |
+| Minimum reservation period (in days) | `1` | Minimum length of a reservation. |
+| Maximum reservation period (in days) | `30` | Maximum length of a reservation. |
+| Free cancellation (in days) | `0` | How many days before the start date the customer can cancel. Sets the cancellation label and allows self-service cancellation from the [Reservation Status](./reservation-status) page. `0` means there's no cancellation window. |
+| Require full payment if free cancellation has passed | `false` | Charge the full amount if the free cancellation window has already passed at booking time. |
+| Maximum quantity | `8` | Maximum quantity in one reservation. |
+| Ignore quantity for prices | `false` | Track quantity without multiplying the price by it (for example, seats at a restaurant). |
 | Calculate days using time | `false` | With *Enable time*, charge an extra day when the return time is after the start time. *Not yet implemented in the frontend.* |
 | Decrease availability for extra time | `false` | Block the final day's availability when the return time is after the start time. |
-| Admin email | *(empty)* | Comma-separated list of emails notified about new reservations and refunds. Leave empty to disable admin notifications. |
+| Admin email | *(empty)* | Comma-separated emails notified about new reservations and refunds. Leave empty to turn off admin notifications. |
 
 ::: tip Cancellation policy is now per-rate
-**Free cancellation (in days)** and **Require full payment if free cancellation has passed** are now the *fallback* used when a rate has no explicit policy of its own. Each rate can declare its own free-cancellation window or be marked non-refundable. See [Rates → Cancellation policy](./rates#cancellation-policy). Non-refundable bookings always require full payment at checkout.
+**Free cancellation (in days)** and **Require full payment if free cancellation has passed** are now the fallback for rates without their own policy. Each rate can set its own free cancellation window or be non-refundable. See [Rates → Cancellation policy](./rates#cancellation-policy). Non-refundable bookings always require full payment at checkout.
 :::
 
 ### Checkout
 
-Controls the checkout process and which form each reservation uses. See the [Checkout](./checkout) page for the full flow.
+See [Checkout](./checkout) for the full checkout flow.
 
 | Field | Default | Description |
 |---|---|---|
-| Default checkout form | *(none)* | The form used when no entry-specific or collection-specific mapping matches. **Required.** |
-| Collection checkout form mappings | *(none)* | Map collection handles to checkout forms. Each row has a **Collection** (handle, e.g. `pages`) and a **Form**. |
-| Entry checkout form mappings | *(none)* | Map specific entries to checkout forms. **Entry mappings take precedence over collection mappings.** |
-| Checkout Entry | *(none)* | The Statamic entry that loads the [Livewire checkout](./checkout#checkout-component) component. **Required.** |
-| Checkout Redirect Entry | *(none)* | The [checkout complete](./checkout#checkout-complete) page that includes the `resrv_checkout_redirect` tag. **Required.** |
-| Payment type | `full` | What the customer pays online to complete a reservation (see below). |
-| Fixed amount | `50` | The amount charged. Shown only when **Payment type** is *Charge a fixed amount*. |
-| Percentage | `20` | The percentage of the base price charged. Shown only when **Payment type** is *Charge a percentage of the base price*. |
-| Minutes to hold | `10` | How long availability is temporarily blocked when a customer starts checkout, to prevent double bookings. |
+| Default checkout form | *(none)* | Used when no entry or collection mapping matches. **Required.** |
+| Collection checkout form mappings | *(none)* | Each row maps a **Collection** (handle, for example `pages`) to a **Form**. |
+| Entry checkout form mappings | *(none)* | Map specific entries to forms. **Entry mappings take precedence over collection mappings.** |
+| Checkout Entry | *(none)* | The entry that loads the [Livewire checkout](./checkout#checkout-component) component. **Required.** |
+| Checkout Redirect Entry | *(none)* | The [checkout complete](./checkout#checkout-complete) page with the `resrv_checkout_redirect` tag. **Required.** |
+| Payment type | `full` | What the customer pays online (see below). |
+| Fixed amount | `50` | Shown only when **Payment type** is *Charge a fixed amount*. |
+| Percentage | `20` | Percentage of the base price. Shown only when **Payment type** is *Charge a percentage of the base price*. |
+| Minutes to hold | `10` | How long availability is blocked when a customer starts checkout, to prevent double bookings. |
 
 **Payment type** options:
 
@@ -85,30 +83,28 @@ Controls the checkout process and which form each reservation uses. See the [Che
 
 #### Checkout form mappings
 
-Resrv picks the checkout form for a reservation in this order of precedence:
+Resrv picks the checkout form in this order:
 
-1. **Entry mapping**: a form mapped to that specific entry.
+1. **Entry mapping**: a form mapped to that entry.
 2. **Collection mapping**: a form mapped to the entry's collection.
-3. **Default checkout form**: the fallback used when nothing else matches.
-
-You can configure all three from this tab. The deeper walkthrough lives on the [Checkout](./checkout) page.
+3. **Default checkout form**.
 
 #### Manual reservations <Badge type="tip" text="NEW" />
 
-The **Manual reservations** section of the **Checkout** tab controls how customers pay for [reservations you create from the Control Panel](./manual-reservations). There is no switch to turn the feature on: these settings only decide which payment methods you can offer and what customers who pay offline are told.
+These settings control how customers pay for [reservations you create in the Control Panel](./manual-reservations). There's no switch to turn the feature on.
 
 | Field | Default | Description |
 |---|---|---|
-| Payment Page Entry | *(none)* | The Statamic entry that loads the [`reservation-payment`](./payment-page) Livewire component. Customers land here from the payment request email to pay for a manual reservation. The entry must be published, not private, and have a URL. Without it, online payment methods are disabled for manual reservations; offline (manually confirmed) methods still work. |
-| Offline Payment Instructions | *(empty)* | How customers pay a manual reservation that uses a manually confirmed payment method, such as your bank-transfer details. Shown as plain text, with line breaks kept, on the payment page and in the payment request email. Leave it empty to only tell customers that payment is arranged directly with you and to quote their booking reference. |
+| Payment Page Entry | *(none)* | The entry that loads the [`reservation-payment`](./payment-page) Livewire component, opened from the payment request email. It must be published, not private, and have a URL. Without it, only offline payment methods work for manual reservations. |
+| Offline Payment Instructions | *(empty)* | Instructions for offline payment methods, such as your bank details. Shown as plain text on the payment page and in the payment request email. If empty, customers are told to arrange payment with you and quote their booking reference. |
 
 <Image src="./img/resrv-settings-manual-reservations.webp" alt="Select the payment page and, optionally, the instructions shown for offline payment methods." />
 
-See [Payment page](./payment-page#setting-up-the-page) for how to build the entry. Manual reservations also need the lapsed-hold sweep scheduled (if you use payment deadlines) and a cache store that supports locks, both described below.
+See [Payment page](./payment-page#setting-up-the-page) for how to build the entry. Manual reservations also need a cache store with lock support and, if you use payment deadlines, the lapsed-hold sweep. Both are covered below.
 
 #### Scheduling the lapsed-hold sweep
 
-A manual reservation created with **Hold for a limited time** switched on gets a payment deadline. When the deadline passes, the payment link stops accepting payments straight away, but cancelling the reservation is the job of the `resrv:cancel-lapsed-holds` command. Resrv registers the command but does not schedule it, so add it to your app's `routes/console.php`:
+A manual reservation with **Hold for a limited time** switched on gets a payment deadline. Once it passes, the payment link stops taking payments, but the reservation is only cancelled when the `resrv:cancel-lapsed-holds` command runs. Resrv doesn't schedule it for you, so add it to your app's `routes/console.php`:
 
 ```php
 use Illuminate\Support\Facades\Schedule;
@@ -117,12 +113,12 @@ Schedule::command('resrv:cancel-lapsed-holds')->everyFifteenMinutes()->withoutOv
 ```
 
 ::: warning REQUIRES CRON
-Scheduled commands only run if your server's cron runs `php artisan schedule:run` every minute. Without the sweep, a lapsed hold stays **Awaiting payment**, keeps its availability, and nobody is emailed. The Control Panel flags it with "Hold expired — will be cancelled by the next sweep".
+Scheduled commands need your server's cron to run `php artisan schedule:run` every minute. Without the sweep, a lapsed hold stays **Awaiting payment** and keeps its availability, and nobody is emailed. The Control Panel flags it with "Hold expired — will be cancelled by the next sweep".
 :::
 
-Each run cancels every awaiting-payment reservation whose deadline has passed. It releases the availability the reservation took, cancels any online payment the customer had started, and emails the customer and your admins (see [Emails](./emails#lapsed-holds)). A reservation that was paid, or whose hold you extended, before the sweep reached it is left alone. Every fifteen minutes is a suggestion: a longer interval only delays the cancellation, the released availability and the emails.
+Each run cancels the lapsed holds, releases their availability and emails the customer and your admins (see [Emails](./emails#lapsed-holds) and [The lapsed-hold sweep](./manual-reservations#the-lapsed-hold-sweep)). Every fifteen minutes is only a suggestion. A longer interval just delays the cancellation and the emails.
 
-The sweep only cancels reservations that have a deadline. A manual reservation without a hold is never cancelled automatically, even after its arrival day has passed; you mark it as paid or cancel it yourself.
+A manual reservation without a hold is never cancelled automatically. You mark it as paid or cancel it yourself.
 
 To see how many holds would be cancelled without changing anything, run:
 
@@ -132,45 +128,37 @@ php please resrv:cancel-lapsed-holds --dry-run
 
 #### Cache store with lock support
 
-The [payment page](./payment-page) uses Laravel's atomic cache locks (`Cache::lock()`) so that two payment attempts for the same reservation can't create two charges. Your cache store must support locks: `file`, `database`, `redis`, `memcached`, `dynamodb` and `array` do, `apc` does not. On a store without locks, every online payment on the payment page fails and the customer sees "We could not start the payment process. Please try again or contact us for assistance."
+The [payment page](./payment-page) uses Laravel's atomic cache locks (`Cache::lock()`) so two payment attempts for the same reservation can't create two charges. Your cache store must support locks. `file`, `database`, `redis`, `memcached`, `dynamodb` and `array` do, `apc` doesn't. Without locks, every online payment on the payment page fails and the customer sees "We could not start the payment process. Please try again or contact us for assistance."
 
-If you run more than one app server, use a shared store (`redis`, `database` or `memcached`) so every server sees the same locks.
+If you run more than one app server, use a shared store (`redis`, `database` or `memcached`).
 
-The **Create reservation** page also uses a lock when your store supports one, so a double-clicked submit can't book twice. Without lock support, a retried submit still returns the reservation that was already created, but two submits sent at the same moment are not guarded against.
+The **Create reservation** page also uses a lock when your store supports one, so a double-clicked submit can't book twice.
 
 ### Emails
 
-Resrv sends event-based emails (customer confirmation, admin notification, refund, cancellation, payment request, and abandoned-reservation recovery), and you can customise them per event or per checkout form from this tab.
-
-- **Global email event settings**: add a row per event to set recipient sources (customer, admins, affiliate), extra email addresses, the From address/name, subject, and template.
-- **Per-form email event overrides**: override a specific event for a specific checkout form (form overrides win over global, which win over the built-in defaults).
-- **Abandoned reservation emails**: enable recovery emails for customers who started but did not complete a reservation, and set how many days to wait after the reservation expires.
-
-This tab is described in full on the [Emails](./emails) page, including recipient resolution and the template picker. Do not duplicate it here.
+This tab sets the recipients, sender, subject and template for each email event, with optional overrides per checkout form. It also turns on abandoned reservation emails. See [Emails](./emails) for the details.
 
 | Field | Default | Description |
 |---|---|---|
-| Enable abandoned reservation emails | `false` | When enabled, the `resrv:send-abandoned-emails` command sends recovery emails to customers with expired reservations. |
-| Delay (in days) | `1` | Days after a reservation expires before the recovery email is sent (`1` = next day). |
+| Enable abandoned reservation emails | `false` | The `resrv:send-abandoned-emails` command sends recovery emails to customers with expired reservations. |
+| Delay (in days) | `1` | Days after a reservation expires before the email goes out (`1` = next day). |
 
 ::: tip Choosing a template
-The email **Template** field is a dropdown that auto-populates from the available templates. To add a custom one, publish the email views (`--tag=resrv-emails`) and drop a Blade file into `resources/views/vendor/statamic-resrv/email/reservations/`; it then appears in the dropdown. See [Emails](./emails).
+The **Template** dropdown lists the available templates. To add your own, publish the email views (`--tag=resrv-emails`) and add a Blade file to `resources/views/vendor/statamic-resrv/email/reservations/`. See [Emails](./emails).
 :::
 
 ### Currency
 
-Sets the currency used site-wide.
-
 | Field | Default | Description |
 |---|---|---|
-| Currency name | `Euro` | Display name of the currency. |
-| Currency ISO code | `EUR` | ISO currency code. |
+| Currency name | `Euro` | Display name. |
+| Currency ISO code | `EUR` | ISO code. |
 | Currency symbol | `€` | Symbol shown in prices. |
 | Currency delimiter | `,` | Thousands/decimal delimiter. |
 
 ## Developer config
 
-The following developer-only keys live in `config/resrv-config.php`. Publish the file with:
+These keys live in `config/resrv-config.php`. Publish the file with:
 
 ```bash
 php artisan vendor:publish --tag=resrv-config
@@ -179,16 +167,16 @@ php artisan vendor:publish --tag=resrv-config
 | Key | Description |
 |---|---|
 | `payment_gateway` | The single payment gateway class. Defaults to `StripePaymentGateway`. See [Payment gateways](./payment-gateways). |
-| `payment_gateways` | Optional array of multiple gateways the customer can choose between at checkout. See [Payment gateways](./payment-gateways). |
+| `payment_gateways` | Optional array of gateways the customer can choose from at checkout. See [Payment gateways](./payment-gateways). |
 | `stripe_secret_key` | Stripe secret key (`RESRV_STRIPE_SECRET` env). See [Stripe](./stripe). |
 | `stripe_publishable_key` | Stripe publishable key (`RESRV_STRIPE_PUBLISHABLE` env). |
 | `stripe_webhook_secret` | Stripe webhook signing secret (`RESRV_STRIPE_WEBHOOK_SECRET` env). |
 
-These are the only keys this file should contain. Defining a CP-managed key (business info, engine, currency, etc.) here has **no effect** once a value exists in the Control Panel: the CP value silently wins.
+Keep only these keys in the file. A CP-managed key defined here is ignored once the Control Panel has a value for it.
 
 ## Migrating from a published config
 
-If you are upgrading from v5, your CP-managed settings still live in `config/resrv-config.php`. Move them into the Control Panel with:
+If you're upgrading from v5, move your CP-managed settings from `config/resrv-config.php` into the Control Panel with:
 
 ```bash
 php please resrv:settings:migrate
@@ -202,26 +190,26 @@ php please resrv:settings:migrate --dry-run
 
 The command:
 
-- **Seeds** the CP-managed keys from your published config into the CP settings store. It **skips** any key that already has a CP value (your saved value always wins), is `null`, or still equals the blueprint default.
-- **Reports conflicts** where the file and the CP store disagree (the CP value stays active; the file value is shown for review).
-- **Lists keys you can delete** from `config/resrv-config.php`: the now-CP-managed keys, the previously-nested `checkout_forms` / `reservation_emails` keys (whose values are migrated into the CP), and any **stale keys** that v6 no longer uses (such as `enable_advanced_availability`, `enable_connected_availabilities`, and `form_name`).
-- **Reminds you which developer keys to keep** in the file.
+- Copies the CP-managed keys from your config into the Control Panel. It skips any key that already has a CP value, is `null`, or matches the blueprint default.
+- Reports conflicts where the file and the Control Panel disagree. The CP value stays active.
+- Lists keys you can delete from `config/resrv-config.php`: the CP-managed keys and the keys [removed in v6](#removed-in-v6).
+- Reminds you which developer keys to keep.
 
-When you upgrade to `6.0.0`, Resrv runs this migration automatically once. The manual command is for re-running it, previewing with `--dry-run`, or installs where the automatic step did not fire.
+Resrv runs this migration once, automatically, when you upgrade to `6.0.0`. Use the command to run it again, to preview with `--dry-run`, or if the automatic step didn't run.
 
 ::: warning Published config file detected
-While `config/resrv-config.php` still defines CP-managed keys, a warning section titled **"⚠ Published config file detected"** appears at the top of the **General** settings tab, listing the affected keys. The CP values override the file at runtime. Remove those keys from the file (or run `resrv:settings:migrate`) and the banner disappears.
+While `config/resrv-config.php` still defines CP-managed keys, the **General** tab shows a **"⚠ Published config file detected"** warning listing them. Remove those keys from the file, or run `resrv:settings:migrate`, and the warning goes away.
 :::
 
 ## Removed in v6
 
-These v5 config keys no longer do anything and are reported as stale keys by `resrv:settings:migrate`:
+These v5 keys no longer do anything. `resrv:settings:migrate` reports them as stale:
 
 - `enable_advanced_availability`: replaced by the collection-scoped [Rates](./rates) system.
-- `enable_connected_availabilities`: connected availabilities were removed; use [Rates](./rates) instead.
-- `form_name`: replaced by the [checkout form mappings](#checkout-form-mappings) (default / collection / entry).
+- `enable_connected_availabilities`: removed. Use [Rates](./rates) instead.
+- `form_name`: replaced by the [checkout form mappings](#checkout-form-mappings).
 
-These previously-nested config keys are no longer read; the migrator folds any existing values into the Control Panel and then reports both keys as safe to delete:
+These nested keys are no longer read. The migrator moves their values into the Control Panel and reports both keys as safe to delete:
 
-- `checkout_forms`: the nested `default` / `collections` / `entries` checkout-form mappings now live only in **Resrv → Settings → Checkout**.
-- `reservation_emails`: the nested `global` / `forms` per-event email settings now live only in **Resrv → Settings → Emails**.
+- `checkout_forms`: the `default` / `collections` / `entries` mappings, now in **Resrv → Settings → Checkout**.
+- `reservation_emails`: the `global` / `forms` email settings, now in **Resrv → Settings → Emails**.

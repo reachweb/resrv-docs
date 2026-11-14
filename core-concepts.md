@@ -26,9 +26,9 @@ of hotel rooms to reserve and, in the very same Statamic installation, a Collect
 In the **backend**, using Statamic's control panel, you can access the reservation calendar in each Entry simply by 
 adding a Resrv Availability field to your Collection. 
 
-A single Entry can also offer multiple [Rates](./rates): for example different room types or pricing tiers that share or own their own inventory. Rates are scoped per Collection, so you set them up once and reuse them across all the Entries in that Collection.
+An Entry can also offer multiple [Rates](./rates), like different room types or pricing tiers, each with its own inventory or a shared one. You set up Rates once per Collection and use them across its Entries.
 
-Also in the control panel, you can find a wealth of extra tools, like a list of all the Reservations, [Manual Reservations](./manual-reservations) with payment links, a Calendar, Reports, CSV Export, [Rates](./rates), [Dynamic Pricing](./dynamic-pricing) (discounts & coupons), an [Affiliate](./affiliates) system, and more.
+Also in the control panel, you can find a wealth of extra tools, like a list of all the Reservations, [Manual Reservations](./manual-reservations) with payment links, a Calendar, Reports, CSV Export, [Dynamic Pricing](./dynamic-pricing) (discounts & coupons), an [Affiliate](./affiliates) system, and more.
 
 In the **frontend**, we provide a number of Laravel Livewire components that handle availability search, showing the 
 results, the checkout process, and more.
@@ -38,13 +38,13 @@ results, the checkout process, and more.
 Resrv can be quite complex to set up, depending on the use case. But here are the general steps that you need 
 to follow to get started:
 
-1. [Install](./installation) the addon and migrate the database. Most settings now live in the control panel under **Resrv → Settings**, so the config file is optional and only needed for developer keys like payment gateways.
+1. [Install](./installation) the addon and migrate the database. Most settings live in the control panel under **Resrv → Settings**. You only need the config file for developer keys like payment gateways.
 2. Create the [checkout page](./checkout), which contains the Checkout Livewire component and the checkout complete page.
 3. [Configure Resrv](./configuration#checkout) to use the above pages.
 4. Add a [Resrv Availability](./availability) field to one of your Collections.
 5. Add pricing and availability to your Entries.
-6. If you need more than one rate per Entry (room types, pricing tiers, and so on), create your [Rates](./rates) for the Collection.
+6. If an Entry needs more than one rate, create [Rates](./rates) for its Collection.
 7. Add any additional [Extras](./extras) or [Options](./options) that you may need.
-8. Set up your [payment gateways](./payment-gateways) and configure the webhooks. [Stripe](./stripe) is supported out of the box, an offline / bank-transfer gateway is bundled, you can run multiple gateways at once, and [Mollie](./mollie) is available as a separate add-on.
+8. Set up your [payment gateways](./payment-gateways) and configure the webhooks. [Stripe](./stripe) and an offline gateway for bank transfers are built in, and [Mollie](./mollie) is available as an add-on. You can use more than one gateway.
 9. Add the [frontend](./frontend-setup) assets and use the Livewire components to add availability search to your site.
 10. Profit!

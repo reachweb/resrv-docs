@@ -38,7 +38,7 @@ You'll need to include Stripe's Javascript in your layout page:
 </html>
 ```
 
-If you create [manual reservations](./manual-reservations), customers pay for them on the [payment page](./payment-page), which renders the same Stripe payment form. Make sure the layout of your payment page entry loads Stripe's JavaScript too, together with Livewire and the Resrv frontend assets shown above.
+If you use [manual reservations](./manual-reservations), your [payment page](./payment-page) shows the same Stripe form, so its layout needs the same Stripe, Livewire and Resrv assets.
 
 ## Adding your keys to .env
 
@@ -57,7 +57,7 @@ php artisan config:clear
 
 ### Per-collection Stripe accounts <Badge type="tip" text="NEW" />
 
-Each Stripe key may be either a single string (the default) or an array keyed by collection handle. Use the array form when different collections should charge through different Stripe accounts. Resrv resolves the right key from the reservation's entry collection.
+To charge different collections through different Stripe accounts, set each key to an array keyed by collection handle. Resrv picks the one for the reserved entry's collection:
 
 ```php
 // config/resrv-config.php
@@ -75,7 +75,7 @@ Each Stripe key may be either a single string (the default) or an array keyed by
 ],
 ```
 
-The array key must match the handle of the collection the reserved entry belongs to. If a key is left as a plain string, that same value is used for every collection.
+A key left as a plain string applies to every collection.
 
 ## Setup the webhook
 
@@ -84,7 +84,7 @@ In order to receive payment information from Stripe, you need to set up a webhoo
 At the endpoint URL, you need to enter the URL of your site, followed by `/resrv/api/webhook`. So if your site is https://resrv.dev, the endpoint URL should be `https://resrv.dev/resrv/api/webhook`. Please note that HTTPS is required.
 
 ::: info Running multiple gateways?
-The bare `/resrv/api/webhook` URL only works when Stripe is your single gateway. If you register Stripe under the `payment_gateways` config array (alongside other gateways), use the per-gateway URL instead: `https://resrv.dev/resrv/api/webhook/stripe`. The bare URL returns a 404 when more than one gateway is configured. See [Payment gateways](./payment-gateways) for the multi-gateway setup.
+With more than one gateway under `payment_gateways`, the bare `/resrv/api/webhook` URL returns a 404. Use `https://resrv.dev/resrv/api/webhook/stripe` instead. See [Payment gateways](./payment-gateways).
 :::
 
 At the "Select events to listen to" section, you need to select the following events:
@@ -104,13 +104,13 @@ RESRV_STRIPE_WEBHOOK_SECRET=whsec_.....
 ```
 
 ::: info Webhook hardening
-The v6 Stripe gateway rejects webhooks signed against an empty secret, confirms a reservation only when the amount received matches the booking amount (plus any surcharge), and emails admins about orphaned payments that can't be matched to a reservation, so you can reconcile them manually. From v6.5.0, that includes payments that arrive after the reservation was cancelled, for example a manual reservation whose payment hold lapsed.
+In v6, webhooks signed against an empty secret are rejected, and a reservation is only confirmed when the amount received matches the booking amount plus any surcharge. Payments that can't be matched to a reservation trigger an orphaned payment email to your admins. From v6.5.0 that includes payments that arrive after the reservation was cancelled.
 :::
 
-From v6.5.0, the same webhook also confirms payments customers make from the [payment page](./payment-page) of a [manual reservation](./manual-reservations). You don't need any extra events. If the webhook isn't working, those reservations stay **Awaiting payment** even after the customer has paid. A failed or cancelled card payment doesn't end an awaiting-payment reservation: the customer can try again from the same link.
+From v6.5.0 the same webhook and events also confirm payments from the [payment page](./payment-page) of a [manual reservation](./manual-reservations). Without a working webhook, those reservations stay **Awaiting payment** after the customer pays. If a card payment fails or is cancelled, the customer can try again from the same link.
 
 ## Next steps
 
 That's it! You should now be able to receive payments from Stripe. Again, it's suggested that you test the payment gateway in test mode before going live.
 
-To run Stripe alongside other gateways (for example an offline / bank-transfer option), add per-gateway surcharges or amount limits, see [Payment gateways](./payment-gateways).
+To offer other gateways or add surcharges, see [Payment gateways](./payment-gateways).

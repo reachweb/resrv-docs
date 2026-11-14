@@ -33,7 +33,7 @@ However, this approach has some limitations. For instance, if a user blocks cook
 
 ## Skipping payment
 
-As previously mentioned, if you enable the **Allow skipping payment** option, the affiliate will be able to bypass the payment step during the checkout process. This feature is useful if you want an affiliate to book a reservation on behalf of a client without immediate payment, for example, if an agency or concierge is booking for a client who will pay later. Be cautious when using this feature, as sharing the affiliate code may allow other users to bypass payment unintentionally.
+As previously mentioned, if you enable the **Allow skipping payment** option, the affiliate will be able to bypass the payment step during the checkout process. This feature is useful if you want an affiliate to book a reservation on behalf of a client without immediate payment (for example, an agency or concierge booking for a client who will pay later). Be cautious when using this feature, as sharing the affiliate code may allow other users to bypass payment unintentionally.
 
 When skipping payment is allowed, a new button labeled **Complete reservation and pay later** will appear in the checkout process after entering the client's details.
 
@@ -47,6 +47,6 @@ The fees displayed here are for your convienience only, the affiliate does not s
 
 ### Crediting reservations you create <Badge type="tip" text="NEW" />
 
-When you [create a reservation in the Control Panel](./manual-reservations#creating-a-reservation), you can credit it to an affiliate with the **Affiliate** field under **Advanced**. The field appears only when affiliates are enabled, and it lists your published affiliates. The commission is recorded the same way as for a booking made through the affiliate link, and if the affiliate has **Send reservation email** enabled, they receive the reservation email once the booking is confirmed.
+When you [create a reservation in the Control Panel](./manual-reservations#creating-a-reservation), you can credit it to an affiliate with the **Affiliate** field under **Advanced**. It lists your published affiliates and only appears when affiliates are enabled. The commission is recorded just like a booking made through the affiliate link. If the affiliate has **Send reservation email** enabled, they get the email once the booking is confirmed.
 
-If the reservation is cancelled before it is paid, either by you or because its payment deadline passed, the commission is cancelled too, and the reservation details page shows **Commission cancelled**.
+If the reservation is cancelled before it's paid (by you, or because its payment deadline passed), the commission is cancelled too and the reservation details page shows **Commission cancelled**.

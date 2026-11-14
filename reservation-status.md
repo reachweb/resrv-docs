@@ -1,47 +1,43 @@
 # Reservation Status <Badge type="tip" text="NEW" />
 
-The `reservation-status` Livewire component gives customers a self service page where they can look up their booking, see its current status, and (optionally) cancel it themselves. Inside the free cancellation window a cancellation refunds the charge automatically through the original payment gateway; after the window closes the customer can still cancel, after a clear warning, without a refund.
-
-The whole feature is **off by default** and controlled by two nested toggles.
+The `reservation-status` Livewire component gives customers a page to look up their booking, see its status and, if you allow it, cancel it. Inside the free cancellation window, cancelling refunds the charge automatically. The feature is **off by default**.
 
 ## Enabling the feature
 
-Head to **Resrv → Settings → Checkout**:
+In **Resrv → Settings → Checkout**:
 
-1. **Enable the reservation status page** turns on the component (it renders nothing while off) and adds a "Manage your booking" link to confirmation emails. It requires a **Reservation Status Entry**: the Statamic entry whose template loads the component.
-2. **Enable customer cancellations** additionally shows the cancel buttons. Without it the page is view only.
-
-Both toggles are enforced server side, so a crafted request can't reach a disabled feature.
+1. **Enable the reservation status page** turns on the component and adds a "Manage your booking" link to confirmation emails. While it's off, the component renders nothing.
+2. **Enable customer cancellations** shows the cancel buttons. Without it, the page is view only.
 
 ## Component basics
 
-Create an entry for the page (any URL you like) and include the component in its template:
+Create an entry for the page at any URL and add the component to its template:
 
 ```antlers
 {{ livewire:reservation-status }}
 ```
 
-Both the `<livewire:...>` and the Antlers <code v-pre>{{ livewire:... }}</code> syntaxes work. The component is standalone: it needs no paired component and takes no attributes. Point the **Reservation Status Entry** setting at this entry so the email links resolve to it.
+Both the `<livewire:...>` and the Antlers <code v-pre>{{ livewire:... }}</code> syntaxes work, and the component takes no attributes. Then select it as the **Reservation Status Entry**. The first toggle requires it, and the email links point to it.
 
 ## Looking up a reservation
 
 ### By email and booking reference
 
-In its default state the component renders a lookup form. The customer enters the email address they booked with and their booking reference. When nothing matches they always see the same generic message, so the form can never be used to probe which references exist.
+By default the component shows a lookup form for the customer's email address and booking reference. A failed lookup always shows the same message, so the form can't be used to find out which references exist.
 
 ::: info RATE LIMITING
-Failed lookups are rate limited twice: 10 attempts per IP and reference, and 30 attempts per IP across all references, both decaying after about 10 minutes. Successful lookups never count against the budget.
+Failed lookups are limited to 10 attempts per IP and reference, and 30 per IP across all references, each decaying after about 10 minutes. Successful lookups don't count.
 :::
 
 ### Via the deep link
 
-Confirmation emails automatically include a "Manage your booking" button that opens the page with the reservation already resolved:
+Confirmation emails include a "Manage your booking" button that opens the page with the reservation loaded:
 
 ```text
 https://yoursite.com/manage-booking?ref=ABC123&hash=...
 ```
 
-The `hash` is an HMAC signed with your Laravel `app.key` that ties the link to that single booking and the customer's email, so no login is needed and a leaked link can't be replayed against another reservation. To build the link yourself (for example in a published email template), use the model method that generates it:
+The `hash` is an HMAC signed with your Laravel `app.key`. It ties the link to that one booking and the customer's email, so no login is needed. To build the link yourself, for example in a published email template, use `customerStatusUrl()`:
 
 ```blade
 @if ($url = $reservation->customerStatusUrl())
@@ -49,52 +45,49 @@ The `hash` is an HMAC signed with your Laravel `app.key` that ties the link to t
 @endif
 ```
 
-`customerStatusUrl()` returns `null` when the feature is off, the status entry is missing or unpublished, or the customer has no email on file. If a customer follows a broken or tampered link, the page shows a neutral notice and falls back to the lookup form without revealing why the link failed.
+It returns `null` when the feature is off, the status entry is missing or unpublished, or the customer has no email on file. A broken or tampered link shows a neutral notice and the lookup form.
 
 ::: tip KEEP YOUR APP KEY STABLE
 The hash depends on `config('app.key')`. Rotating the key invalidates every existing deep link. The same scheme powers the <code v-pre>{{ resrv:reservation_from_uri }}</code> Antlers tag.
 :::
 
 ::: info LOOKABLE STATUSES
-The page surfaces live bookings (**Confirmed** and **Partner**), plus **Refunded**, **Cancelled** and **Completed** ones. **Pending** and **Expired** reservations are excluded because the customer never received a reference for those.
+The page shows **Confirmed**, **Partner**, **Refunded**, **Cancelled** and **Completed** reservations. **Pending** and **Expired** ones never got a reference, so they're left out.
 
-From v6.5.0, **Awaiting payment** reservations you [created in the Control Panel](./manual-reservations) are excluded too. Until they are paid, customers open them through the link to the [payment page](./payment-page) in their payment request email. Once paid, they appear here as **Confirmed**.
+From v6.5.0, **Awaiting payment** reservations you [created in the Control Panel](./manual-reservations) are left out too. Until they're paid, customers reach them through the [payment page](./payment-page) link in their payment request email.
 :::
 
 ## The status view
 
-Once a reservation is resolved, the form is replaced by the status view showing a status badge, the booking reference, the reservation period (with one line per rate for cart bookings), quantity and rate where relevant, any extras and options, the cancellation policy label, the total, and the amount paid online. Bookings paid through manual gateways (offline / bank transfer) show a zero amount paid, since the money arrives outside the gateway. The same goes for bookings you [marked as paid](./manual-reservations#mark-as-paid) in the Control Panel.
+A found reservation shows a status badge, the booking reference and the reservation period (one line per rate for cart bookings). Below that come the quantity and rate where relevant, extras and options, the cancellation policy, the total and the amount paid online. That amount is zero for bookings paid through manual gateways such as bank transfer, or [marked as paid](./manual-reservations#mark-as-paid) in the Control Panel.
 
-The badge reads **Confirmed** for live bookings, **Cancelled & refunded** when the charge went back, **Cancelled** when no charge existed, **Cancelled — no refund issued** when the payment was retained, and **Completed** for past stays.
+The badge reads **Confirmed** for live bookings, **Cancelled & refunded** when the charge went back, **Cancelled** when there was no charge, **Cancelled — no refund issued** when you kept the payment, and **Completed** for past stays.
 
 ## Cancelling a reservation
 
-With customer cancellations enabled, an eligible booking shows a cancel button below the details. There are two paths:
+With customer cancellations enabled, an eligible booking shows a cancel button.
 
-**With a refund.** While the free cancellation window is open, the booking has not started, and the gateway supports automatic refunds, the customer can cancel and the full amount paid is refunded to the original payment method. The deadline is inclusive through the end of its final day.
+**With a refund.** While the free cancellation window is open, cancelling refunds the full amount paid to the original payment method. The window runs through the end of its last day. The stay must not have started, and the gateway must support automatic refunds.
 
-**Without a refund.** Once the window has closed, or when the booked policy is non-refundable, the customer can still cancel a booking paid online, but the payment stays with you. The button is preceded by an emphasized warning ("You will NOT receive a refund for this cancellation.") and a separate confirmation prompt, and the booking lands in the **Cancelled** status.
+**Without a refund.** After the window closes, or if the policy is non-refundable, the customer can still cancel a booking paid online, but you keep the payment. They see a warning ("You will NOT receive a refund for this cancellation.") and a second confirmation first. The booking ends up **Cancelled**.
 
-Both buttons trigger a JavaScript confirmation dialog, and the server re-checks eligibility before doing anything, so a stale or tampered request can't cancel an ineligible booking. Gateway failures show a generic message to the customer and log the underlying error for you.
+If the gateway fails, the customer sees a generic message and the error is logged.
 
-No cancel button is shown, and a "contact us" note appears instead, when:
+Instead of a cancel button, the customer sees a "contact us" note when:
 
-- No cancellation policy was ever configured (the default period of `0` means unconfigured, so nothing was agreed to at checkout).
-- The booking was paid through a gateway that can't refund automatically (offline / bank transfer), it's a partner booking, or its recorded gateway is no longer configured.
-- The booking was [marked as paid](./manual-reservations#mark-as-paid) in the Control Panel, because the money arrived outside Resrv. Manual reservations paid through their payment link follow the rules above.
-- The stay has already started.
+- no cancellation policy was ever set (the default period of `0` means unconfigured);
+- the booking was paid through a gateway that can't refund automatically (such as bank transfer) or is no longer configured;
+- it's a partner booking;
+- the booking was [marked as paid](./manual-reservations#mark-as-paid) in the Control Panel (manual reservations paid through their link follow the rules above);
+- the stay has already started.
 
-The per-rate terms that drive the window are documented under [Rates → Cancellation policy](./rates#cancellation-policy); the global fallback lives in the [free cancellation settings](./configuration).
+Each rate's [cancellation policy](./rates#cancellation-policy) sets the window, with the [free cancellation settings](./configuration) as the global fallback.
 
 ## What happens on cancellation
 
-A customer cancellation behaves exactly like the matching Control Panel action:
+A customer cancellation works like the matching Control Panel action. A refund moves the reservation to **Refunded**, or leaves the status unchanged if the gateway call fails. Cancelling without a refund moves it to **Cancelled** without calling the gateway. Either way, availability for the booked dates is restored.
 
-- On the refund path the charge is returned through the original gateway inside a row lock (a gateway failure rolls the status back, and a concurrent double cancel only refunds once), and the reservation transitions to **Refunded**.
-- On the no-refund path the reservation transitions to **Cancelled** and no gateway call is made.
-- Availability is restored for the booked dates in both cases.
-- The customer receives the matching email: the refund notice on the refund path, or a cancellation notice that never claims a refund on the no-refund path. Your admins receive a "cancelled by customer" notification. See [Emails](./emails) to customize recipients, subjects and templates.
-- Affiliate commissions follow the money: voided on a refund, kept when the payment was retained.
+The customer gets the refund notice or a cancellation notice, and your admins a "cancelled by customer" notification. See [Emails](./emails) to change recipients, subjects and templates. Affiliate commissions are voided on a refund and kept when you keep the payment.
 
 ## Customizing
 
@@ -104,11 +97,11 @@ The view is published together with the other checkout views and lives at `/reso
 php artisan vendor:publish --tag=resrv-checkout-views
 ```
 
-Unlike other components there is no `view` attribute; customize the published file directly.
+There's no `view` attribute, so edit the published file directly.
 
 ## Translations
 
-The component uses these frontend keys, overridable as described in [Languages](./languages):
+The component uses these frontend keys, which you can override as described in [Languages](./languages):
 
 | Key | Default |
 | --- | ------- |
@@ -144,4 +137,4 @@ The component uses these frontend keys, overridable as described in [Languages](
 | `reservationCancelledNoRefundSuccess` | Your reservation has been cancelled. As it was outside the free cancellation period, no refund has been issued. A confirmation email is on its way. |
 | `lookUpAnotherReservation` | Look up another reservation |
 
-The view also reuses shared keys documented elsewhere: `somethingWentWrong`, `reservationPeriod`, `to`, `quantity`, `property`, `extras`, `options`, `cancellationPolicy` and `total`.
+The view also reuses these shared keys: `somethingWentWrong`, `reservationPeriod`, `to`, `quantity`, `property`, `extras`, `options`, `cancellationPolicy` and `total`.

@@ -1,37 +1,33 @@
 # Availability Search for Multiple Entries
 
-This page explains how to let your users search across many Entries at once and list only the ones that are available for a specific date or dates.
+This page explains how to list all available Entries for a specific date or dates.
 
-v6 ships a built-in [`availability-collection`](#the-availability-collection-component) Livewire component that lists availability for a whole collection (or a curated set of entries) live, with **no extra package** and full [Rates](./rates) support. It is the recommended approach. The older [Collection Tag](#collection-tag-server-rendered) and [Livewire Filters](#livewire-filters-filtering-beyond-dates) patterns are still fully supported when you need a no-JavaScript, server-rendered list or faceted filtering beyond dates.
+We suggest the built-in [`availability-collection`](#the-availability-collection-component) component. It updates live, supports [Rates](./rates) and needs no extra package. Use the [Collection Tag](#collection-tag-server-rendered) for a server-rendered list without JavaScript, or [Livewire Filters](#livewire-filters-filtering-beyond-dates) if you also filter by other fields.
 
 ::: info REPLACES CONNECTED AVAILABILITY
-With [Rates](./rates), the `availability-collection` component is the v6 replacement for the old "Connected availabilities" listing approach. If you are upgrading an existing site, read [Upgrading to v6](./upgrading).
+With [Rates](./rates), `availability-collection` replaces the v5 "Connected availabilities" listing. If you are upgrading, read [Upgrading to v6](./upgrading).
 :::
 
 ## When to use which component
 
-Resrv ships several frontend surfaces for showing availability. Pick the one that matches your use case:
-
-| You want… | Use |
+| You want | Use |
 |---|---|
-| Availability of **one** entry on its detail page | [`availability-results`](./availability-results) |
-| A list of **upcoming available dates** for one entry | [`availability-list`](./availability-list) |
-| A multi-rate / multi-date **cart** for one entry | [`availability-multi-results`](./cart-booking) |
+| Availability of **one** entry on its page | [`availability-results`](./availability-results) |
+| **Upcoming available dates** for one entry | [`availability-list`](./availability-list) |
+| A **cart** of several rates or dates for one entry | [`availability-multi-results`](./cart-booking) |
 | **Many entries** of a collection, live, no extra package | [`availability-collection`](#the-availability-collection-component) |
-| Many entries, with availability as one **filter facet** alongside taxonomies/ranges | [`lf-availability-filter`](#livewire-filters-filtering-beyond-dates) (requires `marcorieser/statamic-livewire-filters`) |
-| Many entries, server-side, full page reload acceptable | [the `resrv_search` collection-tag query scope](#collection-tag-server-rendered) |
-
-`availability-collection` is the no-package, live answer to "show me the entries available for these dates". For richer faceted filtering, reach for `lf-availability-filter`.
+| Many entries, with availability as one **filter** among others | [`lf-availability-filter`](#livewire-filters-filtering-beyond-dates) (requires `marcorieser/statamic-livewire-filters`) |
+| Many entries, server-rendered with a page reload | [the `resrv_search` collection-tag query scope](#collection-tag-server-rendered) |
 
 ## The availability-collection component <Badge type="tip" text="NEW" />
 
-The `availability-collection` Livewire component shows the availability of **many entries at once**, a curated set of entries, or every published entry in a collection, for the dates the visitor searched. It is live (no page reload) and needs **no extra package**.
+The `availability-collection` Livewire component shows availability for the searched dates across every published entry in a collection, or across entries you pick.
 
-It pairs with [`availability-search`](./availability-search-component): the search component dispatches an `availability-search-updated` event, and `availability-collection` listens for it, runs a **single batched availability query** for the whole set, and renders one card per entry with a price and a booking action.
+It listens for the `availability-search-updated` event from [`availability-search`](./availability-search-component), checks availability for all entries in **one batched query** and shows a card per entry with a price and a booking button.
 
 ### Template setup
 
-The component always works alongside an `availability-search` instance, which provides the dates, quantity and (optionally) the rate the visitor searched for.
+Always add an `availability-search` too. It provides the dates, the quantity and, optionally, the rate.
 
 #### All published entries in a collection
 
@@ -48,14 +44,14 @@ The component always works alongside an `availability-search` instance, which pr
 
 #### Collection + IDs (intersection)
 
-Passing both narrows to the given IDs **within** that collection:
+Passing both limits the list to those IDs **within** the collection:
 
 ```antlers
 <livewire:availability-collection collection="rooms" :entries="$featured_ids" />
 ```
 
 ::: warning COLLECTION OR ENTRIES REQUIRED
-You must pass at least one of `collection` or `entries`. The component throws an `InvalidArgumentException` if both are empty.
+Pass `collection`, `entries` or both. If both are empty, the component throws an `InvalidArgumentException`.
 :::
 
 #### With rates, pagination and price sorting
@@ -72,7 +68,7 @@ You must pass at least one of `collection` or `entries`. The component throws an
 />
 ```
 
-`sort` orders the **entries**; `rate-sorting` orders the **rates within** each entry. They are independent: see the properties table below.
+`sort` orders the **entries**, and `rate-sorting` orders the **rates within** each entry.
 
 <Image src="./img/resrv-availability-collection.webp" alt="The availability-collection component showing a grid of available entries for the searched dates." />
 
@@ -80,57 +76,55 @@ You must pass at least one of `collection` or `entries`. The component throws an
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `collection` | string | `null` | Collection handle. Required unless `entries` is given. |
-| `entries` | array | `[]` | Explicit entry IDs. Combined with `collection`, the two intersect. Accepts localized or origin IDs (multisite). |
-| `rates` | bool | `false` | Resolve per-entry rate labels. |
-| `showRates` | bool | `false` | `true` lists every available rate (label + price + book button) per entry; `false` shows a single cheapest "from" price. |
-| `showUnavailable` | bool | `false` | `false` hides sold-out entries; `true` renders them with a "No availability" note. |
-| `paginate` | int | `null` | Page size. Uses Livewire pagination; availability is still fetched in one batched query per page. |
-| `sort` | string | `order` | Orders the **entries**: `order` (collection order, only honoured when `collection` is set), `title`, or `price` (cheapest first). |
-| `rateSorting` | string | `order` | Orders the **rates within** each entry: `order` (each rate's configured order, matching [`availability-results`](./availability-results)) or `price` (cheapest first). Independent of `sort`. |
-| `overrideRates` | array | `[]` | Override the `rate_id => label` map instead of resolving from the [Rates](./rates). |
-| `view` | string | `availability-collection` | Use a fully custom Blade view. |
+| `collection` | string | `null` | Collection handle. Required unless `entries` is set. |
+| `entries` | array | `[]` | Entry IDs. With `collection`, only the IDs in that collection are shown. Accepts localized or origin IDs (multisite). |
+| `rates` | bool | `false` | Show rate labels. |
+| `showRates` | bool | `false` | `true` lists every available rate (label, price and book button) per entry. `false` shows a single "from" price. |
+| `showUnavailable` | bool | `false` | `true` shows sold out entries with a "No availability" note. `false` hides them. |
+| `paginate` | int | `null` | Page size, using Livewire pagination. |
+| `sort` | string | `order` | Orders the **entries**: `order` (collection order, only when `collection` is set), `title`, or `price` (cheapest first). |
+| `rateSorting` | string | `order` | Orders the **rates within** each entry: `order` (each rate's configured order, as in [`availability-results`](./availability-results)) or `price` (cheapest first). |
+| `overrideRates` | array | `[]` | Your own `rate_id => label` map instead of the labels from [Rates](./rates). |
+| `view` | string | `availability-collection` | A custom Blade view. |
 
 ### What happens when a visitor selects an entry
 
 When a visitor books, the component calls `select($entryId, $rateId)`:
 
-1. The chosen entry is re-validated against the listing filters (published, public, current site, in the collection / in `entries`) to reject stale or forged IDs. If it is out of scope, an error is shown.
-2. If a rate was passed, it is written to the shared `resrv-search` session.
-3. **If the entry has a detail page** (`$entry->url()` is set), the visitor is **redirected** there. The `#[Session]` search carries over, so the detail page's [`availability-results`](./availability-results) (or [`availability-multi-results`](./cart-booking)) rehydrates from the session and continues the booking.
-4. **If the entry has no detail page**, a reservation is created **immediately** and the visitor is sent straight to the [checkout](./checkout) entry. Cutoff and availability/price are re-validated at this step.
-
-This redirect-vs-direct-book split is what lets the same collection listing drive either a "browse then open the detail page" flow or a one-click "book from the grid" flow, depending on whether your entries have detail pages.
+1. It checks that the entry still belongs in the listing (published, public, current site, in the collection or in `entries`). If not, it shows an error.
+2. If a rate was passed, it's saved to the shared `resrv-search` session.
+3. **If the entry has a detail page** (`$entry->url()` is set), the visitor goes there. The `#[Session]` search carries over, so the page's [`availability-results`](./availability-results) (or [`availability-multi-results`](./cart-booking)) picks up the booking.
+4. **If the entry has no detail page**, the reservation is created right away and the visitor goes to the [checkout](./checkout) entry. Cutoff, availability and price are checked again first.
 
 ### Customizing the view
 
-Publish the views to override them:
+Publish the views:
 
 ```bash
 php artisan vendor:publish --tag=resrv-checkout-views
 ```
 
-…then edit `resources/views/vendor/statamic-resrv/livewire/availability-collection.blade.php`. Or point the component at your own view: `<livewire:availability-collection ... view="my-view" />`.
+Then edit `resources/views/vendor/statamic-resrv/livewire/availability-collection.blade.php`, or use your own view: `<livewire:availability-collection ... view="my-view" />`.
 
 The view receives:
 
-- `$this->rows`: a Collection, one row per entry to render:
-  - `id`: the entry id (pass to `select()`),
-  - `entry`: the Statamic `Entry` (title, url, fields, thumbnail…),
-  - `available`: bool,
-  - `from`: the cheapest / order-first available rate row: `price`, `original_price`, `payment`, `rate_id`, `rateLabel`, `cancellation_policy`,
-  - `rates`: a Collection of every available rate row (same shape), for `showRates`.
-- `$this->rateLabels`: a `rate_id => label` map (populated only when `rates` or `showRates` is set).
-- `$this->resolvedEntries`: the underlying `EntryCollection` or paginator. Call `->links()` on it to render pagination when `paginate` is set.
+- `$this->rows`: a Collection with one row per entry:
+  - `id`: the entry ID (pass it to `select()`).
+  - `entry`: the Statamic `Entry`.
+  - `available`: bool.
+  - `from`: the "from" rate row, with `price`, `original_price`, `payment`, `rate_id`, `rateLabel` and `cancellation_policy`.
+  - `rates`: every available rate row, in the same shape, for `showRates`.
+- `$this->rateLabels`: a `rate_id => label` map, filled only when `rates` or `showRates` is set.
+- `$this->resolvedEntries`: the `EntryCollection` or paginator. Call `->links()` on it to render pagination when `paginate` is set.
 - `$data`: the current search (`$data->dates`, `$data->quantity`, `$data->rate`, `$data->hasDates()`).
 
-Each rate row's `cancellation_policy` key holds a `['policy' => string, 'period' => ?int]` array; pass it to `CancellationPolicy::labelFor(...)` to render a "Free cancellation until…" or "Non-refundable" line. See the [Rates](./rates) page for how the per-rate policy is configured.
+To show a rate's cancellation label, pass its `cancellation_policy` (a `['policy' => string, 'period' => ?int]` array) to `CancellationPolicy::labelFor(...)`. See [Rates](./rates) to set up policies.
 
-The per-entry `from`/`rates` shape matches the [`live_availability`](#accessing-availability-data) value used by the Livewire-Filters integration, so card templates can be shared between this component and `lf-availability-filter`.
+`from` and `rates` have the same shape as [`live_availability`](#accessing-availability-data), so you can share card templates with `lf-availability-filter`.
 
 ### Pagination
 
-Set `paginate` to a page size to bound the work on large collections. Entries are paginated **first** (using `sort`), and the batched availability query then runs only for the current page. Render the page links from the resolved paginator:
+Set `paginate` on large collections. Entries are paged first (by collection order or title), so availability is only checked for the current page. This also means `sort="price"` only sorts within each page. Render the page links like this:
 
 ```blade
 @if($this->resolvedEntries instanceof \Illuminate\Contracts\Pagination\Paginator)
@@ -140,29 +134,22 @@ Set `paginate` to a page size to bound the work on large collections. Entries ar
 
 ### Sort vs. rate sorting
 
-The two ordering controls are fully independent:
+`sort` orders the entries in the listing. `rateSorting` orders the rates in each entry's card, and the first rate in that order is the entry's "from" price.
 
-- **`sort`** orders the **entries** in the listing: by collection `order`, by `title`, or by `price`.
-- **`rateSorting`** orders the **rates inside** each entry's card (only relevant with `showRates`): by each rate's configured `order`, or by `price`.
+`rateSorting` defaults to `order`, so each entry lists its rates in the same order as on its `availability-results` page. The old listing approach always sorted rates by price. Pass `rate-sorting="price"` to keep that.
 
-A common combination is `sort="price"` to surface the cheapest entries first while keeping `rate-sorting="order"` so each card lists its rates in your configured sequence.
+A common setup is `sort="price"` with `rate-sorting="order"`. Entries are then sorted by their "from" price, which is the first rate in your configured order and not always the cheapest. [`availability-results`](./availability-results) works the same way.
 
 ### Notes & caveats
 
-- **Cutoff rules** are not applied to the at-a-glance list; they are re-checked on `select()` for the chosen entry, where a per-entry [cutoff](./cutoff) is meaningful.
-- **Large collections**: every search prunes stale holds and scans reservations. Use `paginate` to bound the work: entries are paginated first, so the batched availability query only runs for the current page.
-- **`sort="price"`** sorts within the resolved set. With `paginate`, that means within the current page (entries are paged by collection order/title before availability is known).
-- **`rateSorting` defaults to `order`** so a collection listing shows each entry's rates in the same sequence as that entry's `availability-results` detail page. Pass `rate-sorting="price"` for cheapest-first rate ordering. (This is a behaviour change: the old listing approach always sorted rates by price.)
-- **`sort="price"` with `rate-sorting="order"`** orders entries by each entry's *order-first* ("from") price rather than its cheapest price, because the "from" price is the first rate under the chosen rate ordering, the same coupling [`availability-results`](./availability-results) already has.
-- **Multisite**: availability is stored against origin entry IDs. The component resolves localized entries to their origin automatically; pass either localized or origin IDs in `entries`.
+- Cutoff rules aren't checked in the list. They're checked on `select()` for the chosen entry, where its [cutoff](./cutoff) applies.
+- On multisite, availability is stored against origin entry IDs. The component resolves localized entries to their origin, so you can pass either kind of ID in `entries`.
 
 ## Alternative approaches
 
-The `availability-collection` component above covers most multi-entry listings. Two older patterns remain useful in specific cases: a fully server-rendered list with no JavaScript, and faceted filtering by fields other than dates.
-
 ### Collection Tag (server-rendered)
 
-If you don't want to use Livewire or don't need the live refresh, you can use the regular [Collection Tag](https://statamic.dev/tags/collection) to list all available entries. Apply the same `resrv_search` query scope to filter out the entries that are not available for the selected dates.
+If you don't need live refresh, use the regular [Collection Tag](https://statamic.dev/tags/collection) with the `resrv_search` query scope to list only the available entries.
 
 A basic example would look like this:
 
@@ -198,13 +185,13 @@ This will display an `AvailabilitySearch` component on the side, without live re
 
 ### Livewire Filters (filtering beyond dates)
 
-Reach for **Livewire Filters** when you need to filter your entries by fields **other than** date-availability (number of guests, amenities, taxonomies, price ranges and so on) with live, "no reload" facets. It combines Statamic Resrv with another product of ours, [Livewire Filters](https://livewirefilters.com/), which lets you filter your Statamic collections by almost any field. Availability becomes just one facet alongside the rest.
+[Livewire Filters](https://livewirefilters.com/), another product of ours, filters Statamic collections live by almost any field. Use it when you also want to filter by fields like amenities or price range, with availability as one more filter.
 
 ::: warning REQUIRES AN EXTRA PACKAGE
-This integration only works when `marcorieser/statamic-livewire-filters` is installed. Statamic Resrv registers the `lf-availability-filter` component conditionally: it only exists once that package is present. If you just need availability filtering (no other facets), use [`availability-collection`](#the-availability-collection-component) or the [Collection Tag](#collection-tag-server-rendered) above instead.
+This needs `marcorieser/statamic-livewire-filters`. Resrv only registers the `lf-availability-filter` component when that package is installed. If you only filter by availability, use [`availability-collection`](#the-availability-collection-component) or the [Collection Tag](#collection-tag-server-rendered) instead.
 :::
 
-Once you [install the addon](https://livewirefilters.com/docs/v1/installation), Statamic Resrv detects it and registers an extra Livewire component called `LfAvailabilityFilter`, which includes `AvailabilitySearch` and ties it to the `LivewireCollection` component Livewire Filters provides:
+Once you [install the addon](https://livewirefilters.com/docs/v1/installation), Resrv registers a Livewire component called `LfAvailabilityFilter`. It includes `AvailabilitySearch` and ties it to the `LivewireCollection` component from Livewire Filters:
 
 ```antlers{3-7,10}
 <div class="container mx-auto my-12 flex">
@@ -221,9 +208,9 @@ Once you [install the addon](https://livewirefilters.com/docs/v1/installation), 
 </div>
 ```
 
-`LfAvailabilityFilter` accepts the same properties as the [AvailabilitySearch](./availability-search-component) component, plus a `blueprint` property set to `collection.blueprint`. It uses the `resrv_search` query scope to filter out entries that aren't available for the selected dates. Edit your `LivewireCollection` view at `resources/views/vendor/statamic-livewire-filters/livewire/livewire-collection.blade.php` to control how each entry renders. See the [Livewire Filters docs](https://livewirefilters.com/docs/v1/overview) for the full filtering setup.
+`LfAvailabilityFilter` accepts the same properties as the [AvailabilitySearch](./availability-search-component) component, plus a `blueprint` property set to `collection.blueprint`. The `resrv_search` query scope then filters out the unavailable entries. Edit your `LivewireCollection` view at `resources/views/vendor/statamic-livewire-filters/livewire/livewire-collection.blade.php` to change how entries render. See the [Livewire Filters docs](https://livewirefilters.com/docs/v1/overview) for the rest of the setup.
 
-If your entries use [Rates](./rates), add `:rates="true"` so the search resolves rate labels for each entry, exposed in `live_availability` (see below):
+If your entries use [Rates](./rates), add `:rates="true"` to get rate labels in `live_availability` (see below):
 
 ```antlers{4}
 {{ livewire:lf-availability-filter
@@ -244,12 +231,12 @@ It has the following properties:
 | price | The total price of the Entry for the given dates. |
 | original_price | The starting price if [Dynamic Pricing](./dynamic-pricing) is active. |
 | payment | What the user needs to pay to book this Entry (check the Settings for more info). |
-| rate_id | The ID of the [rate](./rates) this row refers to when rates are used. |
+| rate_id | The ID of the [rate](./rates), when rates are used. |
 | rateLabel | The label of the above rate. |
-| cancellation_policy | The cancellation terms for this rate, as `policy` and `period`. |
+| cancellation_policy | The rate's cancellation terms, as `policy` and `period`. |
 
 ::: info MULTIPLE RATES PER ENTRY
-When [rates](./rates) are enabled and an entry has more than one available rate for the search, `live_availability` holds a **collection of rows** (one per available rate) instead of a single row. When only one rate matches, it holds that single row directly. Loop over it in your template when you expect more than one rate.
+With [rates](./rates) enabled, an entry with several available rates gets a **collection of rows** in `live_availability`, one per rate. With only one matching rate, it holds that row directly. Loop over it if you expect more than one rate.
 :::
 
 When the availability data is provided, you can use it like so:
@@ -282,6 +269,6 @@ The method above works for both the **Collection Tag** and the **Livewire Filter
 
 ## Related
 
-- [Availability Search component](./availability-search-component): all the search props shared by these approaches.
-- [Rates](./rates): how rates replace the old "advanced availability" concept.
-- [Availability Results](./availability-results), [Availability List](./availability-list) and [Cart Booking](./cart-booking): the other frontend availability surfaces.
+- [Availability Search component](./availability-search-component): the search props these approaches share.
+- [Rates](./rates): how rates replace "advanced availability".
+- [Availability Results](./availability-results), [Availability List](./availability-list) and [Cart Booking](./cart-booking): the other availability components.

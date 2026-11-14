@@ -32,7 +32,7 @@ To complete the installation, run the install script:
 php artisan resrv:install
 ```
 
-The script asks five questions, each publishing a different set of assets:
+The script asks five questions:
 
 ```bash
  Publish the developer configuration file (payment gateways & Stripe keys)? Most sites don't need this. (yes/no) [no]:
@@ -58,31 +58,31 @@ Publishing Livewire views
 Installation finished. Go get some reservations!
 ```
 
-Here's what each prompt does, and the recommended answer:
+Here's what each one publishes:
 
 | Prompt | Default | Recommended | What it publishes |
 | --- | --- | --- | --- |
 | Developer configuration file | `no` | `no` | `config/resrv-config.php` |
 | Checkout form | `yes` | `yes` | The checkout form and blueprints |
-| Livewire views | `yes` | `yes` | The frontend Livewire views, so you can customize them |
+| Livewire views | `yes` | `yes` | The frontend Livewire views |
 | Language files | `no` | Only if editing | Translation files under `lang/vendor/statamic-resrv` |
 | Email templates | `no` | Only if editing | Email views under `resources/views/vendor/statamic-resrv/email` |
+
+We suggest publishing the checkout form and the Livewire views. Tailwind needs the published views to build the required styles.
 
 ### The developer configuration file
 
 ::: info MOST SITES SKIP THIS
-In v6, all user-facing settings (business information, reservation rules, currency, checkout, emails) are managed in the Control Panel under **Resrv → Settings** and stored on your site at `resources/addons/statamic-resrv.yaml`.
+All user-facing settings are managed in the Control Panel under **Resrv → Settings** and saved to `resources/addons/statamic-resrv.yaml`.
 :::
 
-The published `config/resrv-config.php` holds only **developer keys**: `payment_gateway`, `payment_gateways`, the `stripe_*` env lookups. It's required if you need to register multiple [payment gateways](./payment-gateways) or hand-edit [Stripe](./stripe) keys. You can publish it later at any time with:
+`config/resrv-config.php` only holds the **developer keys** `payment_gateway`, `payment_gateways` and the `stripe_*` env lookups. You need it to register multiple [payment gateways](./payment-gateways) or to edit the [Stripe](./stripe) keys by hand. You can publish it at any time:
 
 ```bash
 php artisan vendor:publish --tag=resrv-config
 ```
 
 See [Configuration](./configuration) for the full settings model.
-
-It is recommended to publish the checkout form and the Livewire views, especially since the views are needed for Tailwind to create the styles required.
 
 ## Where to go from here?
 

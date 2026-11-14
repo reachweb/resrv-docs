@@ -1,132 +1,104 @@
 # Rates
 
-Rates are how Resrv handles multiple pricing and availability options on a single Entry. A common example is a hotel room type that you sell at a "Standard" rate, a discounted "Non-refundable" rate, and a "Breakfast included" rate, all sharing the same inventory but priced differently.
+Rates let you offer several prices and availability options on one Entry. A common example is a hotel room sold at a "Standard" rate, a cheaper "Non-refundable" rate and a "Breakfast included" rate, all sharing the same inventory.
 
 ::: info REPLACES ADVANCED & CONNECTED AVAILABILITY
-Rates are a new feature in v6 and replace the old "Advanced availability" (per-entry properties) and "Connected availabilities" features from v5. If you are upgrading an existing site, read [Upgrading to v6](./upgrading) for the migration path.
+Rates are new in v6 and replace "Advanced availability" (per-entry properties) and "Connected availabilities" from v5. If you are upgrading, read [Upgrading to v6](./upgrading).
 :::
 
 ## What is a Rate?
 
-A Rate is a record scoped to a **Statamic collection**, not to a single Entry. One collection can have many rates, and a rate can apply to every Entry in the collection or just a hand-picked few.
-
-Each rate carries:
-
-- A **pricing type**: its own prices, or prices derived from another rate.
-- An **availability type**: its own inventory pool, or a pool shared with another rate.
-- An optional **booked units per add-on** divisor, which changes how many booked units count as one when pricing [extras](./extras) and [options](./options).
-- Optional **restrictions**: date window, booking lead time, and minimum/maximum stay.
-- An optional **cancellation policy**.
-- A **published** flag and a sort **order**.
-
-When an Entry has more than one published rate, your visitors get to pick which rate to book on the frontend.
+A Rate belongs to a **Statamic collection**, not to a single Entry. It can apply to every Entry in the collection or only to the ones you pick. Each rate sets how it's priced and where its inventory comes from. It can also have restrictions, a cancellation policy and a **booked units per add-on** value for pricing [extras](./extras) and [options](./options).
 
 ## Managing rates
 
-Rates live in their own **Rates** section in the admin panel, under the Resrv navigation.
+Rates have their own **Rates** section under Resrv in the Control Panel.
 
 <Image src="./img/resrv-rates-list.webp" alt="The Rates management page with the collection picker and rate tree." />
 
-At the top of the screen you pick a **collection**. Only collections that use the [Resrv Availability](./availability) field appear here.
+Pick a **collection** at the top. Only collections that use the [Resrv Availability](./availability) field are listed.
 
-Rates are shown as a **two-level tree**. Top-level (base or standalone) rates appear first, with any rates derived from them nested and indented underneath. Drag handles let you reorder rates within a level.
+Base rates are listed first, with the rates derived from them indented underneath. Drag rates to reorder them within a level. Badges show whether a rate is published, applies to "All entries" or is "Non-refundable", and how many rates derive from it.
 
-The list shows badges for each rate, such as a published/draft indicator, "All entries" (when the rate applies to the whole collection), a "Non-refundable" warning, and on parent rates a count of how many rates derive from them.
-
-To create a rate, click **Add rate**. To edit one, click its title. Both open the rate panel.
+Click **Add rate** to create a rate, or a rate's title to edit it.
 
 <Image src="./img/resrv-rates-panel.webp" alt="The Add/Edit rate panel with its General, Pricing, Availability and Restrictions sections." />
 
 ## Apply to all vs specific entries
 
-In the **General** section, the **Apply to all entries in collection** switch controls where the rate is available:
+In the **General** section, turn on **Apply to all entries in collection** to offer the rate on every Entry. Turn it off to pick the Entries yourself. **Select all** and **Remove all** help with long lists.
 
-- **On**: the rate applies to every Entry in the collection.
-- **Off**: an entry picker appears so you can select exactly which Entries the rate applies to. Use **Select all** / **Remove all** to manage the list quickly.
-
-The collection is fixed once a rate is created; you cannot move a rate to another collection later.
+You can't move a rate to another collection after you create it.
 
 ## Pricing type
 
-A rate's **pricing type** decides where its prices come from.
+- **Independent** (default): the rate has its own per-day prices, which you set in the Entry's [Availability calendar](./availability).
+- **Relative**: the rate takes its prices from a **base rate** and applies a modifier.
 
-- **Independent** (default): the rate has its own per-day prices. For a standard rate that also owns its inventory, prices come from the Entry's [Availability calendar](./availability) rows for that rate.
-- **Relative**: the rate has no prices of its own. It derives them from a **base rate** by applying a modifier.
-
-When you choose **Relative**, you set three modifier fields:
+A relative rate has three modifier fields:
 
 | Field | Values | Description |
 | ------------- | ------------- | ------------- |
-| Modifier type | `Percent` or `Fixed` | Whether the adjustment is a percentage or a flat amount. |
-| Modifier operation | `Increase` or `Decrease` | Whether the adjustment raises or lowers the base price. |
-| Modifier amount | A number (no `%` character) | The amount or percentage to apply. |
+| Modifier type | `Percent` or `Fixed` | A percentage or a flat amount. |
+| Modifier operation | `Increase` or `Decrease` | Raise or lower the base price. |
+| Modifier amount | A number (no `%` character) | The amount or percentage. |
 
-Behaviour:
-
-- **Percent** raises or lowers the base price by that percentage. A `Percent` + `Decrease` modifier is capped at 100.
-- **Fixed** adds or subtracts a flat amount **per day** (for a multi-day booking the amount is multiplied by the number of nights).
-- A decrease that would push the price below zero is floored at zero.
+A `Fixed` amount applies **per day**, so it's multiplied by the number of nights. A `Percent` decrease is capped at 100, and no modifier can take a price below zero.
 
 ::: warning PRICING TYPE IS IMMUTABLE
-The pricing type cannot be changed after a rate is created. If you need to switch between independent and relative pricing, delete the rate and recreate it.
+You can't change the pricing type after you create a rate. To switch, delete the rate and create it again.
 :::
 
-A base rate used for relative pricing must be in the **same collection**, must be **published**, and must itself be an **independent, non-shared** rate. Relative and shared rates cannot be used as a base.
+The base rate must be in the **same collection**, **published**, and an **independent, non-shared** rate.
 
 ## Availability type
 
-A rate's **availability type** decides where its inventory comes from.
+- **Independent** (default): the rate has its own inventory in the Availability calendar.
+- **Shared**: the rate uses the **base rate's** inventory, so booking it reduces the base rate's availability. Use **Max available** to cap how many units can be booked on this rate.
 
-- **Independent** (default): the rate has its own inventory pool, stored against its rate in the Availability calendar.
-- **Shared**: the rate does not own inventory. It shares the **base rate's** pool, so booking the shared rate decrements the base rate's availability. You can optionally cap how many units are bookable on the shared rate with **Max available**, even when the underlying pool is larger.
-
-When you choose **Shared**, a base rate is required (the same base-rate field serves both relative pricing and shared availability).
+A shared rate needs a base rate. It's the same field relative pricing uses.
 
 ::: warning AVAILABILITY TYPE IS IMMUTABLE
-Like the pricing type, the availability type cannot be changed after a rate is created. Delete and recreate the rate to switch it.
+You can't change the availability type after you create a rate either. Delete and recreate the rate to switch.
 :::
 
 ### The four configurations
 
-Pricing type and availability type combine into four real-world setups:
-
 | Pricing | Availability | Base rate | What it is |
 | ------------- | ------------- | ------------- | ------------- |
-| Independent | Independent | Not required | A standalone rate with its own prices and its own inventory. This is the default. |
-| Relative | Independent | Required | Own inventory, price derived from the base rate via a modifier. |
-| Independent | Shared | Required | Shares the base rate's inventory, but prices are managed independently (see below). |
-| Relative | Shared | Required | Shares the base rate's inventory **and** derives its price from the base rate. |
+| Independent | Independent | Not required | Own prices and own inventory. This is the default. |
+| Relative | Independent | Required | Own inventory, price derived from the base rate. |
+| Independent | Shared | Required | The base rate's inventory with its own prices (see below). |
+| Relative | Shared | Required | The base rate's inventory **and** a price derived from it. |
 
 ## Independent pricing on shared rates
 
-When a rate is **Shared** and uses **Independent** pricing, it shares the base rate's inventory but keeps its own prices. Those prices are entered in the Entry's [Availability calendar](./availability), not in the Rates screen, where you set a per-day price for the shared rate. (Editing the *inventory* of a shared rate is blocked, since that comes from the base rate.)
+A shared rate with independent pricing keeps its own prices. You set them per day in the Entry's [Availability calendar](./availability), not in the Rates screen. Its inventory comes from the base rate and can't be edited.
 
-A **Require price override** switch controls what happens on dates where you haven't set a price for the shared rate:
+**Require price override** controls dates where you haven't set a price for this rate:
 
-- **On**: dates without an explicit price for this rate are **unavailable**.
-- **Off**: those dates fall back to the **base rate's** price.
-
-This switch only appears for rates that are Shared with Independent pricing.
+- **On**: those dates are **unavailable**.
+- **Off**: they use the **base rate's** price.
 
 ## Restrictions
 
-The **Restrictions** section lets you limit when a rate can be booked. Every field is optional.
+Restrictions limit when a rate can be booked. Every field is optional.
 
 | Field | Description |
 | ------------- | ------------- |
-| Date range | The rate is only bookable within this window. The check-in date must fall on or after the start, and the booking must end on or before the end date. |
-| Min days before | Early-bird: bookable only at least this many days before the reservation starts. The global minimum still applies. Leave empty for no restriction. |
-| Max days before | Last-minute: bookable only at most this many days before the reservation starts. Use **0** for same-day bookings only. Leave empty for no restriction. |
+| Date range | The rate can only be booked within this window. Check-in must be on or after the start, and the booking must end on or before the end date. |
+| Min days before | Early bird: book at least this many days before the reservation starts. The global minimum still applies. |
+| Max days before | Last minute: book at most this many days before the reservation starts. Use **0** for same-day bookings only. |
 | Min stay | Minimum number of nights. |
 | Max stay | Maximum number of nights. |
 
 ## Booked units per add-on
 
-[Extras](./extras) and [option values](./options) are normally priced **per booked unit**: a Fixed or Per day price is multiplied by the reservation quantity, so two rooms pay for two breakfasts. That is right when a unit is a room or a car, but not when a unit is smaller than what a guest actually books.
+[Extras](./extras) and [option values](./options) are priced **per booked unit**. Fixed and Per day prices are multiplied by the reservation quantity, so two rooms pay for two breakfasts. That doesn't work when a unit is smaller than what a guest actually books.
 
-The **Booked units per add-on** field, in the rate's **Availability** section next to **Max available** (it is shown for every rate type), tells Resrv how many booked units count as **one** unit when pricing add-ons for that rate. Leave it empty to keep pricing add-ons per booked unit.
+**Booked units per add-on** sets how many booked units count as **one** when pricing add-ons for a rate. You'll find it in the rate's **Availability** section, next to **Max available**. Leave it empty to price add-ons per booked unit.
 
-Take a cruise where cabins are sold as berths, so a 2-berth cabin is quantity `2`. A single-occupancy rate books the whole cabin for one guest, and a fixed `350` port tax should be charged once, not twice. Set **Booked units per add-on** to `2` on that rate:
+Say a cruise sells cabins by the berth, so a 2-berth cabin is quantity `2`. A single-occupancy rate books the whole cabin for one guest, and a fixed `350` port tax should be charged once. Set **Booked units per add-on** to `2` on that rate:
 
 | Rate | Booked units per add-on | Booked quantity | Add-on quantity |
 | ------------- | ------------- | ------------- | ------------- |
@@ -135,54 +107,58 @@ Take a cruise where cabins are sold as berths, so a 2-berth cabin is quantity `2
 | Single cabin (two solo cabins) | 2 | 4 | 2 |
 | Single cabin | 2 | 3 | 2 |
 
-The single cabin now pays `350` for the port tax instead of `700`, and two solo cabins pay `2 × 350`. The add-on quantity is the booked quantity divided by the field, **rounded up**, so a partial unit is never free: quantity `3` with the field set to `2` prices add-ons for 2 units.
+The single cabin now pays `350` instead of `700`, and two solo cabins pay `2 × 350`. The result is **rounded up**, so quantity `3` with the field set to `2` prices add-ons for 2 units.
 
 A few things to keep in mind:
 
-- **Only add-ons are affected.** The cabin price, the inventory that is decremented and the quantity stored on the reservation do not change.
-- **The global flag wins.** When **Ignore quantity for prices** is enabled in your [configuration](./configuration), add-ons are never multiplied by quantity and this field has no effect.
-- **It applies to every Extra price type and to Fixed and Per day option values.** Extras priced *relative to the reservation price* are not divided again: their base is the reservation price, which already scales with the booked quantity.
-- **Multi-cabin bookings apply it per cabin line**, using that line's rate. A party of three in a double cabin (quantity `2`, field empty) plus a single (quantity `2`, field `2`) pays `3 × 350`, where it used to pay `4 × 350`.
-- **The value is read from the rate whenever add-ons are priced**, including after the rate is deleted, so an existing reservation keeps pricing its add-ons under the rate it was booked with. Add-on prices are stored on the reservation at booking time, so changing the field later only affects new bookings.
+- Only add-ons change. The cabin price, the inventory taken and the quantity stored on the reservation stay the same.
+- When **Ignore quantity for prices** is enabled in your [configuration](./configuration), add-ons are never multiplied by quantity and this field does nothing.
+- It applies to every Extra price type and to Fixed and Per day option values. Extras priced *relative to the reservation price* aren't divided again, because the reservation price already scales with quantity.
+- In multi-cabin bookings it applies per cabin line, using that line's rate. A party of three in a double cabin (quantity `2`, field empty) plus a single (quantity `2`, field `2`) pays `3 × 350` instead of `4 × 350`.
+- Add-on prices are stored on the reservation when it's booked, so changing the field only affects new bookings.
 
 ::: tip ADD-ONS SHOWN NEXT TO THE RESULTS
-When Extras or Options are rendered next to the availability results and the search itself carries no rate (rates disabled, which is the default), they are priced against the rate the results resolved, the one the reservation will be booked with. The results component passes it to the two components as `effectiveRateId` and broadcasts it on the `availability-results-updated` event, so a selection is re-priced whenever the search or the resolved rate changes. A selection restored from the session, for example when the two components are rendered again after a rate switch, is re-priced before it is broadcast whenever the search has dates (a cleared calendar keeps the last derived prices until the next search), and the results component re-prices the whole selection once more under the rate it books, so booking a rate straight from the all-rates listing carries the right amounts into the checkout. If you have published and customised `availability-results.blade.php`, pass `:effectiveRateId="$this->effectiveRateId()"` to `<livewire:extras>` and `<livewire:options>` so the first render is right too; without it the prices correct themselves right after the page loads. With rates enabled and several rates on offer, add-ons cannot be priced until a rate is picked, which is why the stock results view only renders them once one is.
+When Extras or Options are shown next to the availability results and the search has no rate (rates disabled, the default), they're priced against the rate the results will book. The results component passes it to them as `effectiveRateId` and with the `availability-results-updated` event, so selections are re-priced when the search or rate changes.
+
+If you've customised `availability-results.blade.php`, pass `:effectiveRateId="$this->effectiveRateId()"` to `<livewire:extras>` and `<livewire:options>` so the first render is right. Without it, the prices correct themselves right after the page loads.
+
+With rates enabled and several rates on offer, add-ons can't be priced until a rate is picked, so the stock results view only shows them after that.
 :::
 
 ## Cancellation policy
 
-Each rate can declare its own cancellation policy in the **Cancellation policy** section. This layers on top of the global free-cancellation settings in your [configuration](./configuration).
+Each rate can have its own policy in the **Cancellation policy** section, on top of the global free cancellation settings in your [configuration](./configuration).
 
-The **Cancellation policy** select offers three choices:
+The **Cancellation policy** select has three choices:
 
-- **Free cancellation until X days before** (`free_cancellation`): free cancellation up to a number of days before check-in. A **Free cancellation period** input appears so you can set that number of days.
-- **Non-refundable** (`non_refundable`): no free-cancellation window. The booking is always prepaid in full.
-- **Use global default** (leave empty): the rate inherits the global `free_cancellation_period` setting, which is the v5 behaviour.
+- **Free cancellation until X days before** (`free_cancellation`): set the number of days in the **Free cancellation period** input that appears.
+- **Non-refundable** (`non_refundable`): no free cancellation. The booking is always prepaid in full.
+- **Use global default** (leave empty): the rate uses the global `free_cancellation_period` setting, as in v5.
 
-A customer-facing label is rendered from this policy on availability results, the checkout sidebar, the reservation details, and the confirmation email, for example "Free cancellation until Mon 03 Jun 2026" or "Non-refundable". If the policy resolves to no configured period, no label is shown.
+Customers see the policy as a label on the availability results, the checkout sidebar, the reservation details and the confirmation email, like "Free cancellation until Mon 03 Jun 2026" or "Non-refundable". If no period is configured, there's no label.
 
 ::: warning NON-REFUNDABLE ALWAYS CHARGES IN FULL
-Non-refundable rates always require **full payment at checkout**, regardless of your deposit settings, and this holds even after a coupon is applied or removed.
+Non-refundable rates always take **full payment at checkout**, whatever your deposit settings, even after a coupon is applied or removed.
 :::
 
-The resolved policy is **snapshotted onto the reservation at booking time**, so later edits to the rate or to the global settings never change the terms an existing booking was made under. For multi-day bookings that span several rates, Resrv resolves a single strictest policy across them: any non-refundable part makes the whole booking non-refundable.
+The policy is **saved on the reservation at booking time**, so later changes to the rate or the global settings don't affect existing bookings. When a booking spans several rates, Resrv uses the strictest policy. If any part is non-refundable, the whole booking is.
 
 ## Published flag & ordering
 
-The **Settings** section has a **Published** switch. Unpublished (draft) rates are hidden on the frontend, so you can prepare a rate before making it bookable.
+Turn off **Published** in the **Settings** section to hide a rate on the frontend while you prepare it.
 
-Ordering is controlled by dragging rates in the Rates list. The order you set there is the order rates appear in on the frontend rate selector.
+Drag rates in the Rates list to set the order they appear in on the frontend rate selector.
 
 ::: info DELETING RATES
-A rate cannot be deleted while it is used as the base for another rate, or while it has active reservations. Remove or reassign those first.
+You can't delete a rate while it's the base for another rate or has active reservations. Remove or reassign those first.
 :::
 
 ## On the frontend
 
-When an Entry has multiple published rates, a rate selector appears in the [availability search component](./availability-search-component) so visitors can choose which rate to book. The selected rate flows through to the [availability results](./availability-results), which show the price, availability, and cancellation label for the chosen rate.
+When an Entry has several published rates, the [availability search component](./availability-search-component) shows a rate selector. The [availability results](./availability-results) then show the price, availability and cancellation label for the chosen rate.
 
-If no rate is selected and an Entry has several rates, Resrv shows the cheapest available rate by default.
+If no rate is selected, Resrv shows the cheapest available one.
 
 ## Upgrading from v5
 
-If you are coming from v5, where multiple availability options were handled through "Advanced availability" properties and "Connected availabilities", see [Upgrading to v6](./upgrading) for the full migration sequence and the `resrv:upgrade-to-rates` command that converts your existing setup into rates.
+See [Upgrading to v6](./upgrading) for the full migration and the `resrv:upgrade-to-rates` command, which converts your v5 "Advanced availability" properties and "Connected availabilities" into rates.

@@ -17,7 +17,7 @@ More often than not, you'll also want to include the [AvailabilityResults](./ava
 ::: tip
 Each search that the user makes is saved in the session (under the key `resrv-search`), so that their search persists between page loads.
 
-Because that session is shared, a [rate](./rates) selected on one page might not exist on another. From v6.1.0, every availability component reconciles this for you: a rate that doesn't apply to the current entry or collection is dropped automatically, and when only one valid rate exists it is auto-selected. You don't need to clear a stale search manually.
+From v6.1.0, if the saved [rate](./rates) doesn't apply to the current entry or collection, it's dropped. If only one valid rate exists, it's selected automatically.
 :::
 
 <Image src="./img/resrv-availability-search.webp" alt="A very simple AvailabilitySearch component with its pal, AvailabilityResults" />
@@ -30,27 +30,27 @@ Of course, there are quite a few properties that you can set depending on the us
 | -------- | ---- | ------- | ----------- |
 | calendar | string | "single" | The calendar type to use. `single` selects a single date, `range` selects a date range. |
 | live | boolean | true | When enabled, the component automatically updates the results when the user changes any value of their search. When disabled, the component only updates when the user clicks the "Search" button. |
-| rates | boolean | false | When enabled, the [rate](./rates) selector is rendered so the user can pick a rate. Pass `:rates="true"`. (Replaces the v5 `advanced` property: it's now a plain boolean.) |
-| anyRate | boolean | false | **Usable when searching for multiple entries.** When enabled, an unselected rate is sent as "any" and the results return the cheapest rate that is available. Search is also allowed without dates. Pass `:any-rate="true"`. |
+| rates | boolean | false | Shows the [rate](./rates) selector. Pass `:rates="true"`. Replaces the v5 `advanced` property. |
+| anyRate | boolean | false | **Usable when searching for multiple entries.** If no rate is selected, it searches "any" rate and returns the cheapest available one. Also allows searching without dates. Pass `:any-rate="true"`. |
 | enableQuantity | boolean | false | When enabled, a quantity control is added so that the user can book more than one product at once. |
 | redirectTo | string | null | If live mode is disabled, the page to redirect to when the user clicks "Search". |
-| overrideRates | array | [] | A `rate_id => label` map that overrides the rates resolved from the database for this entry/collection. |
+| overrideRates | array | [] | A `rate_id => label` map that replaces the rates loaded for this entry or collection. |
 | showAvailabilityOnCalendar | boolean | false | Show availability & pricing information on the calendar. Usable only when browsing [a specific entry](./availability-search-single#display-availability-in-the-calendar). |
-| entry | string | null | **Needs to be a Statamic Entry ID.** Used to resolve the per-entry rate labels and required when *showAvailabilityOnCalendar* is enabled. Optional for collection-wide search. |
-| ratesBlueprint | string | null | Optional. Carries the `collection.blueprint` reference when needed (mainly for the Livewire Filters path). Not required for normal single/collection search, since rates are now collection-scoped database records. |
+| entry | string | null | **Needs to be a Statamic Entry ID.** Loads the entry's rate labels. Required when *showAvailabilityOnCalendar* is enabled, optional for collection-wide search. |
+| ratesBlueprint | string | null | A `collection.blueprint` reference, mainly for use with Livewire Filters. Not needed for normal searches. |
 | view | string | "availability-search" | Override the view that's used to render the component. Really useful when you want different versions of the AvailabilitySearch component on different pages. Expects a `name.blade.php` file in the `/resources/views/vendor/statamic-resrv/livewire` folder. |
 
 ::: warning UPGRADING FROM v5 OR v6.0.0
-Several properties were renamed in v6 as part of the move to the [Rates](./rates) system: `advanced` → `rates`, `anyAdvanced` → `anyRate`, `overrideProperties` → `overrideRates`. See [Upgrading to v6](./upgrading) for the full list.
+With the move to [Rates](./rates), v6 renamed `advanced` to `rates`, `anyAdvanced` to `anyRate` and `overrideProperties` to `overrideRates`. See [Upgrading to v6](./upgrading) for the full list.
 
-The boot-reset property (`resetAdvancedOnBoot` in v5, `resetOnBoot` in v6.0.0) was **removed in v6.1.0** — passing `:resetOnBoot` now throws a Livewire "property does not exist" error, so remove it from your templates. You no longer need it: the component reconciles stale rates on its own, dropping a rate that doesn't apply to the current entry or collection and auto-selecting when only one valid rate exists. See [Upgrading from v6.0.0 to v6.1.0](./upgrading#upgrading-from-v6-0-0-to-v6-1-0).
+`resetAdvancedOnBoot` (v5), later `resetOnBoot` (v6.0.0), was **removed in v6.1.0**. Passing `:resetOnBoot` now throws a Livewire "property does not exist" error, so remove it from your templates. You no longer need it, as the component drops stale rates itself. See [Upgrading from v6.0.0 to v6.1.0](./upgrading#upgrading-from-v6-0-0-to-v6-1-0).
 :::
 
 ## Customizing
 
 The design of the Availability Search component is very basic by default, since it's meant to be modified to fit your layout. To modify it, make sure you've published the views during checkout and edit the `/resources/views/vendor/statamic-resrv/livewire/availability-search.blade.php` file.
 
-In the same path, inside the `components` folder, you can find and customize the Blade components that are used by the Availability Search component. The rate selector lives in `components/availability-rates.blade.php`.
+In the same path, inside the `components` folder, you can find and customize the Blade components that are used by the Availability Search component. The rate selector is in `components/availability-rates.blade.php`.
 
 ## Usage
 
@@ -65,28 +65,28 @@ When you want the user to input their search and list all available Entries. You
 
 ## Setting the search via URL parameters
 
-From v6.2.0, you can seed the search using URL query parameters. This lets you link directly to a page with the calendar prefilled and the results already loaded. It comes in handy for links in newsletters, campaigns or banners.
+From v6.2.0, you can prefill the search with URL query parameters. A link like this opens the page with the dates set and the results loaded:
 
 ```
 https://yoursite.com/villa-blue?date_start=2026-08-20&date_end=2026-08-25&rate=3
 ```
 
-The following parameters are supported:
+The supported parameters are:
 
 | Parameter | Example | Description |
 | --------- | ------- | ----------- |
-| date | `?date=2026-08-20` | Sets the starting date. The ending date is calculated automatically using the `minimum_reservation_period_in_days` setting (1 day minimum). |
-| date_start & date_end | `?date_start=2026-08-20&date_end=2026-08-25` | Sets an exact date range. Both parameters must be present. If `date` is also present, the explicit range wins. |
-| rate | `?rate=3` | Preselects a [rate](./rates) by its numeric ID. The string `any` is also accepted when `anyRate` is enabled. |
+| date | `?date=2026-08-20` | Sets the start date. The end date comes from the `minimum_reservation_period_in_days` setting (at least 1 day). |
+| date_start & date_end | `?date_start=2026-08-20&date_end=2026-08-25` | Sets an exact date range. Both are required, and they take priority over `date`. |
+| rate | `?rate=3` | Preselects a [rate](./rates) by its numeric ID, or `any` when `anyRate` is enabled. |
 
-A few things to keep in mind:
+Keep in mind:
 
 - Dates must use the `YYYY-MM-DD` format.
-- The parameters are read once, when the page loads, and they override any previous search saved in the session.
-- Invalid values are ignored silently. A date in the past, a malformed value or a range that violates your reservation settings will never throw an error; the component simply behaves as if the parameter was not there.
-- A rate ID that does not exist for the current entry or collection is dropped by the same reconciliation described above.
-- Passing only `rate` preselects it in the dropdown, but a search only runs if dates are also available (either in the URL or in the session).
-- On a standalone search form that redirects (`live` set to false with `redirectTo`), the parameters fill the form and the session but the visitor is not redirected automatically. The search carries over to the results page once they click "Search".
+- Parameters are read once on page load and replace any search saved in the session.
+- Invalid values, such as a past date, are silently ignored.
+- A rate that doesn't apply to the current entry or collection is dropped.
+- `rate` on its own only preselects the rate. A search runs only if there are dates in the URL or the session.
+- On a search form that redirects (`live` set to false with `redirectTo`), the parameters fill the form and session but don't trigger the redirect. The visitor still has to click "Search".
 
 ## Passing data to checkout
 
@@ -104,4 +104,4 @@ In some cases you might want to disable specific days of the week. To do so, you
 />
 ```
 
-The array uses full English day names (`Sunday`, `Monday`, `Tuesday`, `Wednesday`, `Thursday`, `Friday`, `Saturday`).
+Use full English day names (`Sunday`, `Monday`, `Tuesday`, `Wednesday`, `Thursday`, `Friday`, `Saturday`).
