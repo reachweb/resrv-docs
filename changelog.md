@@ -1,5 +1,25 @@
 # Resrv Changelog
 
+## v6.5.2
+#### Release date: 15th November 2026
+
+This release fixes a data exposure on the checkout-complete page and adds one migration, so read [Upgrading to v6.5.2](./upgrading#upgrading-to-v6-5-2) before you deploy.
+
+### Security
+- **Other bookings' data on the checkout-complete page:** the page loaded whichever reservation `?payment_pending=<id>` named. Reservation ids are sequential, so on a site whose template renders the `reservation` data, a visitor could read another booking's reference, dates, amounts, payment id and entry. Customer names and emails weren't included. The data now goes only to the session that made the booking, for 60 minutes after it completes, and anyone else sees the pending message without it. Pages that render <code v-pre>{{ resrv_checkout_redirect }}</code> are no longer written to Statamic's static cache.
+- **Custom payment gateways:** most custom gateways copied the same lookup into `handlePaymentPending()`. The tag now filters what any gateway returns, but replace the method body with `return PendingPayment::fromRequest();` anyway. See [Handling the redirect back](./custom-payment-gateway#handling-the-redirect-back).
+
+### Improvements
+- **Payment page with bank-hosted providers:** some providers, such as Cardlink and other bank payment pages, can't cancel an order the bank hasn't answered yet. On the [payment page](./payment-page), every **Pay** press then failed with a generic error until the bank's page timed out. A gateway can now report when the open order expires, and the page tells the customer they can try again after that time. See [Retrieving a payment intent](./custom-payment-gateway#retrieving-a-payment-intent).
+- **Updated booking calendar** to [`@reachweb/alpine-calendar`](./frontend-setup) v1.4.1. The date picker now fits narrow phone screens, closes with Escape, keeps the page behind it from scrolling and no longer submits a surrounding form from its buttons.
+
+### Bug fixes
+- **Free cancellation after its deadline:** availability results and the checkout offered "Free cancellation until \<date\>" even when that date had already passed, for example on a check-in 3 days away with a 7-day window. They now show "No free cancellation for these dates". A booking keeps the label as it stood when it was confirmed, so emails and the status page show the terms the guest booked. See [Rates](./rates#cancellation-policy).
+
+### Upgrading
+
+Run `composer update reachweb/statamic-resrv` and `php artisan migrate` before the site serves traffic. If you use static caching, clear it once with `php please static:clear`. [Upgrading to v6.5.2](./upgrading#upgrading-to-v6-5-2) covers the new translation keys and the payment page view.
+
 ## v6.5.1
 #### Release date: 14th November 2026
 

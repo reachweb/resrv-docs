@@ -135,7 +135,7 @@ The **Cancellation policy** select has three choices:
 - **Non-refundable** (`non_refundable`): no free cancellation. The booking is always prepaid in full.
 - **Use global default** (leave empty): the rate uses the global `free_cancellation_period` setting, as in v5.
 
-Customers see the policy as a label on the availability results, the checkout sidebar, the reservation details and the confirmation email, like "Free cancellation until Mon 03 Jun 2026" or "Non-refundable". If no period is configured, there's no label.
+Customers see the policy as a label on the availability results, the checkout sidebar, the reservation details and the confirmation email, like "Free cancellation until Mon 03 Jun 2026" or "Non-refundable". If no period is configured, there's no label. When the free cancellation date has already passed for the dates searched, the label reads "No free cancellation for these dates". A booking keeps the label as it stood when it was confirmed, so emails and the status page show the terms the guest booked.
 
 ::: warning NON-REFUNDABLE ALWAYS CHARGES IN FULL
 Non-refundable rates always take **full payment at checkout**, whatever your deposit settings, even after a coupon is applied or removed.

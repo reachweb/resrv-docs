@@ -107,4 +107,4 @@ You can override these frontend keys as described in the [Languages](./languages
 | `searchError` | Search error |
 | `youAreTooLate` | You are too late! |
 
-The cancellation label also uses the `nonRefundable` and `freeCancellationUntilDate` keys. See [Rates](./rates#cancellation-policy).
+The cancellation label also uses the `nonRefundable`, `freeCancellationUntilDate` and `freeCancellationPassed` keys. See [Rates](./rates#cancellation-policy).

@@ -272,7 +272,7 @@ public function handleRedirectBack(): array
 }
 ```
 
-`handlePaymentPending()` returns a pending state when `?payment_pending=<id>` is present, for async methods like bank transfer, and `false` otherwise. Return Resrv's `PendingPayment` helper, available from v6.5.1:
+`handlePaymentPending()` returns a pending state when `?payment_pending=<id>` is present, for async methods like bank transfer, and `false` otherwise. Return Resrv's `PendingPayment` helper, available from v6.5.2:
 
 ```php
 use Reach\StatamicResrv\Http\Payment\PendingPayment;
@@ -286,7 +286,7 @@ public function handlePaymentPending(): bool|array
 The helper includes the reservation data only when the id belongs to the visitor's own checkout session. For any other id the customer still sees the pending message, with an empty `reservation`.
 
 ::: warning Don't look the reservation up yourself
-Earlier versions of this page used `Reservation::find(request()->input('payment_pending'))` here. The id comes from the URL and reservation ids are sequential, so that lookup returned any booking's data to anyone who asked for it. If your gateway has that code, update Resrv to v6.5.1 and replace the method body with the one above. From v6.5.1 the <code v-pre>{{ resrv_checkout_redirect }}</code> tag also removes the data for an id the session doesn't own, but update your gateway anyway.
+Earlier versions of this page used `Reservation::find(request()->input('payment_pending'))` here. The id comes from the URL and reservation ids are sequential, so that lookup returned any booking's data to anyone who asked for it. If your gateway has that code, update Resrv to v6.5.2 and replace the method body with the one above. From v6.5.2 the <code v-pre>{{ resrv_checkout_redirect }}</code> tag also removes the data for an id the session doesn't own, but update your gateway anyway.
 
 The same goes for `handleRedirectBack()`: find the reservation from a value your provider issued, like the payment id in `findByPaymentId()`, never from a reservation id in the query string.
 :::
@@ -488,6 +488,8 @@ Return `null` only when the intent definitely doesn't exist, such as an HTTP 404
 Throw on transient failures: timeouts, rate limits (429), 5xx responses, authentication and connection errors. Never catch everything and return `null`, or Resrv may create a second chargeable intent, lose a charge that captures later, or skip a real refund.
 
 After `cancelPaymentIntent()` voids an intent, report it as `canceled`. Resrv checks for `canceled` or `null` before it creates a replacement. If the old intent still looks payable, the payment attempt stops with a retryable error.
+
+Some providers, such as bank-hosted payment pages, can't void an order the bank hasn't answered and reject a second post of the same order. From v6.5.2, report such an order as still payable, without `->redirectTo`, and add `->expires_at`: the moment the provider stops accepting it, as a Unix timestamp in seconds or a `DateTimeInterface`. The [payment page](./payment-page) then tells the customer they can try again after that time (`paymentAttemptStillOpen`) instead of showing an error. `->expires_at` never lets Resrv replace the order, so once it has expired, report it as `canceled` yourself. Use the provider's own cut-off, and if you time it yourself, make it cover the latest moment your page can still post the order to the bank.
 
 The bundled Stripe gateway returns the Stripe intent itself, which already has `->status` and `->client_secret`:
 

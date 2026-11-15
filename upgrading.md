@@ -10,6 +10,7 @@ Find the section that starts at your version, then work through it and every sec
 2. [Upgrading from v6.0.0 to v6.1.0](#upgrading-from-v6-0-0-to-v6-1-0): one removed attribute.
 3. [Upgrading from v6.1.0 to v6.4.0](#upgrading-from-v6-1-0-to-v6-4-0): a new gateway method, a new status and a changed tag default.
 4. [Upgrading to v6.5.0](#upgrading-to-v6-5-0): manual reservations, gateway interface changes and a scheduled command.
+5. [Upgrading to v6.5.2](#upgrading-to-v6-5-2): a security fix, one migration and two translation keys.
 
 Each section ends with a checklist for confirming the upgrade worked.
 
@@ -470,3 +471,67 @@ These apply even if you never create a manual reservation. The [v6.5.0 changelog
 - [ ] Your cache store (`CACHE_STORE` in `.env`) isn't `apc`.
 - [ ] If you take online payments for manual reservations, a test reservation paid through its payment link turns **Confirmed** once the webhook arrives.
 - [ ] Your published email templates, checkout views and language files include the v6.5.0 changes.
+
+## Upgrading to v6.5.2
+
+v6.5.2 fixes a data exposure on the checkout-complete page and adds one migration. v6.5.1 had no upgrade steps, so this section also covers upgrading from v6.5.0. The [v6.5.2 changelog](./changelog#v6-5-2) has the details.
+
+### 1. Update the package and run the migration
+
+```bash
+composer update reachweb/statamic-resrv
+php artisan migrate
+```
+
+| Migration | Adds |
+|---|---|
+| `2026_11_15_000000_add_confirmed_at_to_resrv_reservations_table` | `confirmed_at` (nullable timestamp) on `resrv_reservations` |
+
+Run it before the site serves traffic. Resrv records `confirmed_at` every time a booking is confirmed, so confirmations fail until the column exists. Existing rows need no backfill: bookings confirmed before the upgrade use `created_at` for their cancellation label.
+
+### 2. Clear the static cache
+
+If your site uses Statamic's static caching and didn't exclude the checkout-complete page, run this once after deploying:
+
+```bash
+php please static:clear
+```
+
+From v6.5.2, Resrv keeps pages that render <code v-pre>{{ resrv_checkout_redirect }}</code> out of the static cache, but copies cached before the upgrade are still served until you clear them. A CDN or reverse proxy that caches HTML must not cache that page either.
+
+### 3. Update custom payment gateways
+
+There's no interface change, so nothing fails to load. But if your gateway's `handlePaymentPending()` looks the reservation up with `Reservation::find(request()->input('payment_pending'))`, replace its body:
+
+```php
+use Reach\StatamicResrv\Http\Payment\PendingPayment;
+
+public function handlePaymentPending(): bool|array
+{
+    return PendingPayment::fromRequest();
+}
+```
+
+The tag now filters what any gateway returns, but update the gateway anyway. See [Handling the redirect back](./custom-payment-gateway#handling-the-redirect-back).
+
+If your provider can't cancel an order the bank hasn't answered yet, you can now report when that order expires. See [Retrieving a payment intent](./custom-payment-gateway#retrieving-a-payment-intent).
+
+### 4. Merge customized views and translations
+
+- The frontend language file (`--tag=resrv-language`) has two new keys in `frontend.php`: `freeCancellationPassed` ([cancellation policy keys](./languages#cancellation-policy-keys)) and `paymentAttemptStillOpen` ([payment page](./payment-page#translations)). Add them to every locale you've published.
+- A published `livewire/reservation-payment.blade.php` doesn't show the new "try again after" notice. Merge in the `$paymentRetryAt` block from the packaged view if your gateway reports `->expires_at`.
+- Custom result views that style the cancellation label, such as a green "free cancellation" badge, should check `CancellationPolicy::freeCancellationOpen()` and treat a closed window like non-refundable. The stock views need no change.
+
+### What changes for existing sites
+
+- Rates no longer offer free cancellation once its date has passed for the dates searched. They show "No free cancellation for these dates" instead.
+- The checkout-complete page shows a booking's data only to the session that made it, for 60 minutes. Anyone else, including the same customer in another browser, sees the pending message without it.
+- The booking calendar is updated to `@reachweb/alpine-calendar` v1.4.1. The precompiled script and stylesheet update with the package. If you bundle the calendar yourself, update it too.
+
+### Checklist {#checklist-v6-5-2}
+
+- [ ] `php artisan migrate:status` shows `2026_11_15_000000_add_confirmed_at_to_resrv_reservations_table` as ran.
+- [ ] A test booking confirms and gets a `confirmed_at` value.
+- [ ] If you use static caching, you've run `php please static:clear`.
+- [ ] Every custom gateway's `handlePaymentPending()` returns `PendingPayment::fromRequest()`.
+- [ ] Your published language files include `freeCancellationPassed` and `paymentAttemptStillOpen`.
