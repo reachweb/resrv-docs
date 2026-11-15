@@ -116,6 +116,8 @@ const screens = [
     path: "reservations",
     width: 1800,
     height: 909,
+    // On phones: the region from x 0 to 900, from the page title to the rate
+    crop: "--crop-w: 200%; --crop-x: 0%",
     alt: "Resrv's Reservations list in the Statamic control panel: five confirmed bookings with their entry, rate, dates, deposit, total and customer, and a Create reservation button.",
   },
   {
@@ -124,6 +126,8 @@ const screens = [
     path: "reports",
     width: 1800,
     height: 1267,
+    // On phones: the region from x 40 to 880, the date filter and the report's left cards
+    crop: "--crop-w: 214.3%; --crop-x: -4.8%",
     alt: "Reports for 2026: 6 reservations, €4,712.60 revenue, €785.43 average value, and a best sellers table by entry.",
   },
   {
@@ -132,6 +136,8 @@ const screens = [
     path: "reservations/create",
     width: 1800,
     height: 1267,
+    // On phones: the region from x 950 to 1800, the summary with its discount and total
+    crop: "--crop-w: 211.8%; --crop-x: -111.8%",
     alt: "The Create reservation form filled in for the Sea View Suite, 14 to 18 December 2026, with an airport transfer and Continental breakfast, and a summary showing the dynamic pricing discount and a €1,229.40 total.",
   },
 ];
@@ -224,11 +230,13 @@ const details = [
               <a class="btn btn-primary" href="#demo">
                 Try the live demo <Icon name="arrow-down" size={16} />
               </a>
-              <a class="btn btn-secondary" href={marketplaceUrl}>Buy for {price}</a>
+              <a class="btn btn-secondary" href={marketplaceUrl}>
+                Buy for {price} <Icon name="arrow-up-right" size={16} />
+              </a>
               <a class="btn btn-link" href="/introduction">Read the docs</a>
             </div>
             <ul class="facts" aria-label="At a glance">
-              <li><Icon name="check" size={14} /> One-time {price}</li>
+              <li><Icon name="check" size={14} /> 5 years in production</li>
               <li><Icon name="check" size={14} /> Statamic {requirements.statamic}</li>
               <li><Icon name="check" size={14} /> Livewire frontend</li>
             </ul>
@@ -259,20 +267,22 @@ const details = [
               <span class="dots"><i></i><i></i><i></i></span>
               <span class="address"><Icon name="lock" size={11} /> {host(demoCpUrl)}/cp/resrv/reservations</span>
             </div>
-            <img
-              class="is-light"
-              src="/home/hero-cp-light.webp"
-              width="1600"
-              height="752"
-              alt="Resrv's Reservations list in the Statamic control panel, with five confirmed bookings and their entries, rates, dates, totals and customers."
-            />
-            <img
-              class="is-dark"
-              src="/home/hero-cp-dark.webp"
-              width="1600"
-              height="752"
-              alt="Resrv's Reservations list in the Statamic control panel, with five confirmed bookings and their entries, rates, dates, totals and customers."
-            />
+            <div class="crop" style="--crop-w: 250%; --crop-x: -40.9%; --crop-y: -9.7%">
+              <img
+                class="is-light"
+                src="/home/hero-cp-light.webp"
+                width="1600"
+                height="752"
+                alt="Resrv's Reservations list in the Statamic control panel, with five confirmed bookings and their entries, rates, dates, totals and customers."
+              />
+              <img
+                class="is-dark"
+                src="/home/hero-cp-dark.webp"
+                width="1600"
+                height="752"
+                alt="Resrv's Reservations list in the Statamic control panel, with five confirmed bookings and their entries, rates, dates, totals and customers."
+              />
+            </div>
           </div>
           <figcaption><span class="dot is-amber"></span>You manage them in Statamic</figcaption>
         </figure>
@@ -630,22 +640,24 @@ const details = [
                     <Icon name="lock" size={11} /> {host(demoCpUrl)}/cp/resrv/{screen.path}
                   </span>
                 </div>
-                <img
-                  class="is-light"
-                  src={`/home/cp-${screen.id}-light.webp`}
-                  width={screen.width}
-                  height={screen.height}
-                  loading="lazy"
-                  alt={screen.alt}
-                />
-                <img
-                  class="is-dark"
-                  src={`/home/cp-${screen.id}-dark.webp`}
-                  width={screen.width}
-                  height={screen.height}
-                  loading="lazy"
-                  alt={screen.alt}
-                />
+                <div class="crop is-square" style={screen.crop}>
+                  <img
+                    class="is-light"
+                    src={`/home/cp-${screen.id}-light.webp`}
+                    width={screen.width}
+                    height={screen.height}
+                    loading="lazy"
+                    alt={screen.alt}
+                  />
+                  <img
+                    class="is-dark"
+                    src={`/home/cp-${screen.id}-dark.webp`}
+                    width={screen.width}
+                    height={screen.height}
+                    loading="lazy"
+                    alt={screen.alt}
+                  />
+                </div>
               </div>
             ))
           }
@@ -695,8 +707,8 @@ const details = [
     <section class="section" aria-labelledby="details-title">
       <div class="wrap">
         <header class="section-head">
-          <h2 id="details-title">The details</h2>
-          <p>The smaller things a booking site needs, already there.</p>
+          <h2 id="details-title">Also built in</h2>
+          <p>The smaller things a booking site needs, ready when you install Resrv.</p>
         </header>
         <ul class="details">
           {
@@ -726,7 +738,7 @@ const details = [
         </header>
         <ol class="doors">
           <li class="door door-site">
-            <a class="door-media" href={demoUrl} tabindex="-1" aria-hidden="true">
+            <a class="door-media" href={demoUrl} target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
               <img
                 src="/home/demo-hotel.webp"
                 width="1400"
@@ -739,8 +751,8 @@ const details = [
               <p class="door-step">Step 1</p>
               <h3>Book on the hotel site</h3>
               <p>Pick your dates, choose a rate, add extras and go through checkout. The demo only offers bank transfer, so you won't need a card.</p>
-              <a class="btn btn-primary" href={demoUrl}>
-                Open the hotel site <Icon name="arrow-up-right" size={16} />
+              <a class="btn btn-primary" href={demoUrl} target="_blank" rel="noopener">
+                Open the hotel site <Icon name="arrow-up-right" size={16} /><span class="sr-only">(opens in a new tab)</span>
               </a>
             </div>
           </li>
@@ -763,12 +775,52 @@ const details = [
                 <div><dt>Email</dt><dd><code>{demoLogin.email}</code></dd></div>
                 <div><dt>Password</dt><dd><code>{demoLogin.password}</code></dd></div>
               </dl>
-              <a class="btn btn-secondary" href={demoCpUrl}>
-                Open the control panel <Icon name="arrow-up-right" size={16} />
+              <a class="btn btn-secondary" href={demoCpUrl} target="_blank" rel="noopener">
+                Open the control panel <Icon name="arrow-up-right" size={16} /><span class="sr-only">(opens in a new tab)</span>
               </a>
             </div>
           </li>
         </ol>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="team-title">
+      <div class="wrap">
+        <div class="split team">
+          <div class="split-text">
+            <h2 id="team-title">Made by Reach in Kos, Greece</h2>
+            <p>
+              We've built websites as Reach Web Agency since 2012, and only with Statamic since 2020.
+              We're a Statamic Partner, and we make two more add-ons. Resrv's code is on GitHub.
+            </p>
+            <a class="partner" href={partnerUrl}>
+              <img src="/statamic-partner.svg" width="112" height="96" alt="Statamic Partner" loading="lazy" />
+            </a>
+            <p class="link-row">
+              <a class="more" href={reachUrl}>About Reach <Icon name="arrow-right" size={14} /></a>
+              <a class="more" href={sellerUrl}>Our add-ons <Icon name="arrow-right" size={14} /></a>
+            </p>
+          </div>
+          <ul class="addons">
+            <li>
+              <h3><a href={easyFormsUrl}>Easy Forms</a></h3>
+              <p>Professional, accessible forms for your Statamic site.</p>
+            </li>
+            <li>
+              <h3><a href={livewireFiltersUrl}>Livewire Filters</a></h3>
+              <p>Live filters for Statamic collections. Pair it with Resrv to search for entries that are available.</p>
+            </li>
+            <li>
+              <h3><a href={githubUrl}>Resrv on GitHub</a></h3>
+              <p>Read the code, follow releases, and report issues.</p>
+            </li>
+          </ul>
+        </div>
+        <ul class="proof" aria-label="Resrv's track record">
+          <li>5 years in production</li>
+          <li>Thousands of bookings processed</li>
+          <li>Millions in revenue generated</li>
+        </ul>
       </div>
     </section>
 
@@ -778,7 +830,7 @@ const details = [
           <h2 id="pricing-title">One price, paid once</h2>
           <p>
             Resrv is free to use while you develop. Buy a license on the Statamic Marketplace before the
-            site goes live.
+            site goes live. There's no commission per booking.
           </p>
           <dl class="reqs">
             <div><dt>PHP</dt><dd>{requirements.php}</dd></div>
@@ -786,7 +838,10 @@ const details = [
             <div><dt>Statamic</dt><dd>{requirements.statamic}</dd></div>
             <div><dt>Livewire</dt><dd>{requirements.livewire}</dd></div>
           </dl>
-          <a class="more" href="/installation">Installation <Icon name="arrow-right" size={14} /></a>
+          <p class="link-row">
+            <a class="more" href="/installation">Installation <Icon name="arrow-right" size={14} /></a>
+            <a class="more" href="/upgrading">Upgrading to v6 <Icon name="arrow-right" size={14} /></a>
+          </p>
         </div>
         <div class="plan">
           <p class="plan-name">{license}</p>
@@ -794,47 +849,18 @@ const details = [
           <p class="plan-terms">One-time purchase, no annual renewal</p>
           <ul class="plan-list">
             <li><Icon name="check" size={16} /> Free in development</li>
-            <li><Icon name="check" size={16} /><span>Help on <a href={issuesUrl}>GitHub</a> and by <a href={`mailto:${supportEmail}`}>email</a></span></li>
+            <li><Icon name="check" size={16} /> Every future release, major versions included</li>
+            <li><Icon name="check" size={16} /><span>Help on <a href={issuesUrl}>GitHub</a> and by <a href={`mailto:${supportEmail}`}>email</a>, usually within a day or two</span></li>
             <li><Icon name="check" size={16} /><span><a href="/support">Paid support</a> for custom work</span></li>
           </ul>
-          <a class="btn btn-primary" href={marketplaceUrl}>Buy on the Statamic Marketplace</a>
-          <p class="plan-foot">
-            Building for a non-profit or an open-source project? <a href={`mailto:${supportEmail}`}>Get in touch</a>.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" aria-labelledby="team-title">
-      <div class="wrap split team">
-        <div class="split-text">
-          <h2 id="team-title">Made by Reach in Kos, Greece</h2>
-          <p>
-            We've built websites as Reach Web Agency since 2012, and only with Statamic since 2020.
-            We're a Statamic Partner, and we make two more add-ons.
-          </p>
-          <a class="partner" href={partnerUrl}>
-            <img src="/statamic-partner.svg" width="112" height="96" alt="Statamic Partner" loading="lazy" />
+          <a class="btn btn-primary" href={marketplaceUrl}>
+            Buy on the Marketplace <Icon name="arrow-up-right" size={16} />
           </a>
-          <p class="team-links">
-            <a class="more" href={reachUrl}>About Reach <Icon name="arrow-right" size={14} /></a>
-            <a class="more" href={sellerUrl}>Our add-ons <Icon name="arrow-right" size={14} /></a>
+          <p class="plan-foot">
+            Read the <a href="/support#pricing">license terms</a>. Building for a non&#8209;profit or an
+            open&#8209;source project? Email <a href={`mailto:${supportEmail}`}>{supportEmail}</a>.
           </p>
         </div>
-        <ul class="addons">
-          <li>
-            <h3><a href={easyFormsUrl}>Easy Forms</a></h3>
-            <p>Professional, accessible forms for your Statamic site.</p>
-          </li>
-          <li>
-            <h3><a href={livewireFiltersUrl}>Livewire Filters</a></h3>
-            <p>Live filters for Statamic collections. Pair it with Resrv to search for entries that are available.</p>
-          </li>
-          <li>
-            <h3><a href={githubUrl}>Resrv on GitHub</a></h3>
-            <p>Read the code, follow releases, and report issues.</p>
-          </li>
-        </ul>
       </div>
     </section>
 
@@ -844,10 +870,12 @@ const details = [
         <h2 id="cta-title">Book a room, then find it in the control panel</h2>
         <p>Try both sides on the demo hotel. When you're ready, Resrv is {price} for one site, paid once.</p>
         <div class="actions">
-          <a class="btn btn-primary" href={demoUrl}>
-            Open the demo hotel <Icon name="arrow-up-right" size={16} />
+          <a class="btn btn-primary" href={demoUrl} target="_blank" rel="noopener">
+            Open the demo hotel <Icon name="arrow-up-right" size={16} /><span class="sr-only">(opens in a new tab)</span>
           </a>
-          <a class="btn btn-ghost" href={marketplaceUrl}>Buy on the Marketplace</a>
+          <a class="btn btn-ghost" href={marketplaceUrl}>
+            Buy on the Marketplace <Icon name="arrow-up-right" size={16} />
+          </a>
         </div>
       </div>
     </section>
@@ -961,6 +989,15 @@ const details = [
      page without a sidebar has no drawer, so Docs would vanish on phones. Keep it in the bar. */
   :global([data-blume-header] a[href="/introduction"]) {
     display: inline-flex;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   /* Screenshots of the control panel come in two versions that follow the site's theme */
@@ -1154,14 +1191,20 @@ const details = [
     color: var(--blume-foreground);
   }
 
+  /* On the light tint, Deep Orange reads at 4.3:1, under AA for this size: the tag takes its
+     hover shade (5.92:1). Dark keeps the accent, which reads at 5.5:1. */
   .news-tag {
     flex: none;
     padding: 0.125rem 0.5rem;
     border-radius: 999px;
     background: var(--tint);
-    color: var(--blume-accent);
+    color: #a03814;
     font-weight: 600;
     font-size: 0.8125rem;
+  }
+
+  :global(:root[data-theme="dark"]) .news-tag {
+    color: var(--blume-accent);
   }
 
   .news-text {
@@ -1258,8 +1301,9 @@ const details = [
   .shot-cp {
     grid-column: 2 / -1;
     grid-row: 2;
-    margin-top: 0.75rem;
+    margin-top: 1.75rem;
   }
+
 
   @media (min-width: 900px) {
     .shot-site {
@@ -1289,10 +1333,12 @@ const details = [
     height: auto;
   }
 
+  /* Captions hang off the frame's bottom edge, so they name the screen without covering it */
   .shot figcaption {
     position: absolute;
     left: 0.75rem;
-    bottom: 0.75rem;
+    bottom: 0;
+    translate: 0 50%;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -1317,7 +1363,6 @@ const details = [
   @media (max-width: 559px) {
     .shot figcaption {
       left: 0.5rem;
-      bottom: 0.5rem;
       padding: 0.25rem 0.5rem;
       font-size: 0.75rem;
     }
@@ -2102,12 +2147,6 @@ const details = [
     }
   }
 
-  .pairing .shot figcaption,
-  .shot-week figcaption {
-    bottom: 0;
-    translate: 0 50%;
-  }
-
   .shot-widget figcaption {
     left: auto;
     right: 0.75rem;
@@ -2268,6 +2307,26 @@ const details = [
 
   .window-cp[hidden] {
     display: none;
+  }
+
+  /* Control panel screenshots on a phone: the whole screen would shrink to 4px text, so each
+     shows one region at about twice the size. The region comes in as custom properties on the
+     .crop box: the image's width and its left and top offsets, all as percentages of the box's
+     width. In the viewer every crop is square, so the frame doesn't jump between tabs. */
+  .crop {
+    overflow: hidden;
+  }
+
+  @media (max-width: 559px) {
+    .crop img {
+      width: var(--crop-w, 100%);
+      max-width: none;
+      margin: var(--crop-y, 0) 0 0 var(--crop-x, 0);
+    }
+
+    .crop.is-square {
+      aspect-ratio: 1;
+    }
   }
 
   .cp-btn {
@@ -2640,12 +2699,16 @@ const details = [
 
   .plan-list li {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.5rem;
+    line-height: 1.5;
+    text-wrap: pretty;
   }
 
+  /* The tick sits on the first line when an item wraps */
   .plan-list :global(svg) {
     flex: none;
+    margin-top: 0.25rem;
     color: var(--blume-accent);
   }
 
@@ -2681,10 +2744,57 @@ const details = [
     background: #fff;
   }
 
-  .team-links {
+  .link-row {
     display: flex;
     flex-wrap: wrap;
     gap: 0 1.5rem;
+  }
+
+  /* The track record: three facts under the logo's bars, in bar order, closing the section
+     right before the price */
+  .proof {
+    display: grid;
+    gap: 2rem;
+    margin: clamp(3.5rem, 7vw, 5rem) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 768px) {
+    .proof {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+  }
+
+  .proof li {
+    color: var(--blume-foreground);
+    font-family: var(--wide);
+    font-size: clamp(1.25rem, 2.2vw, 1.625rem);
+    font-stretch: 115%;
+    font-weight: 750;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .proof li::before {
+    content: "";
+    display: block;
+    width: 7rem;
+    height: 0.75rem;
+    margin-bottom: 1.125rem;
+    border-radius: 999px;
+    background: var(--orange);
+  }
+
+  .proof li:nth-child(2)::before {
+    background: var(--amber);
+  }
+
+  .proof li:nth-child(3)::before {
+    width: 4.5rem;
+    background: var(--third-bar);
   }
 
   .addons {

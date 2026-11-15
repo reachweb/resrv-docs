@@ -63,7 +63,8 @@ Supporting claims, which are true but come after the lead:
 
 ## Evidence on Hand
 
-- **Track record**, confirmed by the owner in November 2026 and shown on the live site: in production for 4 years (the live site still says "3+ years"), thousands of bookings processed, millions in revenue generated, and hundreds of automated tests. Keep these at this precision and never turn them into exact figures.
+- **Track record**, confirmed by the owner in November 2026: 5 years in production, thousands of bookings processed and millions in revenue generated. The home page shows these three (the years in the hero, all three before the price); the old live site also claimed hundreds of automated tests. Keep these at this precision and never turn them into exact figures.
+- **License terms**, confirmed by the owner in November 2026 and set out on `/support`: one live site plus unlimited development sites (Statamic's license), a one-time purchase with no annual renewal (the Marketplace listing), and every future release, major versions included.
 - **Real product imagery** from the Resrv Hotel demo and its control panel: `public/home/` (home page, light and dark), `public/img/` (docs), and `brand/statamic/screens/` and `brand/statamic/marketplace/` (Marketplace images). `scripts/recapture-*-2x.mjs` retakes the CP captures.
 - **Statamic Partner badge** at `public/statamic-partner.svg`, linked to `partnerUrl`.
 - **Changelog** at `docs/(support)/changelog.mdx`, 16 releases up to v6.5.1 (14 November 2026).

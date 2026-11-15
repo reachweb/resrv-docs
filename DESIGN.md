@@ -6,6 +6,7 @@ colors:
   orange: "#f56b3c"
   amber: "#f8ad22"
   deep-orange: "#c4461b"
+  deep-orange-strong: "#a03814"
   paper: "#ffffff"
   paper-band: "#f7f7f7"
   muted-ink: "oklch(0.53 0 0)"
@@ -84,6 +85,17 @@ typography:
     fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 600
+  small-label:
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.8125rem"
+    fontWeight: 600
+  proof:
+    fontFamily: '"Archivo Wide", Archivo, ui-sans-serif, system-ui, sans-serif'
+    fontSize: "clamp(1.25rem, 2.2vw, 1.625rem)"
+    fontWeight: 750
+    lineHeight: 1.12
+    letterSpacing: "-0.02em"
+    fontVariation: '"wdth" 115'
   mono:
     fontFamily: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace'
     fontSize: "0.75rem"
@@ -115,7 +127,7 @@ components:
     padding: "0.5rem 1.25rem"
     height: "2.875rem"
   button-primary-hover:
-    backgroundColor: "#a03814"
+    backgroundColor: "{colors.deep-orange-strong}"
   button-primary-night:
     backgroundColor: "{colors.orange}"
     textColor: "{colors.ink}"
@@ -149,7 +161,8 @@ components:
     padding: "0.3125rem 0.75rem 0.3125rem 0.3125rem"
   chip-news-tag:
     backgroundColor: "{colors.orange-tint}"
-    textColor: "{colors.deep-orange}"
+    textColor: "{colors.deep-orange-strong}"
+    typography: "{typography.small-label}"
     rounded: "{rounded.pill}"
     padding: "0.125rem 0.5rem"
   chip-gateway:
@@ -184,6 +197,7 @@ components:
   frame-caption:
     backgroundColor: "{colors.ink}"
     textColor: "{colors.paper}"
+    typography: "{typography.small-label}"
     rounded: "{rounded.md}"
     padding: "0.375rem 0.75rem"
   price-card:
@@ -221,7 +235,7 @@ One warm accent on a neutral ink-and-paper base, with the brand's amber and a bo
 
 ### Primary
 - **Orange** (`{colors.orange}`): the brand orange from the logo. On dark it is the accent: links, filled buttons (with ink text) and focus rings. In both themes it is the first bar, the first step number, the guest-site caption dot and the closing band's filled button. Ink on Orange reads at 6.0:1.
-- **Deep Orange** (`{colors.deep-orange}`): the light theme's accent. Links, the header's Buy pill, filled buttons with white text, tick icons, icon glyphs and "more" links. It exists because Orange fails as text on white (3.0:1); Deep Orange reaches 4.95:1. It darkens to `#a03814` on hover.
+- **Deep Orange** (`{colors.deep-orange}`): the light theme's accent. Links, the header's Buy pill, filled buttons with white text, tick icons, icon glyphs and "more" links. It exists because Orange fails as text on white (3.0:1); Deep Orange reaches 4.95:1. **Deep Orange Strong** (`{colors.deep-orange-strong}`) is its hover shade, and the text of the "New in" tag on light, where Deep Orange on the Orange Tint reads at only 4.3:1 and Strong reaches 5.9:1.
 
 ### Secondary
 - **Amber** (`{colors.amber}`): the logo's second bar. Only ever the second element in a sequence: the second bar of the step track, the second step number, the control panel caption dot and the control panel demo card's top bar. Never text, never a button.
@@ -244,7 +258,7 @@ One warm accent on a neutral ink-and-paper base, with the brand's amber and a bo
 
 **The Borrowed Indigo Rule.** Statamic's indigo, green and greys live only inside redrawn control panel panels. Outside a panel, the only accent is orange.
 
-**The Bar Order Rule.** Orange, then amber, then ink (white in dark). Amber is never first and never alone.
+**The Bar Order Rule.** Orange, then amber, then ink (white in dark). Amber is never first and never alone. The bars mark the three steps, the three collections and the three track-record facts.
 
 ## Typography
 
@@ -264,6 +278,8 @@ One warm accent on a neutral ink-and-paper base, with the brand's amber and a bo
 - **Lead** (400, `clamp(1.0625rem, 1.6vw, 1.1875rem)`, line height 1.6, muted): hero and section intros, held to 36rem (section heads to 42rem).
 - **Body** (400, 1rem, line height 1.5): running text. Supporting paragraphs on the home page run 1.0625rem at 1.6 to 1.65; docs prose stays in Blume's 42rem column.
 - **Label** (600, 0.875rem): step labels ("Step 1"), the plan name, chips, tabs and "more" links (0.9375rem).
+- **Small Label** (600, 0.8125rem): the "New in" tag, frame captions (0.75rem on phones) and the tabs on phones. Redrawn control panel cards, the code panels from 560px and the demo login's values use the same size at their own weights.
+- **Proof** (750, `clamp(1.25rem, 2.2vw, 1.625rem)`, width 115%): the three track-record facts. Stated as plain sentences at one size, never a big number over a small label.
 - **Mono** (0.75rem, line height 1.7 in code panels): file names and code in redrawn panels; the docs' code blocks use Blume's own sizing.
 
 ### Named Rules
@@ -293,7 +309,7 @@ The system is flat at rest. Depth comes from hairlines and the alternating paper
 ### Shadow Vocabulary
 - **Product lift** (`box-shadow: 0 1px 2px rgb(23 23 24 / 0.06), 0 28px 56px -28px rgb(23 23 24 / 0.32)`; in dark `0 1px 2px rgb(0 0 0 / 0.4), 0 28px 56px -28px rgb(0 0 0 / 0.8)`): browser frames, demo cards, the price card.
 - **Panel card** (`box-shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 14px 30px -20px rgb(0 0 0 / 0.35)`): redrawn control panel cards inside step and feature visuals.
-- **Caption** (`box-shadow: 0 6px 16px -8px rgb(0 0 0 / 0.5)`): the ink caption tags pinned to frame corners.
+- **Caption** (`box-shadow: 0 6px 16px -8px rgb(0 0 0 / 0.5)`): the ink caption tags hanging off frame edges.
 - **Selected tab** (`box-shadow: 0 1px 3px rgb(0 0 0 / 0.12)`): the active segment of the tabs control.
 
 ### Named Rules
@@ -314,6 +330,7 @@ Precise and quiet: one filled button per group, the rest bordered or plain.
 - **Secondary:** paper fill, hairline border, ink text. Hover darkens the border to 35% ink.
 - **Link:** ink text with a 30% underline that goes solid on hover. Used for "Read the docs".
 - **On the closing band:** the primary turns brand Orange with ink text; a ghost button has a 28% white border that strengthens to 60% on hover.
+- **Leaving the site:** buttons and links that go to the Marketplace, the demo or another site end in an up-right arrow. The demo's open in a new tab, so the demo login stays on screen beside them.
 - **Focus:** a 2px accent outline, 3px offset, on every button, tab and link. Background and border transitions run 0.15s and switch off under reduced motion.
 
 ### Chips
@@ -334,13 +351,18 @@ Blume's header: the horizontal logo (shown 27px tall, set at 2.5rem to carry its
 The "who it's for", details and add-on lists are rows, not cards, each with a hairline above or below it, a title and muted text. Only the "who it's for" grid carries icon tiles (2.5rem, Orange Tint with a Deep Orange Lucide glyph), with a semibold accent link to the docs page that backs the claim. The details list is plain: two columns from 640px, each title a link to its docs page with a small accent arrow.
 
 ### Product Frame (signature)
-Real screenshots sit in a browser frame: a paper-band chrome bar with three muted dots and a centered pill address showing the demo's real host and path, the screenshot below, 14px corners, a hairline and the product lift. An ink caption tag pins to a lower corner, with a small rounded-square dot in Orange (guest site) or Amber (control panel). Control panel screenshots ship as light and dark pairs that swap with the theme.
+Real screenshots sit in a browser frame: a paper-band chrome bar with three muted dots and a centered pill address showing the demo's real host and path, the screenshot below, 14px corners, a hairline and the product lift. An ink caption tag hangs off the bottom edge at a lower corner, half on the frame and half below it, so it names the screen without covering it; it carries a small rounded-square dot in Orange (guest site) or Amber (control panel). Control panel screenshots ship as light and dark pairs that swap with the theme.
+
+Below 560px a whole control panel screen would shrink to 4px text, so each one crops to a single region at about twice the size: a `.crop` box takes the image's width and its left and top offsets as custom properties. The hero's Reservations list drops Statamic's top bar and sidebar, and the tab viewer's three screens crop square, so the frame keeps its size between tabs. The calendar week crops to Monday to Thursday the same way.
 
 ### Control Panel Redraws (signature)
 Small HTML panels that redraw the Statamic control panel (fieldtype picker, availability calendar, rates tree, login) in Statamic's own look: Inter, neutral greys, indigo actions, green availability counts, 6 to 10px corners. They use the demo's real names and numbers and follow the site's theme.
 
 ### Three-Bar Track and Step Numbers (signature)
 From 960px, the three steps sit under a track of three staggered capsules (orange, amber, ink or white) that echo the logo's bars. Each step's number is a 2rem, 8px-cornered square in the matching bar color, set in wide Archivo 800.
+
+### Track Record
+The "Made by Reach" section comes right before the price and ends on three facts: "5 years in production", "Thousands of bookings processed" and "Millions in revenue generated". Each sits under a capsule bar in bar order (7rem, 7rem and a shorter 4.5rem, 0.75rem tall), in Proof type, three columns from 768px and stacked below. The hero's facts row repeats the first one. Keep the facts at this precision: never exact figures, never stat tiles.
 
 ### Closing Band
 The page ends on a band of ink (closing night in dark) with the reversed horizontal logo shown 300px wide, a white headline and the orange primary button. It is the only dark band on the light page, like the brand's dark social images.

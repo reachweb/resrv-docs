@@ -97,10 +97,13 @@ export default defineConfig({
 
   footer: {
     copyright: "© 2026 Reach Web Agency",
+    // GitHub is the icon in socials, so it isn't repeated as a link. Docs and Changelog are
+    // here because phones lose the header's version link, and the home page has no sidebar.
     links: [
-      { label: "Statamic Marketplace", href: marketplaceUrl },
-      { label: "GitHub", href: githubUrl },
+      { label: "Docs", href: "/introduction" },
+      { label: "Changelog", href: "/changelog" },
       { label: "Support", href: "/support" },
+      { label: "Statamic Marketplace", href: marketplaceUrl },
     ],
     socials: { github: githubUrl },
   },
