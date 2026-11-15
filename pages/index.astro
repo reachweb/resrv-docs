@@ -3,6 +3,7 @@ import Icon from "blume/components/Icon.astro";
 import PageLayout from "blume/components/layout/PageLayout.astro";
 import data from "blume:data";
 import {
+  composerPackage,
   demoCpUrl,
   demoLogin,
   demoUrl,
@@ -34,7 +35,10 @@ const uses = [
     icon: "bed-double",
     title: "Hotels and rentals",
     text: "Nightly prices, room types as rates, and breakfast as an option.",
-    links: [{ label: "Rates", href: "/rates" }],
+    links: [
+      { label: "Rates", href: "/rates" },
+      { label: "Options", href: "/options" },
+    ],
   },
   {
     icon: "utensils",
@@ -45,7 +49,7 @@ const uses = [
   {
     icon: "compass",
     title: "Tours and excursions",
-    text: "Guests add several rates and dates to a cart and pay for them in one checkout.",
+    text: "Guests add several dates and rates for one tour to a cart, then pay for them in one checkout.",
     links: [{ label: "Cart booking", href: "/cart-booking" }],
   },
   {
@@ -238,7 +242,7 @@ const details = [
             <ul class="facts" aria-label="At a glance">
               <li><Icon name="check" size={14} /> 5 years in production</li>
               <li><Icon name="check" size={14} /> Statamic {requirements.statamic}</li>
-              <li><Icon name="check" size={14} /> Livewire frontend</li>
+              <li><Icon name="check" size={14} /> Free while you develop</li>
             </ul>
           </div>
         </div>
@@ -256,7 +260,7 @@ const details = [
               width="1600"
               height="1000"
               fetchpriority="high"
-              alt="The Resrv Hotel demo's rooms page after a search for 14 to 18 December: four rooms, each with a discounted total price, a free cancellation date and a Book now button."
+              alt="The Resrv Hotel demo's rooms page after a search for 14 to 18 December: the Garden View Double, Coastal Family Room and Sea View Suite, each with a discounted total price, a free cancellation date and a Book now button."
             />
           </div>
           <figcaption><span class="dot is-orange"></span>Guests book on your site</figcaption>
@@ -292,12 +296,12 @@ const details = [
     <section class="section tinted" aria-labelledby="any-title">
       <div class="wrap any">
         <header class="section-head">
-          <h2 id="any-title">Three collections, one checkout</h2>
+          <h2 id="any-title">Three collections, one booking system</h2>
           <p>
             The demo hotel sells rooms, spa treatments and restaurant tables. Each comes from its own
             collection with the Availability field in its blueprint, so every entry has its own
-            availability and prices. Guests book all three through the same checkout, and you see them
-            together on one calendar.
+            availability and prices. One Resrv install handles all three, and you see every
+            reservation on one calendar.
           </p>
           <p class="any-links">
             <a class="more" href="/availability">Availability field <Icon name="arrow-right" size={14} /></a>
@@ -339,7 +343,7 @@ const details = [
         </ol>
 
         <div class="merge" aria-hidden="true">
-          <p class="merge-node"><span>One checkout</span> <code>{"{{ livewire:checkout }}"}</code></p>
+          <p class="merge-node"><span>Resrv</span> <code>{composerPackage}</code></p>
         </div>
 
         <figure class="shot shot-week">
@@ -422,7 +426,7 @@ const details = [
               <span class="step-num">1</span>
               <h3>Add the Availability field</h3>
               <p>Add a Resrv Availability field to a collection's blueprint. Every entry in that collection can now take bookings.</p>
-              <a class="more" href="/availability">Availability <Icon name="arrow-right" size={14} /></a>
+              <a class="more" href="/availability">Availability field <Icon name="arrow-right" size={14} /></a>
             </div>
             <div class="step-visual" aria-hidden="true">
               <div class="cp-card">
@@ -501,8 +505,8 @@ const details = [
             or only certain days of the week, like weekends.
           </p>
           <ul class="ticks">
-            <li><Icon name="check" size={16} /><span>Rates for room types or pricing tiers, with their own prices or a percentage off a base rate.</span></li>
-            <li><Icon name="check" size={16} /><span>Rates can share one inventory, so a room booked at one rate is gone from all of them.</span></li>
+            <li><Icon name="check" size={16} /><span>Rates for room types or pricing tiers. Each has its own prices or a relative price, such as a percentage off a base rate.</span></li>
+            <li><Icon name="check" size={16} /><span>Shared rates use the base rate's inventory, so a room booked at one rate is gone from all of them.</span></li>
           </ul>
           <a class="more" href="/rates">Rates <Icon name="arrow-right" size={14} /></a>
         </div>
@@ -694,9 +698,9 @@ const details = [
 {"}"}</code></pre>
             <p class="code-file">config/resrv-config.php</p>
             <pre><code><span class="s">'payment_gateways'</span> =&gt; [
-    <span class="s">'paypal'</span> =&gt; [
-        <span class="s">'class'</span> =&gt; <span class="a">PayPalGateway</span>::class,
-        <span class="s">'label'</span> =&gt; <span class="s">'PayPal'</span>,
+    <span class="s">'square'</span> =&gt; [
+        <span class="s">'class'</span> =&gt; <span class="a">SquareGateway</span>::class,
+        <span class="s">'label'</span> =&gt; <span class="s">'Square'</span>,
     ],
 ],</code></pre>
           </div>
@@ -708,7 +712,10 @@ const details = [
       <div class="wrap">
         <header class="section-head">
           <h2 id="details-title">Also built in</h2>
-          <p>The smaller things a booking site needs, ready when you install Resrv.</p>
+          <p>
+            The smaller things a booking site needs, all part of Resrv. Some, like cutoff times and the
+            activity log, stay off until you turn them on.
+          </p>
         </header>
         <ul class="details">
           {
@@ -732,8 +739,8 @@ const details = [
         <header class="section-head">
           <h2 id="demo-title">Try it on the Resrv Hotel</h2>
           <p>
-            The demo is a coastal hotel where rooms, spa treatments and restaurant tables are booked
-            through one checkout. Make a booking, then log in and find it.
+            The demo is a coastal hotel that takes bookings for rooms, spa treatments and restaurant
+            tables. Make a booking, then log in and find it.
           </p>
         </header>
         <ol class="doors">
@@ -791,27 +798,28 @@ const details = [
             <h2 id="team-title">Made by Reach in Kos, Greece</h2>
             <p>
               We've built websites as Reach Web Agency since 2012, and only with Statamic since 2020.
-              We're a Statamic Partner, and we make two more add-ons. Resrv's code is on GitHub.
+              We're a Statamic Partner, and we also make Easy Forms and Livewire Filters. Resrv's code
+              is on GitHub.
             </p>
             <a class="partner" href={partnerUrl}>
               <img src="/statamic-partner.svg" width="112" height="96" alt="Statamic Partner" loading="lazy" />
             </a>
             <p class="link-row">
-              <a class="more" href={reachUrl}>About Reach <Icon name="arrow-right" size={14} /></a>
-              <a class="more" href={sellerUrl}>Our add-ons <Icon name="arrow-right" size={14} /></a>
+              <a class="more" href={reachUrl}>About Reach <Icon name="arrow-up-right" size={14} /></a>
+              <a class="more" href={sellerUrl}>Our add-ons <Icon name="arrow-up-right" size={14} /></a>
             </p>
           </div>
           <ul class="addons">
             <li>
-              <h3><a href={easyFormsUrl}>Easy Forms</a></h3>
+              <h3><a href={easyFormsUrl}>Easy Forms <Icon name="arrow-up-right" size={16} /></a></h3>
               <p>Professional, accessible forms for your Statamic site.</p>
             </li>
             <li>
-              <h3><a href={livewireFiltersUrl}>Livewire Filters</a></h3>
+              <h3><a href={livewireFiltersUrl}>Livewire Filters <Icon name="arrow-up-right" size={16} /></a></h3>
               <p>Live filters for Statamic collections. Pair it with Resrv to search for entries that are available.</p>
             </li>
             <li>
-              <h3><a href={githubUrl}>Resrv on GitHub</a></h3>
+              <h3><a href={githubUrl}>Resrv on GitHub <Icon name="arrow-up-right" size={16} /></a></h3>
               <p>Read the code, follow releases, and report issues.</p>
             </li>
           </ul>
@@ -838,6 +846,10 @@ const details = [
             <div><dt>Statamic</dt><dd>{requirements.statamic}</dd></div>
             <div><dt>Livewire</dt><dd>{requirements.livewire}</dd></div>
           </dl>
+          <div class="code install">
+            <p class="code-file">Terminal</p>
+            <pre><code>composer require {composerPackage}</code></pre>
+          </div>
           <p class="link-row">
             <a class="more" href="/installation">Installation <Icon name="arrow-right" size={14} /></a>
             <a class="more" href="/upgrading">Upgrading to v6 <Icon name="arrow-right" size={14} /></a>
@@ -848,7 +860,8 @@ const details = [
           <p class="plan-price">{price}</p>
           <p class="plan-terms">One-time purchase, no annual renewal</p>
           <ul class="plan-list">
-            <li><Icon name="check" size={16} /> Free in development</li>
+            <li><Icon name="check" size={16} /> One live site, plus staging on a subdomain and any development sites</li>
+            <li><Icon name="check" size={16} /> Free while you develop</li>
             <li><Icon name="check" size={16} /> Every future release, major versions included</li>
             <li><Icon name="check" size={16} /><span>Help on <a href={issuesUrl}>GitHub</a> and by <a href={`mailto:${supportEmail}`}>email</a>, usually within a day or two</span></li>
             <li><Icon name="check" size={16} /><span><a href="/support">Paid support</a> for custom work</span></li>
@@ -1449,7 +1462,7 @@ const details = [
     line-height: 1.6;
   }
 
-  /* Three collections, one checkout: three Availability fields merge into one checkout, and the
+  /* Three collections, one booking system: three Availability fields join in Resrv, and the
      bookings land on one calendar. The collections wear the logo's bars in their order. */
   .any-links {
     display: flex;
@@ -1541,7 +1554,7 @@ const details = [
     color: var(--cp-muted);
   }
 
-  /* Three lines join under the fields and run down through the checkout to the calendar */
+  /* Three lines join under the fields and run down through Resrv to the calendar */
   .merge {
     --line: color-mix(in oklab, var(--blume-foreground) 24%, transparent);
     position: relative;
@@ -2638,6 +2651,15 @@ const details = [
     font-weight: 600;
   }
 
+  .install {
+    max-width: 30rem;
+    margin-top: 1.5rem;
+  }
+
+  .install pre {
+    font-size: 0.8125rem;
+  }
+
   .plan {
     position: relative;
     display: flex;
@@ -2819,10 +2841,12 @@ const details = [
     text-decoration: none;
   }
 
-  .addons h3 a::after {
-    content: " ↗";
+  /* Off-site links end in the up-right arrow, in the accent */
+  .addons h3 a :global(svg) {
+    display: inline;
+    margin-left: 0.125rem;
     color: var(--blume-accent);
-    font-family: var(--blume-font-body);
+    vertical-align: -0.125em;
   }
 
   .addons h3 a:hover {

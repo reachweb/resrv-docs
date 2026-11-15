@@ -8,9 +8,12 @@ export const supportEmail = "info@reach.gr";
 export const partnerUrl = "https://statamic.com/partners/iosif-chatzimichail";
 export const sellerUrl = "https://statamic.com/sellers/reach";
 
+// The Composer package, from installation.md.
+export const composerPackage = "reachweb/statamic-resrv";
+
 // The live demo isn't public yet. It's the Resrv Hotel site (rooms, spa treatments and
-// restaurant tables through one checkout) and its control panel, which shows its own
-// demo login. These addresses are placeholders: set the real ones once it's online.
+// restaurant tables, each from its own collection) and its control panel, which shows its
+// own demo login. These addresses are placeholders: set the real ones once it's online.
 export const demoUrl = "https://demo.resrv.dev";
 export const demoCpUrl = "https://demo.resrv.dev/cp";
 

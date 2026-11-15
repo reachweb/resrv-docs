@@ -300,7 +300,7 @@ The docs use Blume's three-column reading layout: sidebar, a 42rem content colum
 ### Named Rules
 **The Week Grid Rule.** The hero's background is a seven-column grid of 1px hairlines at 7% ink, masked to fade in and out vertically. Each column is a seventh of the 74rem container's content box, with lines on both content edges, so the headline and the frames start on a line and the grid runs on at the same pitch into the margins. It is the calendar page under the bookings: faint, structural and only behind the hero.
 
-**The Three Collections Rule.** Right after the hero, the "Three collections, one checkout" band proves the lead claim with the demo: Rooms, Spa Treatments and Restaurant as three columns, each marked by a bar in bar order and holding a redraw of its entry's Availability field for the same week. Hairlines join the columns into one checkout node (`{{ livewire:checkout }}`), and the line ends on the real Reservations Calendar, cropped to that week, where the three bookings sit staggered like the logo's bars. The columns stack below 768px, and the week scrolls sideways inside its frame below 640px.
+**The Three Collections Rule.** Right after the hero, the "Three collections, one booking system" band proves the lead claim with the demo: Rooms, Spa Treatments and Restaurant as three columns, each marked by a bar in bar order and holding a redraw of its entry's Availability field for the same week. Hairlines join the columns into one Resrv node (with the Composer package name), and the line ends on the real Reservations Calendar, cropped to that week, where the three bookings sit staggered like the logo's bars. The columns stack below 768px, and the week scrolls sideways inside its frame below 640px.
 
 ## Elevation & Depth
 

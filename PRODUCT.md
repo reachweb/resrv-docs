@@ -32,7 +32,7 @@ Supporting claims, which are true but come after the lead:
 - **Two parts, one site.** The home page (`pages/index.astro`) is the product page. The docs (`docs/`) are about 40 MDX pages in sidebar groups (Getting started, Backend, Frontend, Configuration, Support), with the changelog at `/changelog` and Support & Pricing at `/support`.
 - **How developers use it.** They evaluate in the browser, often next to the Statamic Marketplace listing, then come back while building: they copy code blocks (Antlers, Blade, PHP, shell), follow numbered steps, and match the exact control panel labels.
 - **Buying.** The purchase happens on the Statamic Marketplace, not on resrv.dev. Resrv is free during development and needs a license before going live.
-- **Demo.** The Resrv Hotel sells rooms, spa treatments and restaurant tables through one checkout, and its control panel shows its own demo login. It isn't public yet: `demoUrl` and `demoCpUrl` in `site.ts` are placeholders.
+- **Demo.** The Resrv Hotel sells rooms, spa treatments and restaurant tables, each from its own collection and handled by one Resrv install, and its control panel shows its own demo login. It isn't public yet: `demoUrl` and `demoCpUrl` in `site.ts` are placeholders.
 - **Support.** GitHub issues and email, with replies usually within a day or two. Paid support is available for custom work, and the add-on is provided as-is.
 - **Releases.** When Resrv changes, the affected docs page and the version in `site.ts` change in the same release.
 
