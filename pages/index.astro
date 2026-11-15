@@ -42,7 +42,7 @@ const uses = [
     icon: "utensils",
     title: "Restaurants",
     text: "Lunch and dinner sittings by date. Set the price to zero and guests book without paying.",
-    links: [{ label: "Checkout", href: "/checkout#skip-payment" }],
+    links: [{ label: "Skip payment", href: "/checkout#skip-payment" }],
   },
   {
     icon: "compass",
@@ -53,8 +53,8 @@ const uses = [
   {
     icon: "flower-2",
     title: "Spas and wellness",
-    text: "Treatments by the day, with the price of each day shown in the date picker.",
-    links: [{ label: "Single entry search", href: "/availability-search-single" }],
+    text: "Treatments by the day. The date picker shows which days are available and the price of each.",
+    links: [{ label: "Availability in the date picker", href: "/availability-search-single#display-availability-in-the-calendar" }],
   },
   {
     icon: "car",
@@ -279,7 +279,7 @@ const details = [
               />
             </div>
           </div>
-          <figcaption><span class="dot is-amber"></span>You manage them in Statamic</figcaption>
+          <figcaption><span class="dot is-amber"></span>You manage bookings in Statamic</figcaption>
         </figure>
       </div>
     </section>
@@ -291,8 +291,8 @@ const details = [
           <p>
             The demo hotel sells rooms, spa treatments and restaurant tables. Each comes from its own
             collection with the Availability field in its blueprint, so every entry has its own
-            availability and prices. One Resrv install handles all three, and you see every
-            reservation on one calendar.
+            availability and prices. Each day below shows how many are left and the price. One Resrv
+            install handles all three, and you see every reservation on one calendar.
           </p>
           <p class="any-links">
             <a class="more" href="/availability">Availability field <Icon name="arrow-right" size={14} /></a>
@@ -467,7 +467,7 @@ const details = [
             <div class="step-text">
               <span class="step-num">1</span>
               <h3>Add the Availability field</h3>
-              <p>Add a Resrv Availability field to a collection's blueprint. Every entry in that collection can now take bookings.</p>
+              <p>In a collection's blueprint, add a field and pick Resrv Availability. Every entry in that collection can now take bookings.</p>
               <a class="more" href="/availability">Availability field <Icon name="arrow-right" size={14} /></a>
             </div>
             <div class="step-visual" aria-hidden="true">
@@ -494,7 +494,7 @@ const details = [
             <div class="step-text">
               <span class="step-num">2</span>
               <h3>Set availability and prices</h3>
-              <p>Fill each entry's calendar with how many units are free each day and what they cost. Add rates for room types or pricing tiers. A rate can take its price from a base rate and share its inventory.</p>
+              <p>Fill each entry's calendar with how many units are free each day and what they cost. Add rates for room types or pricing tiers. A relative rate takes its prices from a base rate, and a shared rate uses the base rate's inventory.</p>
               <a class="more" href="/rates">Rates <Icon name="arrow-right" size={14} /></a>
             </div>
             <div class="step-visual" aria-hidden="true">
@@ -552,7 +552,7 @@ const details = [
           </p>
           <ul class="ticks">
             <li><Icon name="check" size={16} /><span>Change prices by the dates of a stay, its length or how far ahead it's booked. Coupons use the same rules. <a href="/dynamic-pricing">Dynamic pricing</a></span></li>
-            <li><Icon name="check" size={16} /><span>Affiliate links credit partners for the bookings they send, and record the percentage each one earns. <a href="/affiliates">Affiliates</a></span></li>
+            <li><Icon name="check" size={16} /><span>Affiliate links credit partners with the bookings they send, and you record the fee each one earns. <a href="/affiliates">Affiliates</a></span></li>
           </ul>
           <ul class="gateways" aria-label="Payment gateways">
             <li><a href="/stripe">Stripe</a></li>
@@ -692,8 +692,9 @@ const details = [
           <h2 id="team-title">Made by Reach in Kos, Greece</h2>
           <p>
             We've built websites as Reach Web Agency since 2012, and only with Statamic since 2020.
-            We're a Statamic Partner, and we also make Easy Forms, and Livewire Filters, which pairs
-            with Resrv to search for entries that are available. Resrv's code is on GitHub.
+            We're a Statamic Partner, and we also make Easy Forms and Livewire Filters. Paired with
+            Resrv, Livewire Filters lets guests filter entries by availability alongside any other
+            field.
           </p>
           <div class="team-links">
             <a class="partner" href={partnerUrl}>
@@ -722,7 +723,7 @@ const details = [
             Resrv is free to use while you develop. Buy a license on the Statamic Marketplace before the
             site goes live. There's no commission per booking.
           </p>
-          <dl class="reqs">
+          <dl class="reqs" aria-label="Requirements">
             <div><dt>PHP</dt><dd>{requirements.php}</dd></div>
             <div><dt>Laravel</dt><dd>{requirements.laravel}</dd></div>
             <div><dt>Statamic</dt><dd>{requirements.statamic}</dd></div>
