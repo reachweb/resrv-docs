@@ -1,10 +1,15 @@
-// Builds the Statamic Marketplace images in the "Daylight" style: white canvas, ink type in
-// Archivo, the darker orange for labels, real screenshots with soft shadows, and the logo's
-// three bars as a quiet signature.
+// Builds the Statamic Marketplace images. The eight slides tell the home page's story in its order
+// and its look (pages/index.astro, DESIGN.md): wide Archivo headings, Inter text, real screenshots
+// in the site's browser frames with the demo's own addresses, ink caption tags (an orange dot for
+// the guest site, amber for the control panel), and the logo's bars only where they mark three
+// things in order: the collections, the steps and the track record.
 //
-//   node scripts/build-marketplace.mjs
+//   node scripts/capture-marketplace-panels.mjs   (with the site running: npm run dev)
+//   node scripts/build-marketplace.mjs            (or `… 05` for one slide, `… product`)
 //
-// In:  brand/statamic/screens/*.webp (cropped captures from the demo hotel and its control panel)
+// In:  public/home/*.webp         the home page's captures of the demo hotel and its control panel
+//      brand/statamic/screens/    Marketplace-only captures, and the home page's redrawn panels
+//                                 (site-*.webp, from capture-marketplace-panels.mjs)
 // Out: brand/statamic/marketplace/product-image-1280.png and 01-…08-*.png at 2400 × 1600
 //
 // Slides are laid out at 1200 × 800 CSS px and rendered at 2x. The Marketplace shows screenshots
@@ -14,21 +19,31 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
+import { demoUrl, demoCpUrl } from '../site.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BRAND = path.join(ROOT, 'brand');
+const HOME = path.join(ROOT, 'public', 'home');
 const SCREENS = process.env.SCREENS ?? path.join(BRAND, 'statamic', 'screens');
 const OUT = process.env.OUT ?? path.join(BRAND, 'statamic', 'marketplace');
 
-const C = { ink: '#171718', orange: '#F56B3C', amber: '#F8AD22', label: '#C4461B', body: '#5C5C63', line: '#E4E4E7' };
+const C = { ink: '#171718', orange: '#F56B3C', amber: '#F8AD22', deep: '#C4461B', body: '#5C5C63' };
 const TAGLINE = 'Booking system for Statamic';
+const host = (url) => new URL(url).host;
 
 const b64 = (buf) => Buffer.from(buf).toString('base64');
 const dataURL = async (file, type) => `data:${type};base64,${b64(await fs.readFile(file))}`;
 
+// Archivo from the brand kit for headings, and the site's Inter (latin, 400 to 700) for text.
+let fonts;
 async function fontCSS() {
-  const font = await dataURL(path.join(BRAND, 'font', 'Archivo[wdth,wght].ttf'), 'font/ttf');
-  return `@font-face{font-family:"Archivo";src:url(${font}) format("truetype");font-weight:100 900;font-stretch:62% 125%}`;
+  if (!fonts) {
+    const archivo = await dataURL(path.join(BRAND, 'font', 'Archivo[wdth,wght].ttf'), 'font/ttf');
+    const inter = await dataURL(path.join(BRAND, 'statamic', 'font', 'Inter-latin.woff2'), 'font/woff2');
+    fonts = `@font-face{font-family:"Archivo";src:url(${archivo}) format("truetype");font-weight:100 900;font-stretch:62% 125%}
+@font-face{font-family:"Inter";src:url(${inter}) format("woff2");font-weight:400 700}`;
+  }
+  return fonts;
 }
 
 const sizeCache = new Map();
@@ -40,115 +55,195 @@ function size(file) {
   return sizeCache.get(file);
 }
 
-// A screenshot placed by its left/top and either its height or its width (the other follows
-// the image's proportions).
-async function shot(name, { x, y, w, h, alt = '', cls = '' }) {
-  const file = path.join(SCREENS, `${name}.webp`);
+// A capture by name: "home/…" is one of the home page's in public/home, anything else is in SCREENS.
+const source = (name) => (name.startsWith('home/') ? path.join(HOME, `${name.slice(5)}.webp`) : path.join(SCREENS, `${name}.webp`));
+
+// An image shown `w` px wide, cropped to `crop` ({ x, y, w, h } in the image's own pixels) if given.
+async function pic(name, w, crop) {
+  const file = source(name);
   const s = size(file);
-  const width = w ?? Math.round((h * s.w) / s.h);
-  const height = h ?? Math.round((w * s.h) / s.w);
-  return `<div class="shot ${cls}" style="left:${x}px;top:${y}px;width:${width}px;height:${height}px"><img src="${await dataURL(file, 'image/webp')}" alt="${alt}"></div>`;
+  const c = crop ?? { x: 0, y: 0, w: s.w, h: s.h };
+  const k = w / c.w;
+  const h = Math.round(c.h * k);
+  const style = `width:${(s.w * k).toFixed(2)}px;left:${(-c.x * k).toFixed(2)}px;top:${(-c.y * k).toFixed(2)}px`;
+  return { h, html: `<div class="pic" style="width:${w}px;height:${h}px"><img src="${await dataURL(file, 'image/webp')}" style="${style}" alt=""></div>` };
 }
 
-const bars = (style) => `<div class="bars" style="${style}"><i></i><i></i><i></i></div>`;
+// Placed at x/y on the slide, or in the flow of a stack when they're left out.
+const at = ({ x, y, z }) => (x == null ? '' : `position:absolute;left:${x}px;top:${y}px;`) + (z ? `z-index:${z};` : '');
+
+const LOCK = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+const ARROW = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>';
+
+// The ink caption tag that hangs off a frame's bottom edge: [text, "site" | "cp"].
+const caption = (cap, side) => (cap ? `<figcaption class="${side}"><span class="dot ${cap[1]}"></span>${cap[0]}</figcaption>` : '');
+
+// The site's browser frame: a chrome bar with the demo's address, then the screen (an image, or
+// `body` HTML `bodyH` px tall).
+async function frame({ name, w, crop, url, cap, side = 'left', bg, body, bodyH, ...pos }) {
+  const inner = body ? { html: `<div class="body" style="height:${bodyH}px">${body}</div>` } : await pic(name, w - 2, crop);
+  return `<figure class="shot" style="${at(pos)}width:${w}px"><div class="frame"${bg ? ` style="background:${bg}"` : ''}>`
+    + `<div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="address">${LOCK}${url}</span></div>`
+    + `${inner.html}</div>${caption(cap, side)}</figure>`;
+}
+
+// A part of a page without browser chrome, such as a summary or a pop-up, lifted like a frame.
+async function card({ name, w, crop, cap, side = 'left', bg, ...pos }) {
+  const inner = await pic(name, w - 2, crop);
+  return `<figure class="shot" style="${at(pos)}width:${w}px"><div class="frame"${bg ? ` style="background:${bg}"` : ''}>${inner.html}</div>${caption(cap, side)}</figure>`;
+}
+
+// One of the home page's redrawn control panel panels, with the panel card shadow.
+const panel = async (name, w) => `<div class="panel">${(await pic(name, w)).html}</div>`;
 
 const CSS = `
+:root{--ink:${C.ink};--orange:${C.orange};--amber:${C.amber};--deep:${C.deep};--muted:${C.body};
+  --line:oklch(0.88 0.006 260 / 0.72);--band:#f7f7f7;
+  --lift:0 1px 2px rgb(23 23 24 / .06),0 28px 56px -28px rgb(23 23 24 / .32)}
+*{box-sizing:border-box}
 html,body{margin:0}
-.ab{position:relative;overflow:hidden;background:#fff;color:${C.ink};font-family:"Archivo",sans-serif}
-.slide{width:1200px;height:800px}
-.eyebrow{font-weight:600;font-size:19px;letter-spacing:.16em;text-transform:uppercase;color:${C.label}}
-.h{font-weight:700;font-stretch:112%;font-size:58px;line-height:1.04;letter-spacing:-.012em;margin:18px 0 22px;text-wrap:balance}
-.p{font-size:24px;line-height:1.45;color:${C.body}}
-.txt{position:absolute;left:72px;top:92px;width:440px}
-.txt.top{width:860px;top:64px}
-.txt.top .h{margin:14px 0 12px}
-.shot{position:absolute;border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 0 0 1px ${C.line},0 34px 70px -28px rgba(23,23,24,.35),0 4px 10px rgba(23,23,24,.05)}
-.shot img{display:block;width:100%;height:100%}
-.shot.phone{border-radius:34px;border:7px solid ${C.ink};box-shadow:0 34px 70px -28px rgba(23,23,24,.45)}
-.shot.phone img{border-radius:27px}
-.bars{position:absolute;display:grid;gap:14px}
-.bars i{display:block;height:30px;border-radius:15px}
-.bars i:nth-child(1){width:300px;background:${C.orange}}
-.bars i:nth-child(2){width:310px;margin-left:90px;background:${C.amber}}
-.bars i:nth-child(3){width:250px;margin-left:180px;background:${C.ink}}
-.facts{position:absolute;display:flex;flex-wrap:wrap;gap:10px}
-.facts span{font-size:18px;font-weight:600;padding:9px 15px;border-radius:999px;background:#F4F4F5;color:${C.ink}}
-.product{width:1280px;height:1280px}
+.ab{position:relative;overflow:hidden;background:#fff;color:var(--ink);font-family:"Inter",sans-serif}
+.slide{width:1200px;height:800px;-webkit-font-smoothing:antialiased}
+.h{font-family:"Archivo",sans-serif;font-weight:750;font-stretch:115%;font-size:54px;line-height:1.04;letter-spacing:-.025em;margin:0;text-wrap:balance}
+.p{font-size:21px;line-height:1.55;color:var(--muted);margin:20px 0 0;text-wrap:pretty}
+.txt{position:absolute;left:72px;top:88px;width:440px}
+.stack{position:absolute;left:72px;top:64px;width:1056px;display:flex;flex-direction:column}
+.stack .p{max-width:1010px;margin-top:16px}
+.pic{position:relative;overflow:hidden}
+.pic img{position:absolute;top:0;left:0;display:block;max-width:none}
+.shot{position:relative;margin:0}
+.frame{overflow:hidden;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:var(--lift)}
+.bar{display:flex;align-items:center;gap:12px;height:34px;padding:0 13px;border-bottom:1px solid var(--line);background:var(--band)}
+.dots{display:flex;gap:6px}
+.dots i{width:10px;height:10px;border-radius:50%;background:color-mix(in oklab,var(--ink) 16%,transparent)}
+.address{display:inline-flex;align-items:center;gap:6px;margin-inline:auto;padding:3px 12px;border-radius:999px;background:#fff;color:var(--muted);font-size:12.5px;font-weight:500;white-space:nowrap}
+.body{display:grid;place-items:center;background:#f5f5f5}
+figcaption{position:absolute;bottom:0;translate:0 50%;display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:8px;background:var(--ink);color:#fff;font-size:15px;font-weight:600;white-space:nowrap;box-shadow:0 6px 16px -8px rgb(0 0 0 / .5)}
+figcaption.left{left:14px}
+figcaption.right{right:14px}
+.dot{width:11px;height:11px;border-radius:2px}
+.dot.site{background:var(--orange)}
+.dot.cp{background:var(--amber)}
+.panel{border-radius:10px;box-shadow:0 1px 2px rgb(0 0 0 / .05),0 14px 30px -20px rgb(0 0 0 / .35)}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start;margin:0;padding:0;list-style:none}
+.cols .t{font-family:"Archivo",sans-serif;font-weight:650;font-stretch:108%;font-size:22px;letter-spacing:-.01em;line-height:1.2}
+.cols .s{margin-top:5px;font-size:16px;line-height:1.5;color:var(--muted)}
+.cols .panel{margin-top:16px}
+.cap{display:block;width:56px;height:10px;margin-bottom:14px;border-radius:999px}
+.b1{background:var(--orange)}.b2{background:var(--amber)}.b3{background:var(--ink)}
+.track{position:relative;height:52px}
+.track i{position:absolute;height:12px;border-radius:999px}
+.track i:nth-child(1){top:0;left:0;width:44%;background:var(--orange)}
+.track i:nth-child(2){top:20px;left:calc(100% / 3 + 8px);width:44%;background:var(--amber)}
+.track i:nth-child(3){top:40px;left:calc(200% / 3 + 16px);width:calc(100% / 3 - 16px);background:var(--ink)}
+.num{display:inline-grid;place-items:center;width:36px;height:36px;margin-bottom:14px;border-radius:9px;font-family:"Archivo",sans-serif;font-stretch:112%;font-weight:800;font-size:19px}
+.num.b3{color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+.chips span{padding:7px 13px;border:1px solid oklch(0.85 0.006 260);border-radius:8px;font-size:16px;font-weight:600}
+.chips small{margin-left:6px;color:var(--muted);font-weight:500;font-size:14px}
+.go{display:inline-flex;align-items:center;gap:6px;margin-top:22px;color:var(--deep);font-size:22px;font-weight:600}
+.facts{position:absolute;left:72px;bottom:68px;display:grid;gap:22px;width:404px;margin:0;padding:0;list-style:none}
+.facts li{font-family:"Archivo",sans-serif;font-weight:750;font-stretch:115%;font-size:22px;line-height:1.12;letter-spacing:-.02em}
+.facts .cap{width:100px;margin-bottom:10px}
+.facts .cap.short{width:64px}
+.product{width:1280px;height:1280px;font-family:"Archivo",sans-serif}
 .product .logo{position:absolute;left:230px;top:282px;width:820px}
-.product .tagline{position:absolute;left:0;right:0;top:902px;text-align:center;font-weight:600;font-stretch:112%;font-size:50px;color:${C.body}}
-.product .rule{position:absolute;left:0;right:0;bottom:0;height:18px;background:linear-gradient(90deg,${C.orange},${C.amber})}
+.product .tagline{position:absolute;left:0;right:0;top:902px;text-align:center;font-weight:600;font-stretch:112%;font-size:50px;color:var(--muted)}
+.product .rule{position:absolute;left:0;right:0;bottom:0;height:18px;background:linear-gradient(90deg,var(--orange),var(--amber))}
 `;
 
-// Text on the left, screenshots on the right, the bars under the text.
-const side = (t, visuals) => `<div class="txt"><div class="eyebrow">${t.eb}</div><div class="h">${t.h}</div><div class="p">${t.p}</div></div>${bars('left:72px;bottom:72px')}${visuals}`;
-// Text across the top, a wide screenshot below it, small bars in the top right corner.
-const top = (t, visuals) => `<div class="txt top"><div class="eyebrow">${t.eb}</div><div class="h">${t.h}</div><div class="p">${t.p}</div></div>${bars('right:72px;top:72px;transform:scale(.6);transform-origin:100% 0')}${visuals}`;
+// Text on the left, screens on the right.
+const side = (h, p, extra = '') => `<div class="txt"><h1 class="h">${h}</h1><p class="p">${p}</p>${extra}</div>`;
 
-// Every claim here comes from the docs: keep them in step. Positions are in the 1200 × 800 layout.
+// The demo's three collections and their week of 13 December, as on the home page.
+const COLLECTIONS = [
+  { title: 'Rooms', text: 'Sea View Suite, booked by the night', panel: 'site-week-rooms' },
+  { title: 'Spa Treatments', text: 'Mediterranean Massage, booked by the day', panel: 'site-week-spa' },
+  { title: 'Restaurant', text: 'La Marea, booked by the sitting', panel: 'site-week-restaurant' },
+];
+
+const STEPS = [
+  { title: 'Add the Availability field', text: "In a collection's blueprint, add a field and pick Resrv Availability.", panel: 'site-step-field' },
+  { title: 'Set availability and prices', text: "Fill each entry's calendar, and add rates for room types or pricing tiers.", panel: 'site-step-rates' },
+  { title: 'Add the Livewire components', text: 'Put the search, results and checkout components in your templates.', panel: 'site-step-code' },
+];
+
+const site = (p) => `${host(demoUrl)}${p}`;
+const cp = (p) => `${host(demoCpUrl)}${new URL(demoCpUrl).pathname}${p}`;
+
+// Every claim here comes from the home page and the docs: keep them in step. Positions are in the
+// 1200 × 800 layout.
 const SLIDES = [
   {
-    file: '01-availability.png',
-    body: async () => side(
-      { eb: 'Availability & rates', h: 'Set availability and prices for every day', p: 'Each entry gets its own calendar in the control panel. Guests see the price of every night while they pick their dates.' },
-      (await shot('cp-entry-availability', { x: 556, y: 72, h: 600, alt: 'Availability calendar of a room in the control panel, with a price on every day' })) +
-      (await shot('front-datepicker-prices', { x: 700, y: 456, w: 440, alt: 'Date picker on the hotel site with a price under every day' })),
-    ),
+    file: '01-any-entry.png',
+    body: async () => {
+      const cols = [];
+      for (const [i, c] of COLLECTIONS.entries()) {
+        cols.push(`<li><i class="cap b${i + 1}"></i><div class="t">${c.title}</div><div class="s">${c.text}</div>${await panel(c.panel, 336)}</li>`);
+      }
+      return `<div class="stack">
+        <h1 class="h">Make any Statamic entry bookable</h1>
+        <p class="p">Add the Availability field to a collection's blueprint, and each of its entries gets its own availability and prices. The demo hotel does it for rooms, spa treatments and restaurant tables.</p>
+        <ol class="cols" style="margin-top:36px">${cols.join('')}</ol>
+        <div style="margin-top:40px">${await frame({ name: 'home/cp-calendar-light', w: 1056, url: cp('/resrv/reservations/calendar'), cap: ['Every booking on one calendar', 'cp'] })}</div>
+      </div>`;
+    },
   },
   {
-    file: '02-frontend.png',
-    body: async () => side(
-      { eb: 'Your website', h: 'Search and checkout, ready to use', p: 'Livewire components handle the search, the results and the checkout. Publish their views and style them to match your site.' },
-      (await shot('front-search-results', { x: 556, y: 72, w: 572, alt: 'Search results on the hotel site, with prices for the chosen dates' })) +
-      (await shot('front-room-rates', { x: 896, y: 300, h: 440, alt: 'A room\'s rates for the chosen dates' })),
-    ),
+    file: '02-three-steps.png',
+    body: async () => {
+      const cols = [];
+      for (const [i, s] of STEPS.entries()) {
+        cols.push(`<li><span class="num b${i + 1}">${i + 1}</span><div class="t">${s.title}</div><div class="s">${s.text}</div>${await panel(s.panel, 336)}</li>`);
+      }
+      return `<div class="stack">
+        <h1 class="h">From entry to booking in three steps</h1>
+        <p class="p">Resrv builds on Statamic's entries, blueprints and forms, so it fits into a site you already have.</p>
+        <div class="track" style="margin-top:36px"><i></i><i></i><i></i></div>
+        <ol class="cols" style="margin-top:20px">${cols.join('')}</ol>
+      </div>`;
+    },
   },
   {
-    file: '03-checkout.png',
-    body: async () => side(
-      { eb: 'Checkout', h: 'Extras, options and coupons', p: 'Guests add extras like breakfast or a transfer, pick options and apply a coupon. The checkout form is a Statamic form you control.' },
-      (await shot('front-checkout-extras', { x: 556, y: 72, w: 480, alt: 'Checkout step with options and extras' })) +
-      (await shot('front-checkout-summary', { x: 768, y: 318, h: 420, alt: 'Booking summary with a coupon applied' })),
-    ),
+    file: '03-availability.png',
+    body: async () => side('Set availability and prices for every day', "Each entry gets its own calendar in the control panel. Guests see each day's price while they pick their dates.")
+      + await frame({ name: 'cp-entry-availability', w: 548, crop: { x: 0, y: 0, w: 1552, h: 1240 }, url: cp('/collections/rooms/entries/sea-view-suite'), cap: ['In the control panel', 'cp'], side: 'right', x: 580, y: 72 })
+      + await card({ name: 'front-datepicker-prices', w: 400, cap: ['On the spa page', 'site'], side: 'right', x: 520, y: 452, z: 2 }),
   },
   {
-    file: '04-payments.png',
-    body: async () => side(
-      { eb: 'Payments', h: 'Take payments your way', p: 'Stripe for cards, bank transfer or pay on arrival, and Mollie. Offer more than one at checkout, or write your own gateway.' },
-      (await shot('front-mobile-checkout', { x: 896, y: 72, h: 520, cls: 'phone', alt: 'The checkout on a phone' })) +
-      (await shot('front-checkout-payment', { x: 556, y: 372, w: 520, alt: 'Payment step of the checkout on the hotel site' })),
-    ),
+    file: '04-checkout.png',
+    body: async () => side('Extras, discounts and payments',"Guests add extras like an airport transfer, choose options like breakfast and apply a coupon. You build the form in Statamic's form builder.",
+      '<div class="chips"><span>Stripe</span><span>Bank transfer</span><span>Mollie<small>add-on</small></span><span>Your own gateway</span></div>')
+      + await frame({ name: 'home/checkout-extras', w: 560, url: site('/checkout'), bg: '#f3eee6', cap: ['Extras and options', 'site'], x: 544, y: 72 })
+      + await card({ name: 'home/checkout-summary', w: 300, x: 828, y: 250, z: 2 }),
   },
   {
     file: '05-reservations.png',
-    body: async () => top(
-      { eb: 'Reservations', h: 'Every booking in one place', p: 'Filter, export and refund reservations, see them on a calendar, and check revenue and best sellers in Reports.' },
-      (await shot('cp-reservations', { x: 72, y: 264, w: 1000, alt: 'Reservations list in the control panel' })) +
-      (await shot('cp-reports', { x: 668, y: 532, w: 460, alt: 'Reports with reservations, revenue and outstanding payments' })),
-    ),
+    body: async () => side('Every booking in the control panel', 'Reservations live in Statamic next to your content, so your client manages them with the login they already have.')
+      + await frame({ name: 'home/hero-cp-light', w: 900, crop: { x: 0, y: 0, w: 1600, h: 712 }, url: cp('/resrv/reservations'), cap: ['You manage bookings in Statamic', 'cp'], x: 548, y: 172 }),
   },
   {
-    file: '06-rates-pricing.png',
-    body: async () => top(
-      { eb: 'Rates & pricing', h: 'One room, several rates', p: 'Standard, non-refundable or with breakfast, all sharing one inventory. Dynamic pricing adds discounts, increases and coupons on top.' },
-      (await shot('cp-rates', { x: 72, y: 264, w: 1000, alt: 'Rates in the control panel, with derived rates under their base rate' })) +
-      (await shot('cp-dynamic-pricing', { x: 608, y: 560, w: 520, alt: 'Dynamic pricing campaigns and a coupon' })),
-    ),
+    file: '06-manual-reservations.png',
+    body: async () => side('Book by phone and email a payment link', 'Create a reservation in the control panel, ask for a deposit or set a payment deadline, and Resrv emails the customer a link to pay.')
+      + await frame({ name: 'home/cp-create-light', w: 560, crop: { x: 0, y: 0, w: 1300, h: 1267 }, url: cp('/resrv/reservations/create'), cap: ['Create reservation', 'cp'], x: 536, y: 72 })
+      + await card({ name: 'home/cp-create-light', w: 300, crop: { x: 1230, y: 144, w: 510, h: 1010 }, x: 828, y: 150, z: 2 }),
   },
   {
-    file: '07-manual-reservations.png',
-    body: async () => side(
-      { eb: 'Bookings by phone', h: 'Book on behalf of your customers', p: 'Create a reservation in the control panel, set a deposit or a payment deadline, and Resrv emails the customer a link to pay.' },
-      (await shot('cp-manual-create', { x: 556, y: 72, w: 572, alt: 'Creating a reservation in the control panel' })) +
-      (await shot('cp-calendar', { x: 712, y: 420, w: 428, alt: 'Reservations calendar, with bookings awaiting payment' })),
-    ),
+    file: '07-frontend.png',
+    body: async () => side('Search and checkout on your own site', 'Livewire components handle the search, the results and the checkout. Publish their Blade views to change any part, and style them with Tailwind.')
+      + await frame({ name: 'home/hero-site', w: 580, url: site('/rooms'), cap: ['Guests book on your site', 'site'], x: 548, y: 72 })
+      + await card({ name: 'home/room-rates', w: 270, x: 858, y: 250, z: 2 }),
   },
   {
     file: '08-demo.png',
-    body: async () => side(
-      { eb: 'See it live', h: 'Try the demo hotel', p: 'Book a room, a spa treatment or a dinner table on the demo site, then log in to its control panel and see the reservation arrive.' },
-      (await shot('front-home-hero', { x: 556, y: 72, w: 572, alt: 'The demo hotel site' })) +
-      (await shot('cp-reservations-dark', { x: 596, y: 436, w: 544, alt: 'The demo control panel in dark mode' })),
-    ).replace(bars('left:72px;bottom:72px'), `<div class="facts" style="left:72px;bottom:72px;width:440px"><span>Statamic 6</span><span>Livewire</span><span>Docs at resrv.dev</span></div>`),
+    body: async () => {
+      const login = await pic('site-login', 250);
+      return side('Try it on the Resrv Hotel', 'Book a room, a spa treatment or a dinner table, then log in to the control panel and find your booking.',
+        `<div class="go">${host(demoUrl)}${ARROW}</div>`)
+        + `<ul class="facts"><li><i class="cap b1"></i>5 years in production</li><li><i class="cap b2"></i>Thousands of bookings processed</li><li><i class="cap b3 short"></i>Millions in revenue generated</li></ul>`
+        + await frame({ name: 'home/demo-hotel', w: 580, url: site(''), cap: ['Book on the hotel site', 'site'], x: 548, y: 72 })
+        + await frame({ w: 440, url: cp(''), body: `<div class="panel">${login.html}</div>`, bodyH: 262, cap: ['Log in to the control panel', 'cp'], side: 'right', x: 688, y: 462, z: 2 });
+    },
   },
 ];
 
