@@ -8,6 +8,15 @@
   --blume-code-background: #1c1c1e;
 }
 
+/* Selected text takes a wash of the brand orange instead of the browser's blue */
+::selection {
+  background: color-mix(in oklab, #f56b3c 26%, transparent);
+}
+
+:root[data-theme="dark"] ::selection {
+  background: color-mix(in oklab, #f56b3c 38%, transparent);
+}
+
 /* Archivo is wider than Blume's default face: -0.05em heading tracking crowds it */
 h1,
 h2,

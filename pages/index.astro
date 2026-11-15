@@ -110,20 +110,20 @@ const screens = [
     label: "Reservations",
     path: "reservations",
     width: 1800,
-    height: 909,
+    height: 1223,
     // On phones: the region from x 0 to 900, from the page title to the rate
     crop: "--crop-w: 200%; --crop-x: 0%",
-    alt: "Resrv's Reservations list in the Statamic control panel: five confirmed bookings with their entry, rate, dates, deposit, total and customer, and a Create reservation button.",
+    alt: "Resrv's Reservations list in the Statamic control panel: eight confirmed bookings, led by the three in December at La Marea, the spa and the Sea View Suite, each with its entry, rate, dates, deposit, total and customer, and a Create reservation button.",
   },
   {
     id: "reports",
     label: "Reports",
     path: "reports",
     width: 1800,
-    height: 1267,
+    height: 1268,
     // On phones: the region from x 40 to 880, the date filter and the report's left cards
     crop: "--crop-w: 214.3%; --crop-x: -4.8%",
-    alt: "Reports for 2026: 6 reservations, €4,712.60 revenue, €785.43 average value, and a best sellers table by entry.",
+    alt: "Reports for 2026: 8 reservations, €5,267.60 revenue, €658.45 average value, and a best sellers table by entry, led by the Garden View Double and the Sea View Suite.",
   },
   {
     id: "create",
@@ -276,14 +276,14 @@ const details = [
                 src="/home/hero-cp-light.webp"
                 width="1600"
                 height="752"
-                alt="Resrv's Reservations list in the Statamic control panel, with five confirmed bookings and their entries, rates, dates, totals and customers."
+                alt="Resrv's Reservations list in the Statamic control panel, led by a dinner at La Marea, a Mediterranean Massage and a stay in the Sea View Suite in December, each with its rate, dates, total and customer."
               />
               <img
                 class="is-dark"
                 src="/home/hero-cp-dark.webp"
                 width="1600"
                 height="752"
-                alt="Resrv's Reservations list in the Statamic control panel, with five confirmed bookings and their entries, rates, dates, totals and customers."
+                alt="Resrv's Reservations list in the Statamic control panel, led by a dinner at La Marea, a Mediterranean Massage and a stay in the Sea View Suite in December, each with its rate, dates, total and customer."
               />
             </div>
           </div>
@@ -351,23 +351,30 @@ const details = [
               <span class="dots"><i></i><i></i><i></i></span>
               <span class="address"><Icon name="lock" size={11} /> {host(demoCpUrl)}/cp/resrv/reservations/calendar</span>
             </div>
+            {/* The whole week would shrink to 6px text on a phone, so phones get Monday to
+                Thursday, which hold all three bookings, from a narrower capture of the same
+                calendar (scripts/recapture-home-calendar-2x.mjs). */}
             <div class="week-crop">
-              <img
-                class="is-light"
-                src="/home/cp-calendar-light.webp"
-                width="2588"
-                height="488"
-                loading="lazy"
-                alt="The Reservations Calendar in the control panel for the week of 13 to 19 December 2026: the Sea View Suite booked from Monday to Friday, a Mediterranean Massage on Wednesday and a dinner sitting at La Marea on Thursday."
-              />
-              <img
-                class="is-dark"
-                src="/home/cp-calendar-dark.webp"
-                width="2588"
-                height="488"
-                loading="lazy"
-                alt="The Reservations Calendar in the control panel for the week of 13 to 19 December 2026: the Sea View Suite booked from Monday to Friday, a Mediterranean Massage on Wednesday and a dinner sitting at La Marea on Thursday."
-              />
+              <picture class="is-light">
+                <source media="(max-width: 639px)" srcset="/home/cp-calendar-phone-light.webp" width="870" height="336" />
+                <img
+                  src="/home/cp-calendar-light.webp"
+                  width="2588"
+                  height="488"
+                  loading="lazy"
+                  alt="The Reservations Calendar in the control panel for the week of 13 to 19 December 2026: the Sea View Suite booked from Monday to Friday, a Mediterranean Massage on Wednesday and a dinner sitting at La Marea on Thursday."
+                />
+              </picture>
+              <picture class="is-dark">
+                <source media="(max-width: 639px)" srcset="/home/cp-calendar-phone-dark.webp" width="870" height="336" />
+                <img
+                  src="/home/cp-calendar-dark.webp"
+                  width="2588"
+                  height="488"
+                  loading="lazy"
+                  alt="The Reservations Calendar in the control panel for the week of 13 to 19 December 2026: the Sea View Suite booked from Monday to Friday, a Mediterranean Massage on Wednesday and a dinner sitting at La Marea on Thursday."
+                />
+              </picture>
             </div>
           </div>
           <figcaption><span class="dot is-amber"></span>Every booking on one calendar</figcaption>
@@ -871,8 +878,12 @@ const details = [
     --cp-muted: #737373;
     --cp-border: #e5e5e5;
     --cp-primary: #4f46e5;
+    /* Filled buttons keep this indigo in both themes: white on the dark theme's #6366f1 reads
+       at 4.47:1, under AA at this size */
+    --cp-button: #4f46e5;
     --cp-green-bg: #dcfce7;
     --cp-green: #15803d;
+    --cp-live: #22c55e;
     overflow-x: clip;
   }
 
@@ -1269,8 +1280,9 @@ const details = [
     right: 0.75rem;
   }
 
+  /* On the dark page the ink caption needs an edge a step lighter than the hairline */
   :global(:root[data-theme="dark"]) .shot figcaption {
-    border: 1px solid #3a3a3e;
+    border: 1px solid color-mix(in oklab, var(--blume-foreground) 16%, var(--ink));
   }
 
   @media (max-width: 559px) {
@@ -1512,24 +1524,11 @@ const details = [
     font-weight: 400;
   }
 
+  .week-crop picture,
   .week-crop img {
     display: block;
     width: 100%;
     height: auto;
-  }
-
-  /* On a phone the whole week would shrink to a sliver. Sunday, Friday and Saturday are empty,
-     so the frame shows Monday to Thursday, with all three bookings, at a larger size. */
-  @media (max-width: 639px) {
-    .week-crop {
-      overflow: hidden;
-    }
-
-    .week-crop img {
-      width: 172%;
-      max-width: none;
-      margin-left: -25.5%;
-    }
   }
 
   /* Who it's for */
@@ -1873,6 +1872,14 @@ const details = [
     white-space: nowrap;
   }
 
+  /* From 960px a day is wide enough for its count and price a size up */
+  @media (min-width: 960px) {
+    .cal-day i,
+    .cal-day small {
+      font-size: 0.6875rem;
+    }
+  }
+
   .code {
     overflow: hidden;
     border: 1px solid var(--blume-border);
@@ -1885,7 +1892,7 @@ const details = [
     border-bottom: 1px solid var(--blume-border);
     color: var(--blume-muted-foreground);
     font-family: var(--blume-font-mono);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
   }
 
   .code pre {
@@ -1961,9 +1968,11 @@ const details = [
     color: var(--blume-accent);
   }
 
+  /* A docs link at the end of a line stays in one piece, as in the uses and the price card */
   .ticks a {
     color: var(--blume-accent);
     font-weight: 600;
+    white-space: nowrap;
   }
 
   .gateways {
@@ -2191,7 +2200,7 @@ const details = [
   .cp-btn {
     padding: 0.1875rem 0.625rem;
     border-radius: 6px;
-    background: var(--cp-primary);
+    background: var(--cp-button);
     color: #fff;
     font-size: 0.75rem;
     font-weight: 500;
@@ -2203,7 +2212,7 @@ const details = [
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 50%;
-    background: #22c55e;
+    background: var(--cp-live);
   }
 
   /* Details: a plain list in two or three columns, divided by hairlines */
@@ -2421,7 +2430,7 @@ const details = [
     margin-top: 0.875rem;
     padding: 0.4375rem;
     border-radius: 6px;
-    background: var(--cp-primary);
+    background: var(--cp-button);
     color: #fff;
     font-weight: 600;
     text-align: center;

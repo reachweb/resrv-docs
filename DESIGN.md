@@ -234,14 +234,14 @@ Two surfaces share one system. The home page is the marketing surface and carrie
 One warm accent on a neutral ink-and-paper base, with the brand's amber and a borrowed Statamic indigo kept to tightly fenced roles.
 
 ### Primary
-- **Orange** (`{colors.orange}`): the brand orange from the logo. On dark it is the accent: links, filled buttons (with ink text) and focus rings. In both themes it is the first bar, the first step number, the guest-site caption dot and the closing band's filled button. Ink on Orange reads at 6.0:1.
+- **Orange** (`{colors.orange}`): the brand orange from the logo. On dark it is the accent: links, filled buttons (with ink text) and focus rings. In both themes it is the first bar, the first step number, the guest-site caption dot and the closing band's filled button. Ink on Orange reads at 6.0:1. A 26% wash of it (38% in dark) marks selected text across the site.
 - **Deep Orange** (`{colors.deep-orange}`): the light theme's accent. Links, the header's Buy pill, filled buttons with white text, tick icons, icon glyphs and "more" links. It exists because Orange fails as text on white (3.0:1); Deep Orange reaches 4.95:1. **Deep Orange Strong** (`{colors.deep-orange-strong}`) is its hover shade, and the text of the "New in" tag on light, where Deep Orange on the Orange Tint reads at only 4.3:1 and Strong reaches 5.9:1.
 
 ### Secondary
 - **Amber** (`{colors.amber}`): the logo's second bar. Only ever the second element in a sequence: the second bar of the step track, the second step number, the control panel caption dot and the control panel demo card's top bar. Never text, never a button.
 
 ### Tertiary
-- **Statamic Indigo** (`{colors.statamic-indigo}`, `{colors.statamic-indigo-night}` in dark) with **Statamic Green** (`{colors.statamic-green}`) and **Statamic Page** grey (`{colors.statamic-page}`): the control panel's own colors, borrowed only to redraw it. They appear inside the HTML panels that mirror the control panel (Add rate, the active fieldtype, availability counts, live rates) and nowhere else.
+- **Statamic Indigo** (`{colors.statamic-indigo}`, `{colors.statamic-indigo-night}` in dark) with **Statamic Green** (`{colors.statamic-green}`) and **Statamic Page** grey (`{colors.statamic-page}`): the control panel's own colors, borrowed only to redraw it. They appear inside the HTML panels that mirror the control panel (Add rate, the active fieldtype, availability counts, live rates) and nowhere else. Filled buttons (Add rate, Continue) keep `{colors.statamic-indigo}` in dark too, because white on the night indigo reads at only 4.47:1.
 
 ### Neutral
 - **Ink** (`{colors.ink}`): the brand ink. All headings and body text on light, the frame captions, the closing band in light, the third bar in light.
@@ -357,7 +357,9 @@ The "who it's for" and details lists are rows, not cards, each with a hairline a
 ### Product Frame (signature)
 Real screenshots sit in a browser frame: a paper-band chrome bar with three muted dots and a centered pill address showing the demo's real host and path, the screenshot below, 14px corners, a hairline and the product lift. An ink caption tag hangs off the bottom edge at a lower corner, half on the frame and half below it, so it names the screen without covering it; it carries a small rounded-square dot in Orange (guest site) or Amber (control panel). Control panel screenshots ship as light and dark pairs that swap with the theme.
 
-Below 560px a whole control panel screen would shrink to 4px text, so each one crops to a single region at about twice the size: a `.crop` box takes the image's width and its left and top offsets as custom properties. The hero's Reservations list drops Statamic's top bar and sidebar, and the tab viewer's three screens crop square, so the frame keeps its size between tabs. The calendar week crops to Monday to Thursday the same way, which keeps all three bookings in view.
+Below 560px a whole control panel screen would shrink to 4px text, so each one crops to a single region at about twice the size: a `.crop` box takes the image's width and its left and top offsets as custom properties. The hero's Reservations list drops Statamic's top bar and sidebar, and the tab viewer's three screens crop square, so the frame keeps its size between tabs. Below 640px the calendar week swaps, through `<picture>`, to its own capture of Monday to Thursday from a narrower calendar, which keeps all three bookings in view with text at about 10px.
+
+The list, Reports, hero and calendar screenshots all show the same demo data, with the three December bookings at the top of the list. `scripts/recapture-home-reservations-2x.mjs` and `scripts/recapture-home-calendar-2x.mjs` retake them; refund any test bookings in the testbed first.
 
 The hero's guest site is a desktop page, so it is art-directed with `<picture>` instead: below 900px the frame shows two rooms (the Coastal Family Room and the Sea View Suite), and below 560px the Sea View Suite alone at 4:5, with the sea in its photo. Both are cut from the 2x capture of the same search, `brand/statamic/screens/front-search-results.webp`, so the text stays sharp. On phones the checkout summary floats over ten of the twelve columns, so its numbers stay legible.
 
