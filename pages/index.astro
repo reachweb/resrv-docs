@@ -34,37 +34,40 @@ const uses = [
     icon: "bed-double",
     title: "Hotels and rentals",
     text: "Nightly prices, room types as rates, and breakfast as an option.",
-    link: { label: "Rates", href: "/rates" },
+    links: [{ label: "Rates", href: "/rates" }],
   },
   {
     icon: "utensils",
     title: "Restaurants",
     text: "Lunch and dinner sittings by date. Set the price to zero and guests book without paying.",
-    link: { label: "Checkout", href: "/checkout" },
+    links: [{ label: "Checkout", href: "/checkout#skip-payment" }],
   },
   {
     icon: "compass",
     title: "Tours and excursions",
     text: "Guests add several rates and dates to a cart and pay for them in one checkout.",
-    link: { label: "Cart booking", href: "/cart-booking" },
+    links: [{ label: "Cart booking", href: "/cart-booking" }],
   },
   {
     icon: "flower-2",
     title: "Spas and wellness",
     text: "Treatments by the day, with the price of each day shown in the date picker.",
-    link: { label: "Single entry search", href: "/availability-search-single" },
+    links: [{ label: "Single entry search", href: "/availability-search-single" }],
   },
   {
     icon: "car",
     title: "Car and boat rentals",
-    text: "A price for each rental length, and a fee when pickup and return differ.",
-    link: { label: "Fixed pricing", href: "/fixed-pricing" },
+    text: "A price for each rental length, and a one-way fee when pickup and return differ.",
+    links: [
+      { label: "Fixed pricing", href: "/fixed-pricing" },
+      { label: "Surcharges", href: "/surcharges" },
+    ],
   },
   {
     icon: "ticket",
     title: "Conferences and events",
     text: "A set number of places, and a checkout form you build in Statamic.",
-    link: { label: "Checkout form", href: "/checkout" },
+    links: [{ label: "Checkout form", href: "/checkout#checkout-form" }],
   },
 ];
 
@@ -125,7 +128,7 @@ const screens = [
   },
   {
     id: "create",
-    label: "New booking",
+    label: "Create reservation",
     path: "reservations/create",
     width: 1800,
     height: 1267,
@@ -206,7 +209,7 @@ const details = [
       <div class="wrap">
         <a class="news" href="/manual-reservations">
           <span class="news-tag">New in 6.5</span>
-          <span class="news-text">Take bookings by phone and email a payment link</span>
+          <span class="news-text"><span class="news-long">Take bookings by phone and email a payment link</span><span class="news-short">Manual reservations</span></span>
           <Icon name="arrow-right" size={14} />
         </a>
         <h1 id="hero-title">Make any Statamic entry bookable</h1>
@@ -368,10 +371,6 @@ const details = [
             build for. You set up the collections and templates. Your client manages availability,
             prices and reservations in the control panel.
           </p>
-          <p>
-            Any entry can be bookable, so one site can rent rooms from one collection and cars from
-            another.
-          </p>
           <a class="more" href="/core-concepts">How Resrv works <Icon name="arrow-right" size={14} /></a>
         </div>
         <ul class="uses">
@@ -384,7 +383,13 @@ const details = [
                 <div>
                   <h3>{use.title}</h3>
                   <p>
-                    {use.text} <a href={use.link.href}>{use.link.label}</a>
+                    {use.text}{" "}
+                    {use.links.map((link, i) => (
+                      <>
+                        {i > 0 && <span aria-hidden="true"> · </span>}
+                        <a href={link.href}>{link.label}</a>
+                      </>
+                    ))}
                   </p>
                 </div>
               </li>
@@ -405,8 +410,8 @@ const details = [
           <li class="step">
             <div class="step-text">
               <span class="step-num">1</span>
-              <h3>Add the availability field</h3>
-              <p>Add a Resrv Availability field to a collection's blueprint. Each entry in it can now take bookings.</p>
+              <h3>Add the Availability field</h3>
+              <p>Add a Resrv Availability field to a collection's blueprint. Every entry in that collection can now take bookings.</p>
               <a class="more" href="/availability">Availability <Icon name="arrow-right" size={14} /></a>
             </div>
             <div class="step-visual" aria-hidden="true">
@@ -433,7 +438,7 @@ const details = [
             <div class="step-text">
               <span class="step-num">2</span>
               <h3>Set availability and prices</h3>
-              <p>Fill each entry's calendar with how many are free and what they cost. Add rates for room types or pricing tiers.</p>
+              <p>Fill each entry's calendar with how many units are free each day and what they cost. Add rates for room types or pricing tiers.</p>
               <a class="more" href="/rates">Rates <Icon name="arrow-right" size={14} /></a>
             </div>
             <div class="step-visual" aria-hidden="true">
@@ -482,8 +487,8 @@ const details = [
         <div class="split-text">
           <h2 id="rates-title">Availability and prices for every day</h2>
           <p>
-            Each entry has its own calendar. Set how many units are free and what they cost, one day at a
-            time or in bulk by weekday.
+            Each entry has its own calendar. Set availability and prices for one day, a range of dates,
+            or only certain days of the week, like weekends.
           </p>
           <ul class="ticks">
             <li><Icon name="check" size={16} /><span>Rates for room types or pricing tiers, with their own prices or a percentage off a base rate.</span></li>
@@ -542,13 +547,13 @@ const details = [
           </p>
           <ul class="ticks">
             <li><Icon name="check" size={16} /><span>Change prices by the dates of a stay, its length or how far ahead it's booked. Coupons use the same rules. <a href="/dynamic-pricing">Dynamic pricing</a></span></li>
-            <li><Icon name="check" size={16} /><span>Affiliate links credit partners for the bookings they send, with a fee you track. <a href="/affiliates">Affiliates</a></span></li>
+            <li><Icon name="check" size={16} /><span>Affiliate links credit partners for the bookings they send, and record the percentage each one earns. <a href="/affiliates">Affiliates</a></span></li>
           </ul>
           <ul class="gateways" aria-label="Payment gateways">
             <li><a href="/stripe">Stripe</a></li>
             <li><a href="/payment-gateways#the-offline-gateway">Bank transfer</a></li>
             <li><a href="/mollie">Mollie <small>add-on</small></a></li>
-            <li><a href="/custom-payment-gateway">Your own</a></li>
+            <li><a href="/custom-payment-gateway">Your own gateway</a></li>
           </ul>
           <a class="more" href="/checkout">Checkout <Icon name="arrow-right" size={14} /></a>
         </div>
@@ -587,7 +592,7 @@ const details = [
             <a class="more" href="/reservations">Reservations <Icon name="arrow-right" size={14} /></a>
           </div>
           <ul class="ticks">
-            <li><Icon name="check" size={16} /><span>Refund through the gateway the guest paid with, and the availability comes back.</span></li>
+            <li><Icon name="check" size={16} /><span>Refund a booking through the gateway the guest paid with, and its dates become available again.</span></li>
             <li><Icon name="check" size={16} /><span>Book for a guest on the phone and email them a link to pay. <a href="/manual-reservations">Manual reservations</a></span></li>
           </ul>
         </div>
@@ -616,6 +621,7 @@ const details = [
                 role="tabpanel"
                 id={`panel-${screen.id}`}
                 aria-labelledby={`tab-${screen.id}`}
+                tabindex="0"
                 hidden={i !== 0}
               >
                 <div class="bar" aria-hidden="true">
@@ -732,7 +738,7 @@ const details = [
             <div class="door-body">
               <p class="door-step">Step 1</p>
               <h3>Book on the hotel site</h3>
-              <p>Pick your dates, choose a rate, add extras and go through checkout.</p>
+              <p>Pick your dates, choose a rate, add extras and go through checkout. The demo only offers bank transfer, so you won't need a card.</p>
               <a class="btn btn-primary" href={demoUrl}>
                 Open the hotel site <Icon name="arrow-up-right" size={16} />
               </a>
@@ -751,7 +757,7 @@ const details = [
             </div>
             <div class="door-body">
               <p class="door-step">Step 2</p>
-              <h3>Log into the control panel</h3>
+              <h3>Log in to the control panel</h3>
               <p>Find your booking under Reservations, then look around the calendar, rates and reports.</p>
               <dl class="creds">
                 <div><dt>Email</dt><dd><code>{demoLogin.email}</code></dd></div>
@@ -804,15 +810,15 @@ const details = [
         <div class="split-text">
           <h2 id="team-title">Made by Reach in Kos, Greece</h2>
           <p>
-            Reach Web Agency has built websites since 2012, and has worked only with Statamic since
-            2020. We're a Statamic Partner, and we make two more addons.
+            We've built websites as Reach Web Agency since 2012, and only with Statamic since 2020.
+            We're a Statamic Partner, and we make two more add-ons.
           </p>
           <a class="partner" href={partnerUrl}>
             <img src="/statamic-partner.svg" width="112" height="96" alt="Statamic Partner" loading="lazy" />
           </a>
           <p class="team-links">
             <a class="more" href={reachUrl}>About Reach <Icon name="arrow-right" size={14} /></a>
-            <a class="more" href={sellerUrl}>Our addons <Icon name="arrow-right" size={14} /></a>
+            <a class="more" href={sellerUrl}>Our add-ons <Icon name="arrow-right" size={14} /></a>
           </p>
         </div>
         <ul class="addons">
@@ -849,9 +855,31 @@ const details = [
 </PageLayout>
 
 <script>
-  // The control panel viewer: tabs swap the screenshot, with arrow keys between tabs.
+  // The control panel viewer: tabs swap the screenshot, with the arrow keys, Home and End
+  // moving between tabs.
   for (const viewer of document.querySelectorAll<HTMLElement>("[data-viewer]")) {
     const tabs = [...viewer.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    // The hidden screens' images are lazy, so the first switch would show an empty frame while
+    // one loads. When the viewer comes near the screen, start loading the other screens in the
+    // current theme (only one of each light and dark pair is displayed).
+    const preload = () => {
+      const shown = [...viewer.querySelectorAll<HTMLImageElement>('[role="tabpanel"]:not([hidden]) img')].find(
+        (img) => getComputedStyle(img).display !== "none",
+      );
+      const theme = shown?.classList.contains("is-dark") ? "is-dark" : "is-light";
+      for (const img of viewer.querySelectorAll<HTMLImageElement>(`[role="tabpanel"][hidden] img.${theme}`)) {
+        img.loading = "eager";
+      }
+    };
+    const nearby = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        nearby.disconnect();
+        preload();
+      },
+      { rootMargin: "300px 0px" },
+    );
+    nearby.observe(viewer);
     const select = (tab: HTMLButtonElement) => {
       for (const other of tabs) {
         const selected = other === tab;
@@ -864,10 +892,15 @@ const details = [
     tabs.forEach((tab, i) => {
       tab.addEventListener("click", () => select(tab));
       tab.addEventListener("keydown", (event) => {
-        const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
-        if (!step) return;
+        const target =
+          event.key === "ArrowRight" ? i + 1
+          : event.key === "ArrowLeft" ? i - 1
+          : event.key === "Home" ? 0
+          : event.key === "End" ? tabs.length - 1
+          : null;
+        if (target === null) return;
         event.preventDefault();
-        const next = tabs[(i + step + tabs.length) % tabs.length];
+        const next = tabs[(target + tabs.length) % tabs.length];
         next.focus();
         select(next);
       });
@@ -924,6 +957,12 @@ const details = [
     --cp-green: #86efac;
   }
 
+  /* Blume hides the header's text links below 640px and lists them in its menu drawer, but a
+     page without a sidebar has no drawer, so Docs would vanish on phones. Keep it in the bar. */
+  :global([data-blume-header] a[href="/introduction"]) {
+    display: inline-flex;
+  }
+
   /* Screenshots of the control panel come in two versions that follow the site's theme */
   :global(:root:not([data-theme="dark"])) .home .is-dark,
   :global(:root[data-theme="dark"]) .home .is-light {
@@ -955,6 +994,10 @@ const details = [
     color: var(--blume-foreground);
     font-family: var(--wide);
     text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 
   h2 {
@@ -1045,6 +1088,7 @@ const details = [
 
   .btn:focus-visible,
   .tabs button:focus-visible,
+  [role="tabpanel"]:focus-visible,
   .home a:focus-visible {
     outline: 2px solid var(--blume-accent);
     outline-offset: 3px;
@@ -1124,6 +1168,21 @@ const details = [
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+  }
+
+  .news-short {
+    display: none;
+  }
+
+  /* Below about 520px the full line gets cut off, so the chip names the feature instead */
+  @media (max-width: 519px) {
+    .news-long {
+      display: none;
+    }
+
+    .news-short {
+      display: inline;
+    }
   }
 
   .hero h1 {
@@ -2594,6 +2653,7 @@ const details = [
   .plan-foot a {
     color: var(--blume-accent);
     font-weight: 600;
+    white-space: nowrap;
   }
 
   .plan-foot {
