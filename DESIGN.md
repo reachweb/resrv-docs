@@ -334,6 +334,8 @@ Precise and quiet: one filled button per group, the rest bordered or plain.
 - **On the closing band:** the primary turns brand Orange with ink text; a ghost button has a 28% white border that strengthens to 60% on hover.
 - **Leaving the site:** buttons and links that go to the Marketplace, the demo or another site end in an up-right arrow. The demo's open in a new tab, so the demo login stays on screen beside them.
 - **Focus:** a 2px accent outline, 3px offset, on every button, tab and link. Background and border transitions run 0.15s and switch off under reduced motion.
+- **On phones (below 560px):** the hero's primary button takes a row of its own, with Buy and Read the docs side by side below it at every width. The closing band's two buttons stack at one shared width.
+- **Touch:** on a coarse pointer, the standalone docs links ("more" links and the details titles) get an invisible hit area of about 44px that moves nothing, and the tabs grow to 44px. Links inside sentences keep the line's height.
 
 ### Chips
 - **News chip:** a pill with a hairline border on paper, muted text that turns ink on hover, and an inner Orange Tint tag ("New in 6.5") in Deep Orange semibold.
@@ -355,7 +357,9 @@ The "who it's for" and details lists are rows, not cards, each with a hairline a
 ### Product Frame (signature)
 Real screenshots sit in a browser frame: a paper-band chrome bar with three muted dots and a centered pill address showing the demo's real host and path, the screenshot below, 14px corners, a hairline and the product lift. An ink caption tag hangs off the bottom edge at a lower corner, half on the frame and half below it, so it names the screen without covering it; it carries a small rounded-square dot in Orange (guest site) or Amber (control panel). Control panel screenshots ship as light and dark pairs that swap with the theme.
 
-Below 560px a whole control panel screen would shrink to 4px text, so each one crops to a single region at about twice the size: a `.crop` box takes the image's width and its left and top offsets as custom properties. The hero's Reservations list drops Statamic's top bar and sidebar, and the tab viewer's three screens crop square, so the frame keeps its size between tabs. The calendar week crops to Monday to Thursday the same way.
+Below 560px a whole control panel screen would shrink to 4px text, so each one crops to a single region at about twice the size: a `.crop` box takes the image's width and its left and top offsets as custom properties. The hero's Reservations list drops Statamic's top bar and sidebar, and the tab viewer's three screens crop square, so the frame keeps its size between tabs. The calendar week crops to Monday to Thursday the same way, which keeps all three bookings in view.
+
+The hero's guest site is a desktop page, so it is art-directed with `<picture>` instead: below 900px the frame shows two rooms (the Coastal Family Room and the Sea View Suite), and below 560px the Sea View Suite alone at 4:5, with the sea in its photo. Both are cut from the 2x capture of the same search, `brand/statamic/screens/front-search-results.webp`, so the text stays sharp. On phones the checkout summary floats over ten of the twelve columns, so its numbers stay legible.
 
 ### Control Panel Redraws (signature)
 Small HTML panels that redraw the Statamic control panel (fieldtype picker, availability calendar, rates tree, sign-in card) in Statamic's own look: Inter, neutral greys, indigo actions, green availability counts, 6 to 10px corners. They use the demo's real names and numbers and follow the site's theme.

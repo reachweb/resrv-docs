@@ -246,13 +246,21 @@ const details = [
               <span class="dots"><i></i><i></i><i></i></span>
               <span class="address"><Icon name="lock" size={11} /> {host(demoUrl)}/rooms</span>
             </div>
-            <img
-              src="/home/hero-site.webp"
-              width="1600"
-              height="1000"
-              fetchpriority="high"
-              alt="The Resrv Hotel demo's rooms page after a search for 14 to 18 December: the Garden View Double, Coastal Family Room and Sea View Suite, each with a discounted total price, a free cancellation date and a Book now button."
-            />
+            {/* The guest site is a desktop page, so smaller screens show less of it at a size
+                you can read: two rooms below 900px and the Sea View Suite alone on a phone. Both
+                are cut from a 2x capture of the same search,
+                brand/statamic/screens/front-search-results.webp. */}
+            <picture>
+              <source media="(max-width: 559px)" srcset="/home/hero-site-phone.webp" width="816" height="1020" />
+              <source media="(max-width: 899px)" srcset="/home/hero-site-tablet.webp" width="1632" height="1182" />
+              <img
+                src="/home/hero-site.webp"
+                width="1600"
+                height="1000"
+                fetchpriority="high"
+                alt="The Resrv Hotel demo's rooms page after a search for 14 to 18 December. Each room shows its discounted total, a free cancellation date and a Book now button: the Sea View Suite is €1,126.40, down from €1,280."
+              />
+            </picture>
           </div>
           <figcaption><span class="dot is-orange"></span>Guests book on your site</figcaption>
         </figure>
@@ -1155,6 +1163,14 @@ const details = [
     line-height: 1.6;
   }
 
+  /* On a phone the demo button takes the first row to itself, so Buy and Read the docs share the
+     second at every width instead of the link dropping onto a row of its own */
+  @media (max-width: 559px) {
+    .hero .btn-primary {
+      flex: 1 0 100%;
+    }
+  }
+
   .facts {
     display: flex;
     flex-wrap: wrap;
@@ -1223,6 +1239,7 @@ const details = [
     box-shadow: var(--shadow);
   }
 
+  .frame picture,
   .frame img {
     display: block;
     width: 100%;
@@ -1993,8 +2010,9 @@ const details = [
     grid-row: 1;
   }
 
+  /* On a phone the summary is the panel with the numbers, so it takes ten of the twelve columns */
   .window-float {
-    grid-column: 5 / -1;
+    grid-column: 3 / -1;
     grid-row: 2;
     margin-top: -2.5rem;
   }
@@ -2705,6 +2723,15 @@ const details = [
     margin-top: 2rem;
   }
 
+  /* Stacked on a phone, the two buttons share one width */
+  @media (max-width: 559px) {
+    .cta .actions {
+      flex-direction: column;
+      align-items: stretch;
+      width: min(100%, 20rem);
+    }
+  }
+
   .cta .btn-primary {
     background: var(--orange);
     color: var(--ink);
@@ -2721,6 +2748,28 @@ const details = [
 
   .btn-ghost:hover {
     border-color: rgb(255 255 255 / 0.6);
+  }
+
+  /* Touch: the docs links that stand on their own line are about 24px tall, so each gets an
+     invisible hit area of about 44px without moving anything; the gap between wrapped rows
+     (1.5rem) keeps neighbouring areas apart. The tabs grow to 44px. Links inside sentences
+     keep the line's height. */
+  @media (pointer: coarse) {
+    .more,
+    .details h3 a {
+      position: relative;
+    }
+
+    .more::after,
+    .details h3 a::after {
+      content: "";
+      position: absolute;
+      inset: -0.6875rem -0.25rem;
+    }
+
+    .tabs button {
+      min-height: 2.75rem;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
