@@ -68,6 +68,35 @@ const uses = [
   },
 ];
 
+// The demo's three bookable collections, each with the Availability field in its blueprint. The
+// days are the week of 13 to 19 December 2026 as each entry's field shows it, after one booking
+// in each (scripts/make-collection-bookings.mjs). The spa is closed on Tuesdays and La Marea on
+// Mondays, so those days have no availability.
+const week = ["S", "M", "T", "W", "T", "F", "S"];
+const collections = [
+  {
+    title: "Rooms",
+    entry: "Sea View Suite",
+    unit: "booked by the night",
+    rate: "Best Flexible",
+    days: [[3, 320], [2, 320], [2, 320], [2, 320], [2, 320], [3, 368], [3, 368]],
+  },
+  {
+    title: "Spa Treatments",
+    entry: "Mediterranean Massage",
+    unit: "booked by the day",
+    rate: "60 minutes",
+    days: [[4, 90], [4, 90], null, [3, 90], [4, 90], [4, 90], [4, 90]],
+  },
+  {
+    title: "Restaurant",
+    entry: "La Marea",
+    unit: "booked by the sitting",
+    rate: "Dinner Sitting",
+    days: [[16, 55], null, [16, 55], [16, 55], [15, 55], [16, 55], [16, 55]],
+  },
+];
+
 const fieldtypes = ["Resrv Availability", "Resrv Options", "Resrv Extras", "Resrv Fixed Pricing", "Resrv Cutoff"];
 
 // The Sea View Suite's first two weeks of November 2026 in the demo: 3 free a day,
@@ -85,14 +114,6 @@ const screens = [
     width: 1800,
     height: 909,
     alt: "Resrv's Reservations list in the Statamic control panel: five confirmed bookings with their entry, rate, dates, deposit, total and customer, and a Create reservation button.",
-  },
-  {
-    id: "calendar",
-    label: "Calendar",
-    path: "reservations/calendar",
-    width: 1800,
-    height: 1267,
-    alt: "The Reservations Calendar for July 2026, with two Garden View Double bookings drawn as bars across their dates.",
   },
   {
     id: "reports",
@@ -255,6 +276,89 @@ const details = [
       </div>
     </section>
 
+    <section class="section tinted" aria-labelledby="any-title">
+      <div class="wrap any">
+        <header class="section-head">
+          <h2 id="any-title">Three collections, one checkout</h2>
+          <p>
+            The demo hotel sells rooms, spa treatments and restaurant tables. Each comes from its own
+            collection with the Availability field in its blueprint, so every entry has its own
+            availability and prices. Guests book all three through the same checkout, and you see them
+            together on one calendar.
+          </p>
+          <p class="any-links">
+            <a class="more" href="/availability">Availability field <Icon name="arrow-right" size={14} /></a>
+            <a class="more" href="/reservations#reservations-calendar">Reservations Calendar <Icon name="arrow-right" size={14} /></a>
+          </p>
+        </header>
+
+        <ol class="collections">
+          {
+            collections.map((collection) => (
+              <li class="collection">
+                <h3>{collection.title}</h3>
+                <p>
+                  {collection.entry}, {collection.unit}
+                </p>
+                <div class="cp-card" aria-hidden="true">
+                  <p class="cp-head">
+                    <span class="cp-month">December 2026</span>
+                    <span class="cp-select">
+                      {collection.rate} <Icon name="chevron-down" size={12} />
+                    </span>
+                  </p>
+                  <div class="cal">
+                    {week.map((d) => <span class="cal-dow">{d}</span>)}
+                    {
+                      collection.days.map((day, i) => (
+                        <span class:list={["cal-day", { "is-closed": !day }]}>
+                          <b>{13 + i}</b>
+                          {day && <i># {day[0]}</i>}
+                          {day && <small>€{day[1]}</small>}
+                        </span>
+                      ))
+                    }
+                  </div>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+
+        <div class="merge" aria-hidden="true">
+          <p class="merge-node"><span>One checkout</span> <code>{"{{ livewire:checkout }}"}</code></p>
+        </div>
+
+        <figure class="shot shot-week">
+          <div class="frame">
+            <div class="bar" aria-hidden="true">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="address"><Icon name="lock" size={11} /> {host(demoCpUrl)}/cp/resrv/reservations/calendar</span>
+            </div>
+            <div class="week-crop">
+              <img
+                class="is-light"
+                src="/home/cp-calendar-light.webp"
+                width="2588"
+                height="488"
+                loading="lazy"
+                alt="The Reservations Calendar in the control panel for the week of 13 to 19 December 2026: the Sea View Suite booked from Monday to Friday, a Mediterranean Massage on Wednesday and a dinner sitting at La Marea on Thursday."
+              />
+              <img
+                class="is-dark"
+                src="/home/cp-calendar-dark.webp"
+                width="2588"
+                height="488"
+                loading="lazy"
+                alt="The Reservations Calendar in the control panel for the week of 13 to 19 December 2026: the Sea View Suite booked from Monday to Friday, a Mediterranean Massage on Wednesday and a dinner sitting at La Marea on Thursday."
+              />
+            </div>
+          </div>
+          <figcaption><span class="dot is-amber"></span>Every booking on one calendar</figcaption>
+        </figure>
+      </div>
+    </section>
+
     <section class="section" aria-labelledby="who-title">
       <div class="wrap who">
         <div class="who-text">
@@ -388,36 +492,42 @@ const details = [
           <a class="more" href="/rates">Rates <Icon name="arrow-right" size={14} /></a>
         </div>
         <div class="split-visual pairing">
-          <div class="cp-card rates-card" aria-hidden="true">
-            <p class="cp-head"><span>Rates</span><span class="cp-btn">Add rate</span></p>
-            <div class="cp-body">
-              <p class="cp-label">Collection</p>
-              <p class="cp-field">Rooms <Icon name="chevron-down" size={12} /></p>
-              <ul class="rate-tree">
-                {
-                  rates.map((rate) => (
-                    <li class:list={{ "is-child": rate.child }}>
-                      <span class="grip" />
-                      <span class="live" />
-                      <strong>{rate.name}</strong>
-                      <span class="badges">
-                        {rate.badges.map((badge) => <span class="cp-badge">{badge}</span>)}
-                      </span>
-                    </li>
-                  ))
-                }
-              </ul>
+          <figure class="shot shot-rates">
+            <div class="cp-card rates-card" aria-hidden="true">
+              <p class="cp-head"><span>Rates</span><span class="cp-btn">Add rate</span></p>
+              <div class="cp-body">
+                <p class="cp-label">Collection</p>
+                <p class="cp-field">Rooms <Icon name="chevron-down" size={12} /></p>
+                <ul class="rate-tree">
+                  {
+                    rates.map((rate) => (
+                      <li class:list={{ "is-child": rate.child }}>
+                        <span class="grip" />
+                        <span class="live" />
+                        <strong>{rate.name}</strong>
+                        <span class="badges">
+                          {rate.badges.map((badge) => <span class="cp-badge">{badge}</span>)}
+                        </span>
+                      </li>
+                    ))
+                  }
+                </ul>
+              </div>
             </div>
-          </div>
-          <div class="window window-widget">
-            <img
-              src="/home/room-rates.webp"
-              width="800"
-              height="1450"
-              loading="lazy"
-              alt="The demo hotel's booking box for the Sea View Suite, 14 to 18 December: Best Flexible at €282 a night, Bed & Breakfast at €304, Advance Saver at €231 and non-refundable, and Last-Minute Escape with no availability."
-            />
-          </div>
+            <figcaption><span class="dot is-amber"></span>Rates in the control panel</figcaption>
+          </figure>
+          <figure class="shot shot-widget">
+            <div class="window">
+              <img
+                src="/home/room-rates.webp"
+                width="800"
+                height="1450"
+                loading="lazy"
+                alt="The demo hotel's booking box for the Sea View Suite, 14 to 18 December: Best Flexible at €282 a night, Bed & Breakfast at €304, Advance Saver at €231 and non-refundable, and Last-Minute Escape with no availability."
+              />
+            </div>
+            <figcaption><span class="dot is-orange"></span>What guests see</figcaption>
+          </figure>
         </div>
       </div>
     </section>
@@ -820,17 +930,22 @@ const details = [
     display: none;
   }
 
-  .wrap {
-    width: 100%;
-    max-width: 74rem;
-    margin-inline: auto;
-    padding-inline: 1rem;
+  .home {
+    --container: 74rem;
+    --gutter: 1rem;
   }
 
   @media (min-width: 640px) {
-    .wrap {
-      padding-inline: 1.5rem;
+    .home {
+      --gutter: 1.5rem;
     }
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: var(--container);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
   }
 
   h1,
@@ -958,7 +1073,10 @@ const details = [
     isolation: isolate;
   }
 
-  /* A faint week grid behind the hero: seven columns, like the calendar in the logo */
+  /* A faint week grid behind the hero: seven columns, like the calendar in the logo. A column
+     is a seventh of the container's content box. Centring one column on the page (seven is odd)
+     puts lines on both content edges, so the headline and the frames start on a line and the
+     grid carries on at the same pitch into the margins. */
   .hero::before {
     content: "";
     position: absolute;
@@ -969,7 +1087,8 @@ const details = [
       color-mix(in oklab, var(--blume-foreground) 7%, transparent) 1px,
       transparent 1px
     );
-    background-size: calc(100% / 7) 100%;
+    background-size: calc((min(100%, var(--container)) - 2 * var(--gutter)) / 7) 100%;
+    background-position: 50% 0;
     mask-image: linear-gradient(to bottom, transparent, #000 25%, #000 60%, transparent);
   }
 
@@ -1224,6 +1343,176 @@ const details = [
     color: var(--blume-muted-foreground);
     font-size: 1.0625rem;
     line-height: 1.6;
+  }
+
+  /* Three collections, one checkout: three Availability fields merge into one checkout, and the
+     bookings land on one calendar. The collections wear the logo's bars in their order. */
+  .any-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+  }
+
+  .section-head .any-links {
+    margin-top: 0;
+  }
+
+  .any {
+    --gap: 1.5rem;
+  }
+
+  .collections {
+    display: grid;
+    gap: 2.25rem var(--gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .collection {
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (min-width: 768px) {
+    .collections {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    /* Subgrid lines the three fields up, whatever the length of the text above them */
+    .collection {
+      display: grid;
+      grid-row: span 3;
+      grid-template-rows: subgrid;
+      row-gap: 0;
+    }
+  }
+
+  .collection .cp-select {
+    white-space: nowrap;
+  }
+
+  /* Three columns are too narrow for the month and the rate side by side until 960px, and the
+     calendar below names the month */
+  @media (min-width: 768px) and (max-width: 959px) {
+    .collection .cp-month {
+      display: none;
+    }
+  }
+
+  .collection h3 {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    font-size: 1.125rem;
+  }
+
+  .collection h3::before {
+    content: "";
+    width: 3rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--orange);
+  }
+
+  .collection:nth-child(2) h3::before {
+    background: var(--amber);
+  }
+
+  .collection:nth-child(3) h3::before {
+    background: var(--third-bar);
+  }
+
+  .collection > p {
+    margin-top: 0.25rem;
+    color: var(--blume-muted-foreground);
+    font-size: 0.9375rem;
+  }
+
+  .collection .cp-card {
+    margin-top: 1.125rem;
+  }
+
+  .cal-day.is-closed b {
+    color: var(--cp-muted);
+  }
+
+  /* Three lines join under the fields and run down through the checkout to the calendar */
+  .merge {
+    --line: color-mix(in oklab, var(--blume-foreground) 24%, transparent);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    padding-block: 2.25rem;
+  }
+
+  .merge::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 50%;
+    border-left: 1px solid var(--line);
+  }
+
+  @media (min-width: 768px) {
+    .merge {
+      padding-block: 3.25rem 2.25rem;
+    }
+
+    /* Stems from the outer columns' centres, joined by a rounded run along the bottom */
+    .merge::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: calc((100% - 2 * var(--gap)) / 6);
+      right: calc((100% - 2 * var(--gap)) / 6);
+      height: 1.5rem;
+      border: 1px solid var(--line);
+      border-top: 0;
+      border-radius: 0 0 14px 14px;
+    }
+  }
+
+  .merge-node {
+    position: relative;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.25rem 0.625rem;
+    padding: 0.5rem 0.875rem;
+    border: 1px solid var(--blume-border);
+    border-radius: 8px;
+    background: var(--blume-background);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .merge-node code {
+    color: var(--blume-muted-foreground);
+    font-family: var(--blume-font-mono);
+    font-size: 0.75rem;
+    font-weight: 400;
+  }
+
+  .week-crop img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* On a phone the whole week would shrink to a sliver. Sunday, Friday and Saturday are empty,
+     so the frame shows Monday to Thursday, with all three bookings, at a larger size. */
+  @media (max-width: 639px) {
+    .week-crop {
+      overflow: hidden;
+    }
+
+    .week-crop img {
+      width: 172%;
+      max-width: none;
+      margin-left: -25.5%;
+    }
   }
 
   /* Who it's for */
@@ -1728,28 +2017,41 @@ const details = [
     }
   }
 
-  /* The rates screen and the booking box they produce, side by side */
+  /* The rates screen and the booking box they produce, side by side. Their captions hang off
+     the bottom edge, so they name each panel without covering the last rate. */
   .pairing {
     display: grid;
-    gap: 1.25rem;
+    gap: 2.25rem;
     align-items: center;
   }
 
   @media (min-width: 560px) {
     .pairing {
       grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: 1.25rem;
     }
 
-    .window-widget {
+    .shot-widget {
       margin-top: 3rem;
     }
   }
 
   @media (max-width: 559px) {
-    .window-widget {
+    .shot-widget {
       width: min(100%, 18rem);
       margin-inline: auto;
     }
+  }
+
+  .pairing .shot figcaption,
+  .shot-week figcaption {
+    bottom: 0;
+    translate: 0 50%;
+  }
+
+  .shot-widget figcaption {
+    left: auto;
+    right: 0.75rem;
   }
 
   .window img {
@@ -1764,6 +2066,11 @@ const details = [
 
   .rates-card {
     font-size: 0.875rem;
+  }
+
+  /* Room under the last rate for the caption that hangs off the card's bottom edge */
+  .rates-card .cp-body {
+    padding-bottom: 1.375rem;
   }
 
   .cp-label {
@@ -2223,6 +2530,13 @@ const details = [
     border-radius: var(--radius);
     background: var(--blume-background);
     box-shadow: var(--shadow);
+  }
+
+  /* Below 900px the card sits under the text: keep it a card, not a full-width band */
+  @media (max-width: 899px) {
+    .plan {
+      max-width: 28rem;
+    }
   }
 
   .plan::before {

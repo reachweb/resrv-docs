@@ -25,12 +25,13 @@ function prompt(question) {
  * Launch (or reuse) a logged-in 2x Control Panel browser.
  * @returns {{ ctx: import('playwright').BrowserContext, page: import('playwright').Page }}
  */
-export async function launchCP({ width = 1440, height = 1600 } = {}) {
+export async function launchCP({ width = 1440, height = 1600, colorScheme = 'light', headless = false } = {}) {
   const ctx = await chromium.launchPersistentContext(PROFILE_DIR, {
-    headless: false,
+    headless,
     viewport: { width, height },
     deviceScaleFactor: 2,          // <-- true 2x output; layout stays at `width` CSS px
     ignoreHTTPSErrors: true,       // local Valet/Herd TLS cert
+    colorScheme,                   // the CP follows the system theme: 'dark' captures its dark mode
   });
   const page = ctx.pages()[0] || (await ctx.newPage());
   await page.goto(`${CP_BASE}/cp/`, { waitUntil: 'domcontentloaded' });
