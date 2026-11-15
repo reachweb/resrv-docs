@@ -291,7 +291,9 @@ One warm accent on a neutral ink-and-paper base, with the brand's amber and a bo
 
 The home page sits in a 74rem container with a 1rem gutter, widening to 1.5rem from 640px. Sections stack with fluid vertical padding (`clamp(4rem, 9vw, 6.5rem)`) and alternate between white and the paper band, each band bounded by hairlines top and bottom. A section opens with a heading block held to 42rem and 3rem of space below it.
 
-Content inside a section is asymmetric. Text-and-visual splits run 5fr to 6fr (or 5fr to 7fr) from 960px, alternating sides; the hero's lead and actions split into two equal columns. Lists of uses, details and add-ons are hairline-divided rows that reflow from one column to two at 640px. The three steps line up their panels with CSS subgrid at 960px, whatever the length of the text above them.
+Content inside a section is asymmetric. Text-and-visual splits run 5fr to 6fr (or 5fr to 7fr) from 960px; the hero's lead and actions split into two equal columns. Lists of uses and details are hairline-divided rows that reflow from one column to two at 640px (details go to three at 960px). The three steps line up their panels with CSS subgrid at 960px, whatever the length of the text above them; from 640px to 959px each step sets its panel beside its text. The two demo doors sit side by side from 640px, with subgrid lining up their pictures and buttons.
+
+The page runs in this order: hero, the three collections, the demo, who it's for, the three steps, checkout, the control panel, also built in, Made by Reach, the price, the closing band. Rates live in step 2 and frontend control in step 3; each fact has one place on the page.
 
 Product shots overlap on a 12-column grid: in the hero, the guest site spans the first eight columns and the control panel overlaps it from column 7, hanging 4rem below the band. Below 900px they stack, offset by a column, so the overlap survives on phones.
 
@@ -348,7 +350,7 @@ Precise and quiet: one filled button per group, the rest bordered or plain.
 Blume's header: the horizontal logo (shown 27px tall, set at 2.5rem to carry its clear space), then Docs, Demo and the version link in body text, the Buy pill in the accent, search and the theme toggle. The docs sidebar and outline are Blume's, with the current page on a muted pill. The home page's **tabs** are a segmented control: a 12px paper-band track with a hairline, 9px segments in semibold muted text, the selected one on paper with ink text and a 1px lift.
 
 ### Feature Rows
-The "who it's for", details and add-on lists are rows, not cards, each with a hairline above or below it, a title and muted text. Only the "who it's for" grid carries icon tiles (2.5rem, Orange Tint with a Deep Orange Lucide glyph), with a semibold accent link to the docs page that backs the claim. The details list is plain: two columns from 640px, each title a link to its docs page with a small accent arrow.
+The "who it's for" and details lists are rows, not cards, each with a hairline above or below it, a title and muted text. Only the "who it's for" grid carries icon tiles (2.5rem, Orange Tint with a Deep Orange Lucide glyph), with a semibold accent link to the docs page that backs the claim. The details list is plain: two columns from 640px and three from 960px, each title a link to its docs page with a small accent arrow.
 
 ### Product Frame (signature)
 Real screenshots sit in a browser frame: a paper-band chrome bar with three muted dots and a centered pill address showing the demo's real host and path, the screenshot below, 14px corners, a hairline and the product lift. An ink caption tag hangs off the bottom edge at a lower corner, half on the frame and half below it, so it names the screen without covering it; it carries a small rounded-square dot in Orange (guest site) or Amber (control panel). Control panel screenshots ship as light and dark pairs that swap with the theme.
@@ -356,13 +358,16 @@ Real screenshots sit in a browser frame: a paper-band chrome bar with three mute
 Below 560px a whole control panel screen would shrink to 4px text, so each one crops to a single region at about twice the size: a `.crop` box takes the image's width and its left and top offsets as custom properties. The hero's Reservations list drops Statamic's top bar and sidebar, and the tab viewer's three screens crop square, so the frame keeps its size between tabs. The calendar week crops to Monday to Thursday the same way.
 
 ### Control Panel Redraws (signature)
-Small HTML panels that redraw the Statamic control panel (fieldtype picker, availability calendar, rates tree, login) in Statamic's own look: Inter, neutral greys, indigo actions, green availability counts, 6 to 10px corners. They use the demo's real names and numbers and follow the site's theme.
+Small HTML panels that redraw the Statamic control panel (fieldtype picker, availability calendar, rates tree, sign-in card) in Statamic's own look: Inter, neutral greys, indigo actions, green availability counts, 6 to 10px corners. They use the demo's real names and numbers and follow the site's theme.
 
 ### Three-Bar Track and Step Numbers (signature)
 From 960px, the three steps sit under a track of three staggered capsules (orange, amber, ink or white) that echo the logo's bars. Each step's number is a 2rem, 8px-cornered square in the matching bar color, set in wide Archivo 800.
 
 ### Track Record
-The "Made by Reach" section comes right before the price and ends on three facts: "5 years in production", "Thousands of bookings processed" and "Millions in revenue generated". Each sits under a capsule bar in bar order (7rem, 7rem and a shorter 4.5rem, 0.75rem tall), in Proof type, three columns from 768px and stacked below. The hero's facts row repeats the first one. Keep the facts at this precision: never exact figures, never stat tiles.
+The "Made by Reach" section comes right before the price and ends on three facts: "5 years in production", "Thousands of bookings processed" and "Millions in revenue generated". Each sits under a capsule bar in bar order (7rem, 7rem and a shorter 4.5rem, 0.75rem tall), in Proof type. From 960px they stack in the right column beside the Made by Reach story, in line with the price card below; from 768px to 959px they sit in a row of three under it, and they stack on phones. The hero's facts row repeats the first one. Keep the facts at this precision: never exact figures, never stat tiles.
+
+### Demo Doors
+Two cards, one for the hotel site and one for the control panel, each read top to bottom: what to do, what you'll see, then the button that opens it in a new tab. The site door shows the demo hotel's home page at 2:1; the control panel door shows the redrawn sign-in card, and the card holds the demo login itself as real, selectable text, so the login appears once. No "Step" label sits above the headings; the order, the orange and amber bars and the primary button carry the sequence.
 
 ### Closing Band
 The page ends on a band of ink (closing night in dark) with the reversed horizontal logo shown 300px wide, a white headline and the orange primary button. It is the only dark band on the light page, like the brand's dark social images.

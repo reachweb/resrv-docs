@@ -7,11 +7,9 @@ import {
   demoCpUrl,
   demoLogin,
   demoUrl,
-  easyFormsUrl,
   githubUrl,
   issuesUrl,
   license,
-  livewireFiltersUrl,
   marketplaceUrl,
   partnerUrl,
   price,
@@ -105,13 +103,6 @@ const collections = [
 ];
 
 const fieldtypes = ["Resrv Availability", "Resrv Options", "Resrv Extras", "Resrv Fixed Pricing", "Resrv Cutoff"];
-
-// The Sea View Suite's first two weeks of November 2026 in the demo: 3 free a day,
-// €320 on weekdays and €368 on Fridays and Saturdays.
-const calendarDays = Array.from({ length: 14 }, (_, i) => ({
-  day: i + 1,
-  price: i % 7 >= 5 ? "368" : "320",
-}));
 
 const screens = [
   {
@@ -376,6 +367,57 @@ const details = [
       </div>
     </section>
 
+    <section class="section demo" id="demo" aria-labelledby="demo-title">
+      <div class="wrap">
+        <header class="section-head">
+          <h2 id="demo-title">Try it on the Resrv Hotel</h2>
+        </header>
+        <ol class="doors">
+          <li class="door door-site">
+            <div class="door-body">
+              <h3>Book on the hotel site</h3>
+              <p>Pick your dates, choose a rate, add extras and go through checkout. The demo only offers bank transfer, so you won't need a card.</p>
+            </div>
+            <a class="door-media" href={demoUrl} target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
+              <img
+                src="/home/demo-hotel.webp"
+                width="1400"
+                height="875"
+                loading="lazy"
+                alt=""
+              />
+            </a>
+            <div class="door-foot">
+              <a class="btn btn-primary" href={demoUrl} target="_blank" rel="noopener">
+                Open the hotel site <Icon name="arrow-up-right" size={16} /><span class="sr-only">(opens in a new tab)</span>
+              </a>
+            </div>
+          </li>
+          <li class="door door-cp">
+            <div class="door-body">
+              <h3>Log in to the control panel</h3>
+              <p>Find your booking under Reservations, then look around the calendar, rates and reports.</p>
+            </div>
+            <div class="door-media login">
+              <div class="login-card">
+                <p class="login-title" aria-hidden="true">Sign in with email</p>
+                <dl class="creds" aria-label="Demo login">
+                  <div><dt>Email</dt><dd>{demoLogin.email}</dd></div>
+                  <div><dt>Password</dt><dd>{demoLogin.password}</dd></div>
+                </dl>
+                <p class="login-btn" aria-hidden="true">Continue</p>
+              </div>
+            </div>
+            <div class="door-foot">
+              <a class="btn btn-secondary" href={demoCpUrl} target="_blank" rel="noopener">
+                Open the control panel <Icon name="arrow-up-right" size={16} /><span class="sr-only">(opens in a new tab)</span>
+              </a>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
     <section class="section" aria-labelledby="who-title">
       <div class="wrap who">
         <div class="who-text">
@@ -452,23 +494,27 @@ const details = [
             <div class="step-text">
               <span class="step-num">2</span>
               <h3>Set availability and prices</h3>
-              <p>Fill each entry's calendar with how many units are free each day and what they cost. Add rates for room types or pricing tiers.</p>
+              <p>Fill each entry's calendar with how many units are free each day and what they cost. Add rates for room types or pricing tiers. A rate can take its price from a base rate and share its inventory.</p>
               <a class="more" href="/rates">Rates <Icon name="arrow-right" size={14} /></a>
             </div>
             <div class="step-visual" aria-hidden="true">
               <div class="cp-card">
-                <p class="cp-head"><span>November 2026</span><span class="cp-select">Best Flexible <Icon name="chevron-down" size={12} /></span></p>
-                <div class="cal">
-                  {["S", "M", "T", "W", "T", "F", "S"].map((d) => <span class="cal-dow">{d}</span>)}
-                  {
-                    calendarDays.map((d) => (
-                      <span class="cal-day">
-                        <b>{d.day}</b>
-                        <i># 3</i>
-                        <small>€{d.price}</small>
-                      </span>
-                    ))
-                  }
+                <p class="cp-head"><span>Rates</span><span class="cp-btn">Add rate</span></p>
+                <div class="cp-body">
+                  <ul class="rate-tree">
+                    {
+                      rates.map((rate) => (
+                        <li class:list={{ "is-child": rate.child }}>
+                          <span class="grip" />
+                          <span class="live" />
+                          <strong>{rate.name}</strong>
+                          <span class="badges">
+                            {rate.badges.map((badge) => <span class="cp-badge">{badge}</span>)}
+                          </span>
+                        </li>
+                      ))
+                    }
+                  </ul>
                 </div>
               </div>
             </div>
@@ -477,7 +523,7 @@ const details = [
             <div class="step-text">
               <span class="step-num">3</span>
               <h3>Add the Livewire components</h3>
-              <p>Put the search and results components in your templates. The checkout component handles extras, the guest's details and payment.</p>
+              <p>Put the search, results and checkout components in your templates. Publish their Blade views to change any part, and style them with Tailwind.</p>
               <a class="more" href="/frontend-setup">Frontend setup <Icon name="arrow-right" size={14} /></a>
             </div>
             <div class="step-visual" aria-hidden="true">
@@ -496,62 +542,7 @@ const details = [
       </div>
     </section>
 
-    <section class="section" aria-labelledby="rates-title">
-      <div class="wrap split">
-        <div class="split-text">
-          <h2 id="rates-title">Availability and prices for every day</h2>
-          <p>
-            Each entry has its own calendar. Set availability and prices for one day, a range of dates,
-            or only certain days of the week, like weekends.
-          </p>
-          <ul class="ticks">
-            <li><Icon name="check" size={16} /><span>Rates for room types or pricing tiers. Each has its own prices or a relative price, such as a percentage off a base rate.</span></li>
-            <li><Icon name="check" size={16} /><span>Shared rates use the base rate's inventory, so a room booked at one rate is gone from all of them.</span></li>
-          </ul>
-          <a class="more" href="/rates">Rates <Icon name="arrow-right" size={14} /></a>
-        </div>
-        <div class="split-visual pairing">
-          <figure class="shot shot-rates">
-            <div class="cp-card rates-card" aria-hidden="true">
-              <p class="cp-head"><span>Rates</span><span class="cp-btn">Add rate</span></p>
-              <div class="cp-body">
-                <p class="cp-label">Collection</p>
-                <p class="cp-field">Rooms <Icon name="chevron-down" size={12} /></p>
-                <ul class="rate-tree">
-                  {
-                    rates.map((rate) => (
-                      <li class:list={{ "is-child": rate.child }}>
-                        <span class="grip" />
-                        <span class="live" />
-                        <strong>{rate.name}</strong>
-                        <span class="badges">
-                          {rate.badges.map((badge) => <span class="cp-badge">{badge}</span>)}
-                        </span>
-                      </li>
-                    ))
-                  }
-                </ul>
-              </div>
-            </div>
-            <figcaption><span class="dot is-amber"></span>Rates in the control panel</figcaption>
-          </figure>
-          <figure class="shot shot-widget">
-            <div class="window">
-              <img
-                src="/home/room-rates.webp"
-                width="800"
-                height="1450"
-                loading="lazy"
-                alt="The demo hotel's booking box for the Sea View Suite, 14 to 18 December: Best Flexible at €282 a night, Bed & Breakfast at €304, Advance Saver at €231 and non-refundable, and Last-Minute Escape with no availability."
-              />
-            </div>
-            <figcaption><span class="dot is-orange"></span>What guests see</figcaption>
-          </figure>
-        </div>
-      </div>
-    </section>
-
-    <section class="section tinted" aria-labelledby="checkout-title">
+    <section class="section" aria-labelledby="checkout-title">
       <div class="wrap split is-reversed">
         <div class="split-text">
           <h2 id="checkout-title">A checkout with extras, discounts and payments</h2>
@@ -594,7 +585,7 @@ const details = [
       </div>
     </section>
 
-    <section class="section" aria-labelledby="manage-title">
+    <section class="section tinted" aria-labelledby="manage-title">
       <div class="wrap">
         <div class="manage-head">
           <div>
@@ -669,45 +660,6 @@ const details = [
       </div>
     </section>
 
-    <section class="section tinted" aria-labelledby="frontend-title">
-      <div class="wrap split">
-        <div class="split-text">
-          <h2 id="frontend-title">A frontend you control</h2>
-          <p>
-            Search, results and checkout are Livewire components with Blade views. Publish the views
-            and change any part of them.
-          </p>
-          <ul class="ticks">
-            <li><Icon name="check" size={16} /><span>Style them with Tailwind, and theme the date picker with CSS variables.</span></li>
-            <li><Icon name="check" size={16} /><span>Write a gateway class for a payment provider Resrv doesn't support yet. <a href="/custom-payment-gateway">Custom gateways</a></span></li>
-          </ul>
-          <a class="more" href="/frontend-setup">Frontend setup <Icon name="arrow-right" size={14} /></a>
-        </div>
-        <div class="split-visual" aria-hidden="true">
-          <div class="code code-feature">
-            <p class="code-file">Terminal</p>
-            <pre><code>php artisan vendor:publish \
-    <span class="a">--tag</span>=<span class="s">resrv-checkout-views</span></code></pre>
-            <p class="code-file">resources/css/site.css</p>
-            <pre><code><span class="t">@import</span> <span class="s">"tailwindcss"</span>;
-<span class="t">@plugin</span> <span class="s">"@tailwindcss/forms"</span>;
-
-<span class="t">:root</span> {"{"}
-    <span class="a">--color-calendar-primary</span>: <span class="s">#06b6d4</span>;
-    <span class="a">--radius-calendar-day</span>: <span class="s">0.5rem</span>;
-{"}"}</code></pre>
-            <p class="code-file">config/resrv-config.php</p>
-            <pre><code><span class="s">'payment_gateways'</span> =&gt; [
-    <span class="s">'square'</span> =&gt; [
-        <span class="s">'class'</span> =&gt; <span class="a">SquareGateway</span>::class,
-        <span class="s">'label'</span> =&gt; <span class="s">'Square'</span>,
-    ],
-],</code></pre>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <section class="section" aria-labelledby="details-title">
       <div class="wrap">
         <header class="section-head">
@@ -734,95 +686,25 @@ const details = [
       </div>
     </section>
 
-    <section class="section demo" id="demo" aria-labelledby="demo-title">
-      <div class="wrap">
-        <header class="section-head">
-          <h2 id="demo-title">Try it on the Resrv Hotel</h2>
+    <section class="section tinted" aria-labelledby="team-title">
+      <div class="wrap team">
+        <div class="team-text">
+          <h2 id="team-title">Made by Reach in Kos, Greece</h2>
           <p>
-            The demo is a coastal hotel that takes bookings for rooms, spa treatments and restaurant
-            tables. Make a booking, then log in and find it.
+            We've built websites as Reach Web Agency since 2012, and only with Statamic since 2020.
+            We're a Statamic Partner, and we also make Easy Forms, and Livewire Filters, which pairs
+            with Resrv to search for entries that are available. Resrv's code is on GitHub.
           </p>
-        </header>
-        <ol class="doors">
-          <li class="door door-site">
-            <a class="door-media" href={demoUrl} target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
-              <img
-                src="/home/demo-hotel.webp"
-                width="1400"
-                height="875"
-                loading="lazy"
-                alt=""
-              />
-            </a>
-            <div class="door-body">
-              <p class="door-step">Step 1</p>
-              <h3>Book on the hotel site</h3>
-              <p>Pick your dates, choose a rate, add extras and go through checkout. The demo only offers bank transfer, so you won't need a card.</p>
-              <a class="btn btn-primary" href={demoUrl} target="_blank" rel="noopener">
-                Open the hotel site <Icon name="arrow-up-right" size={16} /><span class="sr-only">(opens in a new tab)</span>
-              </a>
-            </div>
-          </li>
-          <li class="door door-cp">
-            <div class="door-media login" aria-hidden="true">
-              <div class="login-card">
-                <p class="login-title">Sign in with email</p>
-                <p class="login-label">Email</p>
-                <p class="login-input">{demoLogin.email}</p>
-                <p class="login-label">Password</p>
-                <p class="login-input is-secret">••••••••</p>
-                <p class="login-btn">Continue</p>
-              </div>
-            </div>
-            <div class="door-body">
-              <p class="door-step">Step 2</p>
-              <h3>Log in to the control panel</h3>
-              <p>Find your booking under Reservations, then look around the calendar, rates and reports.</p>
-              <dl class="creds">
-                <div><dt>Email</dt><dd><code>{demoLogin.email}</code></dd></div>
-                <div><dt>Password</dt><dd><code>{demoLogin.password}</code></dd></div>
-              </dl>
-              <a class="btn btn-secondary" href={demoCpUrl} target="_blank" rel="noopener">
-                Open the control panel <Icon name="arrow-up-right" size={16} /><span class="sr-only">(opens in a new tab)</span>
-              </a>
-            </div>
-          </li>
-        </ol>
-      </div>
-    </section>
-
-    <section class="section" aria-labelledby="team-title">
-      <div class="wrap">
-        <div class="split team">
-          <div class="split-text">
-            <h2 id="team-title">Made by Reach in Kos, Greece</h2>
-            <p>
-              We've built websites as Reach Web Agency since 2012, and only with Statamic since 2020.
-              We're a Statamic Partner, and we also make Easy Forms and Livewire Filters. Resrv's code
-              is on GitHub.
-            </p>
+          <div class="team-links">
             <a class="partner" href={partnerUrl}>
               <img src="/statamic-partner.svg" width="112" height="96" alt="Statamic Partner" loading="lazy" />
             </a>
             <p class="link-row">
               <a class="more" href={reachUrl}>About Reach <Icon name="arrow-up-right" size={14} /></a>
               <a class="more" href={sellerUrl}>Our add-ons <Icon name="arrow-up-right" size={14} /></a>
+              <a class="more" href={githubUrl}>Resrv on GitHub <Icon name="arrow-up-right" size={14} /></a>
             </p>
           </div>
-          <ul class="addons">
-            <li>
-              <h3><a href={easyFormsUrl}>Easy Forms <Icon name="arrow-up-right" size={16} /></a></h3>
-              <p>Professional, accessible forms for your Statamic site.</p>
-            </li>
-            <li>
-              <h3><a href={livewireFiltersUrl}>Livewire Filters <Icon name="arrow-up-right" size={16} /></a></h3>
-              <p>Live filters for Statamic collections. Pair it with Resrv to search for entries that are available.</p>
-            </li>
-            <li>
-              <h3><a href={githubUrl}>Resrv on GitHub <Icon name="arrow-up-right" size={16} /></a></h3>
-              <p>Read the code, follow releases, and report issues.</p>
-            </li>
-          </ul>
         </div>
         <ul class="proof" aria-label="Resrv's track record">
           <li>5 years in production</li>
@@ -832,7 +714,7 @@ const details = [
       </div>
     </section>
 
-    <section class="section tinted" aria-labelledby="pricing-title">
+    <section class="section" aria-labelledby="pricing-title">
       <div class="wrap pricing">
         <div class="pricing-text">
           <h2 id="pricing-title">One price, paid once</h2>
@@ -1760,6 +1642,18 @@ const details = [
     background: var(--blume-background);
   }
 
+  @media (min-width: 640px) and (max-width: 959px) {
+    .step {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    .step-visual {
+      border-top: 0;
+      border-left: 1px solid var(--blume-border);
+    }
+  }
+
   @media (min-width: 960px) {
     .steps {
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1985,21 +1879,6 @@ const details = [
     line-height: 1.7;
   }
 
-  .code-feature pre {
-    font-size: 0.6875rem;
-  }
-
-  @media (min-width: 560px) {
-    .code-feature .code-file {
-      padding: 0.625rem 1.125rem;
-      font-size: 0.75rem;
-    }
-
-    .code-feature pre {
-      padding: 1rem 1.125rem;
-      font-size: 0.8125rem;
-    }
-  }
 
   .code pre + .code-file {
     border-top: 1px solid var(--blume-border);
@@ -2134,37 +2013,6 @@ const details = [
     }
   }
 
-  /* The rates screen and the booking box they produce, side by side. Their captions hang off
-     the bottom edge, so they name each panel without covering the last rate. */
-  .pairing {
-    display: grid;
-    gap: 2.25rem;
-    align-items: center;
-  }
-
-  @media (min-width: 560px) {
-    .pairing {
-      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-      gap: 1.25rem;
-    }
-
-    .shot-widget {
-      margin-top: 3rem;
-    }
-  }
-
-  @media (max-width: 559px) {
-    .shot-widget {
-      width: min(100%, 18rem);
-      margin-inline: auto;
-    }
-  }
-
-  .shot-widget figcaption {
-    left: auto;
-    right: 0.75rem;
-  }
-
   .window img {
     display: block;
     width: 100%;
@@ -2175,33 +2023,12 @@ const details = [
     background: #f3eee6;
   }
 
-  .rates-card {
-    font-size: 0.875rem;
-  }
-
-  /* Room under the last rate for the caption that hangs off the card's bottom edge */
-  .rates-card .cp-body {
-    padding-bottom: 1.375rem;
-  }
-
-  .cp-label {
-    font-weight: 600;
-  }
-
-  .cp-field {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 0.375rem;
-    padding: 0.4375rem 0.625rem;
-    border: 1px solid var(--cp-border);
-    border-radius: 6px;
-  }
-
+  /* The Rooms collection's rates, as the Rates screen lists them: base rate first, the rates
+     derived from it indented below */
   .rate-tree {
     display: grid;
-    gap: 0.5rem;
-    margin: 1rem 0 0.25rem;
+    gap: 0.375rem;
+    margin: 0;
     padding: 0;
     list-style: none;
   }
@@ -2210,8 +2037,8 @@ const details = [
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.375rem 0.5rem;
-    padding: 0.5625rem 0.75rem;
+    gap: 0.25rem 0.5rem;
+    padding: 0.4375rem 0.625rem;
     border: 1px solid var(--cp-border);
     border-radius: 8px;
     background: var(--cp-bg);
@@ -2360,7 +2187,7 @@ const details = [
     background: #22c55e;
   }
 
-  /* Details: a plain two-column list, divided by hairlines */
+  /* Details: a plain list in two or three columns, divided by hairlines */
   .details {
     display: grid;
     margin: 0;
@@ -2373,6 +2200,13 @@ const details = [
     .details {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       column-gap: 3rem;
+    }
+  }
+
+  @media (min-width: 960px) {
+    .details {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: 2.5rem;
     }
   }
 
@@ -2423,6 +2257,11 @@ const details = [
     background: color-mix(in oklab, var(--orange) 4%, var(--blume-background));
   }
 
+  /* Right after the collections band, whose bottom hairline already divides the two */
+  .tinted + .demo {
+    border-top: 0;
+  }
+
   .doors {
     display: grid;
     gap: 1.25rem;
@@ -2431,22 +2270,30 @@ const details = [
     list-style: none;
   }
 
-  @media (min-width: 860px) {
-    .doors {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1.5rem;
-    }
-  }
-
+  /* Each door reads down: what to do, what you'll see, the button that opens it */
   .door {
     position: relative;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: auto auto 1fr;
     overflow: hidden;
     border: 1px solid var(--blume-border);
     border-radius: var(--radius);
     background: var(--blume-background);
     box-shadow: var(--shadow);
+  }
+
+  @media (min-width: 640px) {
+    .doors {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* Subgrid lines the two pictures and the two buttons up, whatever the length of the text */
+    .door {
+      grid-row: span 3;
+      grid-template-rows: subgrid;
+      gap: 0;
+    }
   }
 
   /* The first two bars of the logo: orange for the site, amber for the control panel */
@@ -2468,11 +2315,30 @@ const details = [
     background: var(--amber);
   }
 
+  .door-body {
+    padding: 1.875rem 1.5rem 1.5rem;
+  }
+
+  .door h3 {
+    font-size: 1.375rem;
+  }
+
+  .door-body > p {
+    margin-top: 0.5rem;
+    color: var(--blume-muted-foreground);
+    line-height: 1.6;
+  }
+
   .door-media {
     display: block;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 2 / 1;
     overflow: hidden;
-    border-bottom: 1px solid var(--blume-border);
+    border-block: 1px solid var(--blume-border);
+  }
+
+  /* Stretches to the login card's height when that is the taller of the two */
+  .door-site .door-media {
+    align-self: stretch;
   }
 
   .door-media img {
@@ -2483,52 +2349,53 @@ const details = [
     object-position: top left;
   }
 
+  .door-foot {
+    padding: 1.25rem 1.5rem 1.5rem;
+  }
+
+  /* The control panel's sign-in screen, holding the demo login itself */
   .login {
     display: grid;
     place-items: center;
-    padding: 1.5rem;
+    aspect-ratio: auto;
+    padding: 1.25rem;
     background: var(--cp-page);
   }
 
-  @media (max-width: 559px) {
-    .door-media.login {
-      aspect-ratio: auto;
-      padding-block: 1.75rem;
-    }
-  }
-
   .login-card {
-    width: min(100%, 17rem);
-    padding: 1.125rem;
+    width: min(100%, 17.5rem);
+    padding: 1rem 1.125rem 1.125rem;
     border: 1px solid var(--cp-border);
     border-radius: 12px;
     background: var(--cp-bg);
     box-shadow: 0 12px 28px -18px rgb(0 0 0 / 0.4);
     color: var(--cp-text);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
   }
 
   .login-title {
-    margin-bottom: 0.625rem;
     font-weight: 600;
     font-size: 0.875rem;
     text-align: center;
   }
 
-  .login-label {
-    margin-top: 0.5rem;
+  .creds {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0.75rem 0 0;
+  }
+
+  .creds dt {
     font-weight: 600;
   }
 
-  .login-input {
-    margin-top: 0.25rem;
+  /* The values sit in the sign-in fields; one click selects a whole value to copy */
+  .creds dd {
+    margin: 0.25rem 0 0;
     padding: 0.375rem 0.5rem;
     border: 1px solid var(--cp-border);
     border-radius: 6px;
-  }
-
-  .login-input.is-secret {
-    letter-spacing: 0.1em;
+    user-select: all;
   }
 
   .login-btn {
@@ -2539,70 +2406,6 @@ const details = [
     color: #fff;
     font-weight: 600;
     text-align: center;
-  }
-
-  .door-body {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 1.5rem;
-  }
-
-  .door-step {
-    color: var(--blume-accent);
-    font-size: 0.875rem;
-    font-weight: 600;
-  }
-
-  .door h3 {
-    margin-top: 0.25rem;
-    font-size: 1.375rem;
-  }
-
-  .door-body > p:not(.door-step) {
-    margin-top: 0.5rem;
-    color: var(--blume-muted-foreground);
-    line-height: 1.6;
-  }
-
-  .door-body .btn {
-    margin-top: auto;
-  }
-
-  .door-body > p + .btn,
-  .creds + .btn {
-    margin-top: 1.25rem;
-  }
-
-  .creds {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1.5rem;
-    margin: 1rem 0 0;
-  }
-
-  .creds div {
-    display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
-  }
-
-  .creds dt {
-    color: var(--blume-muted-foreground);
-    font-size: 0.875rem;
-  }
-
-  .creds dd {
-    margin: 0;
-  }
-
-  .creds code {
-    padding: 0.125rem 0.375rem;
-    border-radius: 6px;
-    background: var(--blume-code-background, var(--surface));
-    font-family: var(--blume-font-mono);
-    font-size: 0.8125rem;
   }
 
   /* Pricing */
@@ -2749,9 +2552,37 @@ const details = [
   }
 
   /* Made by Reach */
+  .team {
+    display: grid;
+    gap: 3.5rem;
+  }
+
+  @media (min-width: 960px) {
+    .team {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+      align-items: center;
+      gap: 5rem;
+    }
+  }
+
+  .team-text > p {
+    max-width: 36rem;
+    margin-top: 1rem;
+    color: var(--blume-muted-foreground);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+  }
+
+  .team-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 2rem;
+    margin-top: 1.75rem;
+  }
+
   .partner {
     display: inline-block;
-    margin-top: 1.75rem;
   }
 
   .partner img {
@@ -2772,20 +2603,26 @@ const details = [
     gap: 0 1.5rem;
   }
 
-  /* The track record: three facts under the logo's bars, in bar order, closing the section
-     right before the price */
+  /* The track record: three facts under the logo's bars, in bar order, right before the price.
+     A row of three from 768px, then stacked beside the story from 960px. */
   .proof {
     display: grid;
     gap: 2rem;
-    margin: clamp(3.5rem, 7vw, 5rem) 0 0;
+    margin: 0;
     padding: 0;
     list-style: none;
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: 768px) and (max-width: 959px) {
     .proof {
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 1.5rem;
+    }
+  }
+
+  @media (min-width: 960px) {
+    .proof {
+      gap: 2.25rem;
     }
   }
 
@@ -2817,46 +2654,6 @@ const details = [
   .proof li:nth-child(3)::before {
     width: 4.5rem;
     background: var(--third-bar);
-  }
-
-  .addons {
-    display: grid;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    border-top: 1px solid var(--blume-border);
-  }
-
-  .addons li {
-    padding: 1.25rem 0;
-    border-bottom: 1px solid var(--blume-border);
-  }
-
-  .addons h3 {
-    font-size: 1.125rem;
-  }
-
-  .addons h3 a {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  /* Off-site links end in the up-right arrow, in the accent */
-  .addons h3 a :global(svg) {
-    display: inline;
-    margin-left: 0.125rem;
-    color: var(--blume-accent);
-    vertical-align: -0.125em;
-  }
-
-  .addons h3 a:hover {
-    color: var(--blume-accent);
-  }
-
-  .addons p {
-    margin-top: 0.375rem;
-    color: var(--blume-muted-foreground);
-    line-height: 1.6;
   }
 
   /* Closing band: ink in both themes, like the brand's dark images */
