@@ -10,6 +10,7 @@ Find the section that starts at your version, then work through it and every sec
 2. [Upgrading from v6.0.0 to v6.1.0](#upgrading-from-v6-0-0-to-v6-1-0): one removed attribute.
 3. [Upgrading from v6.1.0 to v6.4.0](#upgrading-from-v6-1-0-to-v6-4-0): a new gateway method, a new status and a changed tag default.
 4. [Upgrading to v6.5.0](#upgrading-to-v6-5-0): manual reservations, gateway interface changes and a scheduled command.
+5. [Upgrading to v6.5.2](#upgrading-to-v6-5-2): one migration and a new translation key.
 
 Each section ends with a checklist for confirming the upgrade worked.
 
@@ -470,3 +471,39 @@ These apply even if you never create a manual reservation. The [v6.5.0 changelog
 - [ ] Your cache store (`CACHE_STORE` in `.env`) isn't `apc`.
 - [ ] If you take online payments for manual reservations, a test reservation paid through its payment link turns **Confirmed** once the webhook arrives.
 - [ ] Your published email templates, checkout views and language files include the v6.5.0 changes.
+
+## Upgrading to v6.5.2
+
+v6.5.2 adds one migration, which isn't destructive, and a new frontend translation key.
+
+### 1. Update the package and run the migration
+
+```bash
+composer update reachweb/statamic-resrv
+php artisan migrate
+```
+
+Run the migration in the same deploy as the package update. Until the new column exists, every confirmation fails and the reservation stays pending: at checkout, in payment webhooks and when you mark a booking as paid.
+
+| Migration | Adds |
+|---|---|
+| `2026_11_15_000000_add_confirmed_at_to_resrv_reservations_table` | `confirmed_at` (nullable timestamp) on `resrv_reservations` |
+
+Resrv sets `confirmed_at` when a reservation becomes **Confirmed** or **Partner**. Existing rows need no backfill: bookings confirmed before the upgrade keep it empty, and their cancellation label uses the time the booking was created instead.
+
+### 2. Add the new translation key
+
+`frontend.php` has a new key, `freeCancellationPassed` ("No free cancellation for these dates"). If you published the language file (`--tag=resrv-language`), add it to every locale you've published. See [Cancellation policy keys](./languages#cancellation-policy-keys).
+
+### What changes for existing sites
+
+- The availability results no longer offer free cancellation until a date that has already passed. When the searched check-in is too close for a rate's free cancellation period, the label says "No free cancellation for these dates". See [Cancellation policy](./availability-results#cancellation-policy).
+- If a customized results view colours the label, for example a green badge for free cancellation, also check `CancellationPolicy::freeCancellationOpen($period, $dateStart)`, so a passed date isn't styled as free cancellation.
+- The checkout sidebar, the confirmation email and the reservation status page show the cancellation terms as they stood when the booking was confirmed, and the label no longer changes later. A manual reservation paid after its free cancellation date now says "No free cancellation for these dates" instead of showing the past date.
+
+### Checklist {#checklist-v6-5-2}
+
+- [ ] `php artisan migrate:status` shows `2026_11_15_000000_add_confirmed_at_to_resrv_reservations_table` as ran.
+- [ ] A test booking confirms, and its row in `resrv_reservations` has `confirmed_at` set.
+- [ ] Your published language files include `freeCancellationPassed`.
+- [ ] Customized results views don't style a passed free cancellation date as free cancellation.

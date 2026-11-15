@@ -118,7 +118,7 @@ The view receives:
 - `$this->resolvedEntries`: the `EntryCollection` or paginator. Call `->links()` on it to render pagination when `paginate` is set.
 - `$data`: the current search (`$data->dates`, `$data->quantity`, `$data->rate`, `$data->hasDates()`).
 
-To show a rate's cancellation label, pass its `cancellation_policy` (a `['policy' => string, 'period' => ?int]` array) to `CancellationPolicy::labelFor(...)`. See [Rates](./rates) to set up policies.
+To show a rate's cancellation label, pass its `cancellation_policy` (a `['policy' => string, 'period' => ?int]` array) to `CancellationPolicy::labelFor(...)`. To style the label, `CancellationPolicy::freeCancellationOpen($period, $dateStart)` tells you whether free cancellation is still possible for that check-in. Treat `false` like a non-refundable rate. See [Rates](./rates) to set up policies.
 
 `from` and `rates` have the same shape as [`live_availability`](#accessing-availability-data), so you can share card templates with `lf-availability-filter`.
 

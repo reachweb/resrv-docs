@@ -56,6 +56,7 @@ Used by the [cancellation policy](./rates#cancellation-policy) label in availabi
 | `cancellationPolicy` | Cancellation policy |
 | `nonRefundable` | Non-refundable |
 | `freeCancellationUntilDate` | Free cancellation until :date |
+| `freeCancellationPassed` | No free cancellation for these dates |
 
 The `:date` placeholder becomes the free cancellation date.
 

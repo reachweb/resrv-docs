@@ -79,6 +79,7 @@ Rates with a cancellation policy show a label:
 
 - **Non-refundable** for non-refundable rates.
 - **Free cancellation until \<date\>** for rates with a free cancellation period. The date is the check-in date minus that period.
+- **No free cancellation for these dates** when that date has already passed, so the searched check-in is too close for free cancellation.
 
 Rates on the global default with no period show no label. The policy is in each rate row's `data` as `cancellation_policy`, a `['policy', 'period']` array. See [Rates](./rates) to set it.
 
