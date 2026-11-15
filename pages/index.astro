@@ -120,60 +120,36 @@ const rates = [
   { name: "Last-Minute Escape", child: true, badges: ["Non-refundable", "Relative", "Shared"] },
 ];
 
-const campaigns = [
-  { n: 1, title: "Stay 7+ nights: save 10%" },
-  { n: 2, title: "Early bird: book 30+ days ahead, save 12%" },
-  { n: 3, title: "COASTAL10: 10% off" },
-];
-
 const details = [
   {
-    icon: "calendar-check",
     title: "Guests manage their booking",
     text: "A status page where guests look up a booking and cancel it within the free cancellation window.",
     href: "/reservation-status",
   },
   {
-    icon: "mail",
     title: "Emails you can edit",
     text: "Confirmation, refund and abandoned checkout emails, with subjects and recipients set in the control panel.",
     href: "/emails",
   },
   {
-    icon: "languages",
     title: "In your site's languages",
     text: "Translate the frontend's text for each site of a Statamic multisite.",
     href: "/languages",
   },
   {
-    icon: "timer",
     title: "Cutoff times",
     text: "Stop bookings a set number of hours before an activity starts.",
     href: "/cutoff",
   },
   {
-    icon: "history",
     title: "Activity log",
     text: "See who changed a price or the availability for a date, and when.",
     href: "/activity-log",
   },
   {
-    icon: "file-spreadsheet",
     title: "CSV export",
     text: "Export reservations with the columns you pick, custom checkout fields included.",
     href: "/reservations#export",
-  },
-  {
-    icon: "palette",
-    title: "Your templates",
-    text: "Publish the Blade views and style them with Tailwind and CSS variables.",
-    href: "/frontend-setup",
-  },
-  {
-    icon: "plug",
-    title: "Any payment provider",
-    text: "Write a gateway class for a provider Resrv doesn't support yet.",
-    href: "/custom-payment-gateway",
   },
 ];
 ---
@@ -408,8 +384,6 @@ const details = [
           <ul class="ticks">
             <li><Icon name="check" size={16} /><span>Rates for room types or pricing tiers, with their own prices or a percentage off a base rate.</span></li>
             <li><Icon name="check" size={16} /><span>Rates can share one inventory, so a room booked at one rate is gone from all of them.</span></li>
-            <li><Icon name="check" size={16} /><span>Minimum and maximum stays, plus early bird and last minute windows, for each rate.</span></li>
-            <li><Icon name="check" size={16} /><span>A free cancellation period for each rate, or none at all with a non-refundable rate.</span></li>
           </ul>
           <a class="more" href="/rates">Rates <Icon name="arrow-right" size={14} /></a>
         </div>
@@ -451,16 +425,14 @@ const details = [
     <section class="section tinted" aria-labelledby="checkout-title">
       <div class="wrap split is-reversed">
         <div class="split-text">
-          <h2 id="checkout-title">A checkout with extras, coupons and payments</h2>
+          <h2 id="checkout-title">A checkout with extras, discounts and payments</h2>
           <p>
             The checkout component takes guests from extras to their details to payment. You build the
             form in Statamic's form builder.
           </p>
           <ul class="ticks">
-            <li><Icon name="check" size={16} /><span>Extras priced per booking, per day or from the total, and shown, hidden or required by conditions.</span></li>
-            <li><Icon name="check" size={16} /><span>Options for choices like breakfast or bed type, and coupon codes for discounts.</span></li>
-            <li><Icon name="check" size={16} /><span>Take the full amount, a fixed deposit or a percentage up front.</span></li>
-            <li><Icon name="check" size={16} /><span>Offer several gateways at checkout, each with its own surcharge and order limits.</span></li>
+            <li><Icon name="check" size={16} /><span>Change prices by the dates of a stay, its length or how far ahead it's booked. Coupons use the same rules. <a href="/dynamic-pricing">Dynamic pricing</a></span></li>
+            <li><Icon name="check" size={16} /><span>Affiliate links credit partners for the bookings they send, with a fee you track. <a href="/affiliates">Affiliates</a></span></li>
           </ul>
           <ul class="gateways" aria-label="Payment gateways">
             <li><a href="/stripe">Stripe</a></li>
@@ -505,10 +477,8 @@ const details = [
             <a class="more" href="/reservations">Reservations <Icon name="arrow-right" size={14} /></a>
           </div>
           <ul class="ticks">
-            <li><Icon name="check" size={16} /><span>Filter by entry, status and dates, and open any booking for its details.</span></li>
             <li><Icon name="check" size={16} /><span>Refund through the gateway the guest paid with, and the availability comes back.</span></li>
             <li><Icon name="check" size={16} /><span>Book for a guest on the phone and email them a link to pay. <a href="/manual-reservations">Manual reservations</a></span></li>
-            <li><Icon name="check" size={16} /><span>See revenue and best sellers in reports, and export to CSV.</span></li>
           </ul>
         </div>
 
@@ -567,66 +537,40 @@ const details = [
       </div>
     </section>
 
-    <section class="section tinted" aria-labelledby="pricing-rules-title">
+    <section class="section tinted" aria-labelledby="frontend-title">
       <div class="wrap split">
         <div class="split-text">
-          <h2 id="pricing-rules-title">Discounts, coupons and affiliates</h2>
+          <h2 id="frontend-title">A frontend you control</h2>
           <p>
-            Change prices by the dates of a stay, its length, its price or how far ahead it's booked.
-            Rules apply one after another, in the order you set.
+            Search, results and checkout are Livewire components with Blade views. Publish the views
+            and change any part of them.
           </p>
           <ul class="ticks">
-            <li><Icon name="check" size={16} /><span>Raise or lower prices by a percentage or a fixed amount, on entries and extras.</span></li>
-            <li><Icon name="check" size={16} /><span>Set a minimum or a maximum price, applied after every other rule and coupon.</span></li>
-            <li><Icon name="check" size={16} /><span>Coupons take the same conditions, and guests enter them at checkout.</span></li>
-            <li><Icon name="check" size={16} /><span>Affiliate links credit partners for the bookings they send, with a fee you track.</span></li>
+            <li><Icon name="check" size={16} /><span>Style them with Tailwind, and theme the date picker with CSS variables.</span></li>
+            <li><Icon name="check" size={16} /><span>Write a gateway class for a payment provider Resrv doesn't support yet. <a href="/custom-payment-gateway">Custom gateways</a></span></li>
           </ul>
-          <a class="more" href="/dynamic-pricing">Dynamic pricing <Icon name="arrow-right" size={14} /></a>
-          <a class="more more-gap" href="/affiliates">Affiliates <Icon name="arrow-right" size={14} /></a>
+          <a class="more" href="/frontend-setup">Frontend setup <Icon name="arrow-right" size={14} /></a>
         </div>
-        <div class="split-visual stack" aria-hidden="true">
-          <div class="cp-card">
-            <p class="cp-head"><span>Dynamic Pricing</span><span class="cp-btn">Add Dynamic Pricing</span></p>
-            <ul class="campaigns">
-              {
-                campaigns.map((c) => (
-                  <li>
-                    <span class="live"></span>
-                    <span class="cp-tag">#{c.n}</span>
-                    {c.title}
-                  </li>
-                ))
-              }
-            </ul>
-          </div>
-          <div class="pair">
-            <div class="cp-card">
-              <p class="cp-head">Summary</p>
-              <div class="cp-body summary">
-                <p class="summary-entry">
-                  <strong>Sea View Suite</strong>
-                  <span>Dec 14 to Dec 18, 2026, 4 nights</span>
-                </p>
-                <dl>
-                  <div><dt>Base price</dt><dd>€ 1280.00</dd></div>
-                  <div class="is-discount"><dt>Dynamic pricing discount</dt><dd>− € 153.60</dd></div>
-                  <div class="is-total"><dt>Total</dt><dd>€ 1126.40</dd></div>
-                </dl>
-              </div>
-            </div>
-            <div class="cp-card">
-              <p class="cp-head">Affiliate</p>
-              <div class="cp-body affiliate">
-                <strong>Mediterranean Travel Co</strong>
-                <code>?afid=MEDTRAVEL</code>
-                <dl>
-                  <div><dt>Fee</dt><dd>8%</dd></div>
-                  <div><dt>Cookie</dt><dd>30 days</dd></div>
-                  <div><dt>Sales</dt><dd>€ 720</dd></div>
-                  <div><dt>Commission</dt><dd>€ 57.60</dd></div>
-                </dl>
-              </div>
-            </div>
+        <div class="split-visual" aria-hidden="true">
+          <div class="code code-feature">
+            <p class="code-file">Terminal</p>
+            <pre><code>php artisan vendor:publish \
+    <span class="a">--tag</span>=<span class="s">resrv-checkout-views</span></code></pre>
+            <p class="code-file">resources/css/site.css</p>
+            <pre><code><span class="t">@import</span> <span class="s">"tailwindcss"</span>;
+<span class="t">@plugin</span> <span class="s">"@tailwindcss/forms"</span>;
+
+<span class="t">:root</span> {"{"}
+    <span class="a">--color-calendar-primary</span>: <span class="s">#06b6d4</span>;
+    <span class="a">--radius-calendar-day</span>: <span class="s">0.5rem</span>;
+{"}"}</code></pre>
+            <p class="code-file">config/resrv-config.php</p>
+            <pre><code><span class="s">'payment_gateways'</span> =&gt; [
+    <span class="s">'paypal'</span> =&gt; [
+        <span class="s">'class'</span> =&gt; <span class="a">PayPalGateway</span>::class,
+        <span class="s">'label'</span> =&gt; <span class="s">'PayPal'</span>,
+    ],
+],</code></pre>
           </div>
         </div>
       </div>
@@ -642,11 +586,10 @@ const details = [
           {
             details.map((detail) => (
               <li>
-                <span class="icon-tile">
-                  <Icon name={detail.icon} size={18} />
-                </span>
                 <h3>
-                  <a href={detail.href}>{detail.title}</a>
+                  <a href={detail.href}>
+                    {detail.title} <Icon name="arrow-right" size={14} />
+                  </a>
                 </h3>
                 <p>{detail.text}</p>
               </li>
@@ -1005,10 +948,6 @@ const details = [
 
   .more:hover {
     text-decoration: underline;
-  }
-
-  .more-gap {
-    margin-left: 1.25rem;
   }
 
   /* Hero */
@@ -1640,6 +1579,22 @@ const details = [
     line-height: 1.7;
   }
 
+  .code-feature pre {
+    font-size: 0.6875rem;
+  }
+
+  @media (min-width: 560px) {
+    .code-feature .code-file {
+      padding: 0.625rem 1.125rem;
+      font-size: 0.75rem;
+    }
+
+    .code-feature pre {
+      padding: 1rem 1.125rem;
+      font-size: 0.8125rem;
+    }
+  }
+
   .code pre + .code-file {
     border-top: 1px solid var(--blume-border);
   }
@@ -1679,6 +1634,7 @@ const details = [
     color: var(--blume-muted-foreground);
     font-size: 1.0625rem;
     line-height: 1.65;
+    text-wrap: pretty;
   }
 
   .ticks {
@@ -1948,24 +1904,6 @@ const details = [
     display: none;
   }
 
-  /* Dynamic pricing panels */
-  .stack {
-    display: grid;
-    gap: 1rem;
-  }
-
-  .pair {
-    display: grid;
-    gap: 1rem;
-  }
-
-  @media (min-width: 560px) {
-    .pair {
-      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-      align-items: start;
-    }
-  }
-
   .cp-btn {
     padding: 0.1875rem 0.625rem;
     border-radius: 6px;
@@ -1976,24 +1914,6 @@ const details = [
     white-space: nowrap;
   }
 
-  .campaigns {
-    display: grid;
-    gap: 0.5rem;
-    margin: 0;
-    padding: 0.75rem;
-    list-style: none;
-  }
-
-  .campaigns li {
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
-    padding: 0.625rem 0.75rem;
-    border: 1px solid var(--cp-border);
-    border-radius: 8px;
-    font-weight: 500;
-  }
-
   .live {
     flex: none;
     width: 0.5rem;
@@ -2002,131 +1922,42 @@ const details = [
     background: #22c55e;
   }
 
-  .cp-tag {
-    padding: 0 0.375rem;
-    border: 1px solid var(--cp-border);
-    border-radius: 4px;
-    background: var(--cp-page);
-    color: var(--cp-muted);
-    font-size: 0.6875rem;
-  }
-
-  .summary-entry {
-    display: grid;
-    gap: 0.125rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--cp-border);
-  }
-
-  .summary-entry span {
-    color: var(--cp-muted);
-  }
-
-  .summary dl,
-  .affiliate dl {
-    display: grid;
-    gap: 0.375rem;
-    margin: 0.75rem 0 0;
-  }
-
-  .summary dl div,
-  .affiliate dl div {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.75rem;
-  }
-
-  .summary dt,
-  .affiliate dt {
-    color: var(--cp-muted);
-  }
-
-  .summary dd,
-  .affiliate dd {
-    margin: 0;
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-  }
-
-  .summary .is-discount dd {
-    color: var(--cp-green);
-    font-weight: 600;
-  }
-
-  .summary .is-total {
-    margin-top: 0.25rem;
-    padding-top: 0.625rem;
-    border-top: 1px solid var(--cp-border);
-    font-weight: 700;
-    font-size: 0.9375rem;
-  }
-
-  .summary .is-total dt {
-    color: var(--cp-text);
-  }
-
-  .affiliate {
-    display: grid;
-    gap: 0.375rem;
-  }
-
-  .affiliate code {
-    justify-self: start;
-    padding: 0.125rem 0.375rem;
-    border-radius: 4px;
-    background: var(--cp-page);
-    font-family: var(--blume-font-mono);
-    font-size: 0.6875rem;
-  }
-
-  .affiliate dl {
-    margin-top: 0.25rem;
-  }
-
-  /* Details */
+  /* Details: a plain two-column list, divided by hairlines */
   .details {
     display: grid;
-    gap: 2.25rem 2rem;
     margin: 0;
     padding: 0;
     list-style: none;
+    border-top: 1px solid var(--blume-border);
   }
 
   @media (min-width: 640px) {
     .details {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
-  @media (min-width: 1000px) {
-    .details {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      column-gap: 3rem;
     }
   }
 
   .details li {
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--blume-border);
-  }
-
-  .icon-tile {
-    display: inline-grid;
-    place-items: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 9px;
-    background: var(--tint);
-    color: var(--blume-accent);
+    padding: 1.25rem 0 1.375rem;
+    border-bottom: 1px solid var(--blume-border);
   }
 
   .details h3 {
-    margin-top: 0.875rem;
     font-size: 1.0625rem;
   }
 
   .details h3 a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
     color: inherit;
     text-decoration: none;
+  }
+
+  .details h3 a :global(svg) {
+    flex: none;
+    color: var(--blume-accent);
   }
 
   .details h3 a:hover {
@@ -2135,6 +1966,7 @@ const details = [
   }
 
   .details p {
+    max-width: 34rem;
     margin-top: 0.375rem;
     color: var(--blume-muted-foreground);
     font-size: 0.9375rem;
