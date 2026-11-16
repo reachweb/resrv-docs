@@ -182,8 +182,9 @@ The component uses these frontend keys, which you can override as described in [
 | `paymentOfflineInstructions` | Please include your booking reference :reference with your payment. We will confirm your reservation as soon as the payment arrives. |
 | `paymentOfflineNoInstructions` | This reservation is not paid online: payment is arranged directly with us. Please contact us for the payment details and quote your booking reference :reference. We will confirm your reservation as soon as the payment arrives. |
 | `paymentMountFailed` | We could not start the payment process. Please try again or contact us for assistance. |
+| `paymentAttemptStillOpen` | An earlier payment attempt for this reservation is still open with the payment provider. If you did not complete it, you can try again after :date. |
 
-`:date` is replaced with the deadline, `:method` with the payment method's label and `:reference` with the booking reference. `frontend.php` also defines `paymentDeadline` (Payment deadline), which the page doesn't currently use.
+`:date` is replaced with the deadline (for `paymentAttemptStillOpen`, the time the open attempt expires), `:method` with the payment method's label and `:reference` with the booking reference. `frontend.php` also defines `paymentDeadline` (Payment deadline), which the page doesn't currently use.
 
 The view also reuses these existing keys: `pay`, `bookingReference`, `emailAddress`, `reservationPeriod`, `to`, `extras`, `options`, `total`, `paymentSurcharge` and `reservationItemUnavailable` (shown in place of a deleted entry's title). The card form uses checkout's payment keys: `payment`, `paymentDescription` and `toCompleteYourReservation`.
 
