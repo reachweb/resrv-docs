@@ -102,7 +102,7 @@ The tag asks the reservation's gateway how the payment went (redirect gateways p
 The three statuses are:
 
 - **`success`** (*"Payment successful."*): the payment went through and the reservation is confirmed.
-- **`failed`** (*"Payment failed."*): the customer is asked to retry or get in touch.
+- **`failed`** (*"Payment failed."*): the customer is asked to retry or get in touch. From v6.5.3 the checkout stays open, so they can go back to the checkout page and pay. If they search again instead, their hold on the dates is released.
 - **`pending`** (*"Reservation received."*): the reservation was received and payment is still to be settled. Offline and other held bookings return this.
 
 Inside the tag you can access the `reservation` variable that contains the reservation data. This is the correct place to add any goal-based events, like Analytics.

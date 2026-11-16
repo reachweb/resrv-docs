@@ -4,6 +4,24 @@ sidebar:
   label: Changelog
 ---
 
+## v6.5.3 [#v6-5-3]
+#### Release date: 16th November 2026
+
+This release fixes four checkout and payment bugs. It has no migrations and no interface changes.
+
+### Bug fixes
+- **Retrying a failed payment:** the checkout-complete page ended the checkout on every return, including a failed payment, where it asks the customer to try again. Going back to the checkout then showed "Reservation not found in the session", and the customer's own hold kept the dates unavailable until `minutes_to_hold` passed. A failed return now leaves the checkout open, so the customer can go back and pay, and a new search releases the hold. Successful and pending returns end the checkout as before. See [Checkout complete](/checkout#checkout-complete).
+- **A payment gateway that fails to load:** with [multiple gateways](/payment-gateways), one that couldn't be loaded, for example with missing credentials, returned a 500 error at the payment step for every customer, including those paying with another gateway. It's now left out of checkout and reported to your exception handler. If no gateway is left, checkout shows the new `noGatewayAvailable` message.
+- **Payment amount decimals:** the Stripe and offline payment views showed "€ 316.8" for a €316.80 payment and "€ 50" for €50.00. They now show the currency's decimals, such as "€ 316.80", and none for currencies like the yen.
+- **PayPal refund ids** are now written to the "Gateway refund processed for reservation." log entry. They were logged as `null`.
+
+### For custom payment gateways
+- **What `handleRedirectBack()` should return:** a `false` status now leaves the checkout open for another try. Return `false` when the customer has to act again, such as a declined or abandoned attempt, even if the provider keeps the payment open. Return `'pending'` only when the payment completes without them. See [Handling the redirect back](/custom-payment-gateway#handling-the-redirect-back). The [Mollie](/mollie) add-on does this from v2.0.2.
+
+### Upgrading
+
+Run `composer update reachweb/statamic-resrv`. There are no migrations. [Upgrading to v6.5.3](/upgrading#upgrading-to-v6-5-3) covers the new translation key, the two payment views and custom gateways.
+
 ## v6.5.2 [#v6-5-2]
 #### Release date: 15th November 2026
 

@@ -107,7 +107,7 @@ Amount limits restrict a gateway to an order value range. Set `min`, `max` or bo
 
 Both limits are inclusive (`payment >= min` and `payment <= max`) and are checked against the reservation's **payment**, before any surcharge. A gateway outside its range is hidden from the picker.
 
-If no gateway is left, checkout shows the `noGatewayAvailableForAmount` error and can't continue, so make sure your ranges cover every possible total. Free reservations (`payment` is `0`) skip the payment step, so limits don't apply (see [Skipping payment](/checkout)).
+If no gateway is left, checkout shows the `noGatewayAvailableForAmount` error and can't continue, so make sure your ranges cover every possible total. From v6.5.3, a gateway that can't be loaded, for example with missing credentials, is also left out of the picker and reported to your exception handler. If the amount allows a gateway but none of those could be loaded, checkout shows the `noGatewayAvailable` error instead. Free reservations (`payment` is `0`) skip the payment step, so limits don't apply (see [Skipping payment](/checkout)).
 
 :::warning[BOOT-TIME VALIDATION]
 `amount_limits` must be an array with only `min` and `max` keys, each a valid amount, and `min` can't be greater than `max`. Otherwise the app throws an error at boot.
