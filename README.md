@@ -42,4 +42,6 @@ Short and plain: second person, short paragraphs, exact UI labels in **bold**, s
 | Build command | `npm run build` |
 | Output directory | `dist` |
 
-Node comes from `.nvmrc`. The repo holds no host config. resrv.dev answers through Cloudflare with Cloudflare Pages' headers and redirects, so it's most likely a Git-connected Cloudflare Pages project, with these settings in its dashboard. `DOCS_SITE_URL` overrides the site URL (`https://resrv.dev`) that sitemaps, canonical links and link previews use.
+resrv.dev is the Cloudflare Pages project `resrv-docs`, connected to this repository. A push to `main` deploys the site, and a push to any other branch builds a preview at `<branch>.resrv-docs.pages.dev`. The settings above are in the project's dashboard (framework preset: None), since the repo holds no host config. Node comes from `.nvmrc`. `DOCS_SITE_URL` overrides the site URL (`https://resrv.dev`) that sitemaps, canonical links and link previews use.
+
+`npm run build` runs `blume build`, then `scripts/flatten-pages.mjs`, which moves each page from `dist/<route>/index.html` to `dist/<route>.html`. Pages then serves `/rates` directly and redirects `/rates/` and the old site's `/rates.html` to it. Without the step, every page URL redirects to a trailing-slash version that its canonical link doesn't match.
