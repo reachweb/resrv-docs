@@ -2,16 +2,13 @@
 title: Vouchers
 ---
 
-The Vouchers add-on (`reachweb/statamic-resrv-vouchers`) gives every confirmed booking a QR code voucher. Guests get it with their confirmation email, and your staff scan it in the Control Panel when the guest arrives. It suits anything a guest turns up for: spa treatments, restaurant tables, tours, classes or tickets.
+The Vouchers add-on gives every confirmed booking a QR code voucher. Guests get it with their confirmation email, and your staff scan it in the Control Panel when the guest arrives. It suits anything a guest turns up for: spa treatments, restaurant tables, tours, classes or tickets.
 
 ## How it works
 
-- When a reservation in a collection you choose is confirmed, the add-on issues one voucher for it.
-- Resrv's confirmation email carries the voucher as a PDF attachment, and can show the QR code in the email body too. There's no separate voucher email.
-- At the door, staff scan the QR code or look the voucher up by its booking reference, then mark it as used. The guest gets a "Thank you for attending!" email.
-- Cancelling, refunding or expiring the reservation invalidates its voucher, and an unused voucher expires a day after the reservation ends (you can change this).
-
-The add-on doesn't change Resrv. It listens to Resrv's events, and adds to the confirmation email through the [`BuildingReservationEmail` event](/emails#extending-emails-advanced).
+- When a booking in one of your chosen collections is confirmed, its confirmation email comes with the voucher as a PDF. The email can show the QR code too.
+- At the door, staff scan the QR code or look up the booking reference, then mark the voucher as used. The guest gets a "Thank you for attending!" email.
+- If the booking is cancelled or refunded, its voucher stops working. An unused voucher expires a day after the booking ends.
 
 <Frame caption="A voucher looked up on the Scan page.">
   ![A voucher looked up on the Scan page.](/img/resrv-vouchers-scan.webp)
@@ -19,118 +16,80 @@ The add-on doesn't change Resrv. It listens to Resrv's events, and adds to the c
 
 ## Installation
 
-The add-on works with Resrv v6 and has the same [requirements](/installation#prerequisites). Install it with Composer, then run its install command:
+Install the add-on with Composer, then run its install command:
 
 ```bash
 composer require reachweb/statamic-resrv-vouchers
 php artisan resrv-vouchers:install
 ```
 
-The install command publishes `config/resrv-vouchers.php` and runs the migrations, which add the `resrv_vouchers` and `resrv_voucher_scans` tables. It then asks whether to publish the email templates and the language files. Say yes only if you want to edit them: you can publish them later.
+The install command sets up the add-on's config file and database tables. It also asks whether to publish the email templates and language files: say yes only if you want to edit them. You can run it again later to publish them.
 
-Then:
-
-1. [Choose the collections](#choosing-the-collections) that get vouchers.
-2. Check your [queue connection](#the-queue).
-3. [Give your staff access](#permissions).
-4. Optionally, [show the QR code in the email body](#showing-the-qr-code-in-the-email) and add the [dashboard widget](#dashboard-widget).
-
-## Choosing the collections
-
-Vouchers are only issued for the collections listed in `enabled_collections`, in `config/resrv-vouchers.php`. Add the handles of the collections that should get one:
+Then list the collections that should get vouchers in `config/resrv-vouchers.php`, by their handles:
 
 ```php
 'enabled_collections' => ['spa_treatments', 'restaurant'],
 ```
 
-The list is empty by default, so nothing gets a voucher until you add a collection. Bookings in other collections get no voucher, and their confirmation email doesn't change.
+The list starts empty, so no booking gets a voucher until you add a collection.
 
-## The queue
-
-The add-on issues vouchers, and sends the "Thank you for attending!" email, through Laravel's queue.
-
-:::warning[USE THE SYNC QUEUE FOR VOUCHERS IN THE CONFIRMATION EMAIL]
-Resrv sends the confirmation email as soon as the booking is confirmed, without waiting for the queue. With `QUEUE_CONNECTION=sync`, the voucher is issued first, so the email carries it. With a queue that runs in the background (`database`, `redis`), the email usually goes out before the worker issues the voucher, and arrives without it. The voucher still works: staff can find it by the reservation code or booking reference in the email.
-:::
-
-With a background queue, you also need a worker running (`php artisan queue:work`). Without one, no vouchers are issued and no attended emails are sent.
+The "Thank you for attending!" email goes out through your queue. If your queue runs in the background, keep a worker running (`php artisan queue:work`).
 
 ## Permissions
 
-Staff need the **Use Resrv Vouchers** permission to see the voucher pages. It has its own group, **Resrv Vouchers Permissions**, under **Users → Roles**. Resrv's own permission doesn't include it, so you can let door staff scan vouchers without giving them access to reservations. Super users have it already.
+Staff need the **Use Resrv Vouchers** permission, in the **Resrv Vouchers Permissions** group under **Users → Roles**. Resrv's own permission doesn't include it, so door staff can scan vouchers without seeing your reservations. Super users have it already.
 
 ## Scanning vouchers
 
-Go to **Resrv → Vouchers → Scan**. There are two ways to find a voucher:
+Go to **Resrv → Vouchers → Scan**, then either:
 
-- Press **Start camera** and point the camera at the guest's QR code. **Stop camera** turns it off, and **Switch camera** appears when the device has more than one. Browsers only allow the camera over HTTPS.
-- Type the **reservation code** or **booking reference** from the guest's email and press **Find voucher**, or Enter. You can also paste the QR code's token. A USB barcode scanner that types into the field works too.
+- press **Start camera** and point it at the guest's QR code, or
+- type the booking reference or reservation code from the guest's email and press **Find voucher**.
 
-The lookup needs an exact match, but references aren't case-sensitive. To search by part of a reference, use the [voucher list](#the-voucher-list).
+The result shows the booking and whether the voucher is valid. Press **Mark as used** when the guest arrives, then **Scan another** for the next guest. Marking a voucher as used can't be undone.
 
-The result shows the voucher's status, the entry, the rate, the booking reference, the guest's name, the dates and the quantity. A banner tells you whether the voucher can be used:
+The camera only works when the Control Panel is on HTTPS. Without it, type the booking reference instead.
 
-| Banner | Meaning |
-| --- | --- |
-| Voucher is valid. | The voucher hasn't been used. **Mark as used** appears. |
-| Voucher has already been used. | Someone marked it as used before. |
-| Voucher has been invalidated. | The reservation was cancelled, refunded or expired. |
-| Voucher has expired. | The voucher wasn't used in time (see [Expiry](#expiry)). |
-
-Press **Mark as used** when the guest arrives, and **Scan another** for the next guest. If the guest has an email address, they get a "Thank you for attending!" email.
-
-:::warning[MARKING AS USED IS FINAL]
-There's no undo. A used voucher stays used even if you later cancel or refund the reservation, since the guest did attend.
+:::warning[KEEP YOUR APP KEY STABLE]
+QR codes are signed with your `APP_KEY`. If it changes, the codes you've already sent stop scanning, though staff can still find those vouchers by booking reference.
 :::
+
+## Voucher statuses
+
+| Status | Meaning |
+| --- | --- |
+| Issued | Valid and not used yet. Only issued vouchers can be marked as used. |
+| Used | Staff marked it as used. It stays used even if the booking is refunded later. |
+| Invalidated | The booking was cancelled or refunded before the voucher was used. |
+| Expired | It wasn't used in time. |
+
+Vouchers expire a day after the booking's end date. To give guests longer, raise `grace_days` in `config/resrv-vouchers.php`. The change applies to vouchers issued after it.
 
 ## The voucher list
 
-**Resrv → Vouchers → List** shows every voucher, newest first, with its entry, status, booking reference, customer email, expiry date, the date it was used and the date it was issued. Filter it by **Status** or **Entry**, and search by booking reference or voucher ID.
+**Resrv → Vouchers → List** shows every voucher, newest first. Filter it by status or entry, or search by booking reference.
 
 <Frame caption="The voucher list, with a voucher in each status.">
   ![The voucher list, with a voucher in each status.](/img/resrv-vouchers-list.webp)
 </Frame>
 
-## Voucher statuses
-
-| Status | When |
-| --- | --- |
-| Issued | The reservation is confirmed and the voucher hasn't been used. Only issued vouchers can be marked as used. |
-| Used | Staff marked it as used. |
-| Invalidated | The reservation was cancelled, refunded or expired before the voucher was used. |
-| Expired | The voucher wasn't used before its expiry date. |
-
-### Expiry
-
-A voucher expires `grace_days` days after the reservation's end date (1 by default). Set it in `config/resrv-vouchers.php`:
-
-```php
-'grace_days' => 1,
-```
-
-The new value applies to vouchers issued after the change.
-
 ## Showing the QR code in the email
 
-Every confirmation email for a booking with a voucher has the voucher attached as a PDF: one A6 page with the QR code, the guest's name, the booking reference and the dates.
-
-To show the QR code in the email body as well, [publish Resrv's email templates](/emails#editing-the-templates) and add the add-on's snippet to `resources/views/vendor/statamic-resrv/email/reservations/confirmed.blade.php`, where you want the code to appear:
+The voucher PDF is always attached to the confirmation email. To show the QR code in the email itself, [publish Resrv's email templates](/emails#editing-the-templates) and add this line to `resources/views/vendor/statamic-resrv/email/reservations/confirmed.blade.php`, where you want the code to appear:
 
 ```blade
-@if (\Reach\StatamicResrvVouchers\Models\Voucher::where('reservation_id', $reservation->id)->exists())
 @include('statamic-resrv-vouchers::email.vouchers.partials.qr')
-@endif
 ```
 
-The snippet shows the QR code with the caption "Show this QR code at check-in.". It always prints the image, so the `@if` keeps it out of emails for bookings that have no voucher, which would otherwise show a broken image. To change the caption, publish the language files and edit `qr_caption`.
+Emails for bookings without a voucher show nothing there. To change the caption under the code, publish the add-on's language files.
 
-<Frame caption="The QR code in the confirmation email, above the booking details.">
-  ![The QR code in the confirmation email, above the booking details.](/img/resrv-vouchers-email.webp)
+<Frame caption="The QR code in the confirmation email.">
+  ![The QR code in the confirmation email.](/img/resrv-vouchers-email.webp)
 </Frame>
 
-## The "attended" email
+## The "Thank you for attending!" email
 
-The "Thank you for attending!" email goes to the customer when their voucher is marked as used. It looks like Resrv's emails, and uses your published email theme if you have one. Change its subject and sender in `config/resrv-vouchers.php`:
+Change its subject and sender in `config/resrv-vouchers.php`:
 
 ```php
 'email' => [
@@ -140,56 +99,35 @@ The "Thank you for attending!" email goes to the customer when their voucher is 
             'address' => 'spa@example.com',
             'name' => 'The Spa',
         ],
-        'markdown' => null,
     ],
 ],
 ```
 
-To change the text, publish the template with `php artisan vendor:publish --tag=resrv-vouchers-emails` and edit `resources/views/vendor/statamic-resrv-vouchers/email/vouchers/attended.blade.php`. To use a different view instead, set `markdown` to its name.
+To change its text, publish the add-on's email templates and edit `resources/views/vendor/statamic-resrv-vouchers/email/vouchers/attended.blade.php`.
 
 ## Dashboard widget
 
-The add-on comes with a **Vouchers** dashboard widget, with buttons for the Scan page and the voucher list, so door staff reach the scanner from the Control Panel's home screen. Add it to the `widgets` array in `config/statamic/cp.php`:
+To put buttons for the Scan page and the voucher list on the Control Panel dashboard, add the widget to `config/statamic/cp.php`:
 
 ```php
 'widgets' => [
     [
         'type' => 'vouchers',
         'width' => 'md',
-        'can' => 'use resrv vouchers',
     ],
 ],
 ```
 
-`width` takes `sm`, `md`, `lg` or `full`, and `title` changes the heading. The widget only shows for users with the **Use Resrv Vouchers** permission.
+Only staff with the voucher permission see it.
 
 <Frame caption="The Vouchers dashboard widget.">
   ![The Vouchers dashboard widget.](/img/resrv-vouchers-widget.webp)
 </Frame>
 
-## The signing key
-
-Each QR code holds a signed token, so a guest can't make up a valid one. The add-on signs tokens with your `APP_KEY`. To use a separate key, set it in `.env`:
-
-```dotenv
-RESRV_VOUCHERS_SIGNING_KEY=...
-```
-
-Changing the key, or the `APP_KEY` it falls back to, makes the QR codes you've already sent unreadable. Staff can still find those vouchers by reservation code or booking reference.
-
-## For developers
-
-The add-on fires two events in `Reach\StatamicResrvVouchers\Events`:
-
-- `VoucherUsed`: a voucher was marked as used. It carries the `$voucher` and the `$userId` of the staff member.
-- `VoucherInvalidated`: a voucher was invalidated. It carries the `$voucher` and the `$reason`: `cancelled`, `refunded` or `expired-reservation`.
-
-Every lookup and every **Mark as used** is logged in the `resrv_voucher_scans` table, with the result, the user, their IP address and their browser.
-
 ## Troubleshooting
 
-- **No vouchers are issued.** Check that the booking's collection is in `enabled_collections`. With a background queue, check that a worker is running.
-- **The confirmation email has no voucher.** Your queue runs in the background. See [The queue](#the-queue).
-- **The email has the PDF but no QR code in the body.** Add the snippet to your published `confirmed.blade.php` (see [Showing the QR code in the email](#showing-the-qr-code-in-the-email)).
-- **Mark as used doesn't appear, or fails.** The voucher was already used, invalidated or has expired. The banner says which.
-- **The camera doesn't start.** The Control Panel has to be served over HTTPS. Until then, type the booking reference instead.
+- **A booking has no voucher.** Check that its collection is in `enabled_collections`.
+- **The "Thank you for attending!" email doesn't arrive.** Check that a queue worker is running.
+- **Mark as used doesn't appear.** The voucher was already used, or it's invalidated or expired. The result says which.
+
+For developers, the add-on's [README](https://github.com/reachweb/statamic-resrv-vouchers) covers its events, its separate signing key option and more.
