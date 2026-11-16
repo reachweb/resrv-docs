@@ -5,5 +5,5 @@ import { defineMeta } from "blume";
 // is it. Blume lists loose pages above groups, so a group keeps this last.
 export default defineMeta({
   title: "Support & Pricing",
-  order: 5,
+  order: 6,
 });
