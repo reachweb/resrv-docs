@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "blume dev",
-    "build": "blume build",
+    "build": "blume build && node scripts/flatten-pages.mjs",
     "preview": "blume preview",
     "doctor": "blume doctor",
     "validate": "blume validate"
