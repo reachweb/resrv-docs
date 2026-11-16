@@ -4,6 +4,16 @@ sidebar:
   label: Changelog
 ---
 
+## v6.5.4 [#v6-5-4]
+#### Release date: unreleased
+
+### Bug fixes
+- **Quantity carried over from another page:** a quantity picked in an `availability-search` with `enableQuantity` stayed in the shared `resrv-search` session, and a search without a quantity control on a later page still priced and booked it. A room page showed and booked two rooms, a restaurant two tables, and a collection listed an entry with one unit left as unavailable. A search without `enableQuantity` now resets the quantity to 1 when the page loads. See [The quantity on other pages](/availability-search-component#the-quantity-on-other-pages).
+
+### Upgrading
+
+Run `composer update reachweb/statamic-resrv`. There are no migrations. If a search's view sets the quantity itself, such as the [Guests component bound to the quantity](/guests#binding-to-the-quantity), read [Upgrading to v6.5.4](/upgrading#upgrading-to-v6-5-4).
+
 ## v6.5.3 [#v6-5-3]
 #### Release date: 16th November 2026
 

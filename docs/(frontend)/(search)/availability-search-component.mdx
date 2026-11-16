@@ -29,6 +29,14 @@ Resrv saves each search in the visitor's session, so it carries over to other pa
   ![The availability search, with availability-results below it.](/img/resrv-availability-search.webp)
 </Frame>
 
+### The quantity on other pages [#the-quantity-on-other-pages]
+
+A search without `enableQuantity` sets the saved quantity back to 1 when the page loads, so a quantity picked in another page's search isn't priced and booked here.
+
+- Results, lists and collections use the reset only when they render after the search. Statamic renders the page template before its layout, so a search in your layout, like a header bar, takes effect from the next page load. To price one unit straight away, put the search in the page template.
+- On a page with two searches, the first to render decides. After a search with `enableQuantity`, a search without it keeps the visitor's quantity. In the other order, the search with `enableQuantity` starts at 1.
+- A page with results, lists or collections but no search keeps the saved quantity, so a search that redirects there still carries its quantity.
+
 ## Properties
 
 | Property | Default | Description |
@@ -38,7 +46,7 @@ Resrv saves each search in the visitor's session, so it carries over to other pa
 | `redirectTo` | | With `live` off, the URL to send visitors to when they press **Search**. Without it, the page reloads. |
 | `rates` | `false` | Shows the [rate](/rates) selector. Pass `:rates="true"`. |
 | `anyRate` | `false` | For [multiple entries](/availability-search-multiple): with no rate selected, searches every rate and shows the cheapest. It also allows searching without dates. Pass `:any-rate="true"`. |
-| `enableQuantity` | `false` | Adds a quantity picker, so visitors can book more than one at once. |
+| `enableQuantity` | `false` | Adds a quantity picker, so visitors can book more than one at once. Without it, the search [sets the quantity back to 1](#the-quantity-on-other-pages). Turn it on for any search whose view sets `data.quantity` itself, like the [Guests component](/guests#binding-to-the-quantity). |
 | `overrideRates` | `[]` | Your own `rate_id => label` map for the rate selector. |
 | `showAvailabilityOnCalendar` | `false` | Shows availability and prices on the calendar. Only for a [single entry](/availability-search-single#display-availability-in-the-calendar), and needs `entry`. |
 | `entry` | | An entry ID, to load that entry's rates. |

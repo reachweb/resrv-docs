@@ -10,6 +10,7 @@ Find the section that starts at your version, then work through it and every sec
 4. [Upgrading to v6.5.0](#upgrading-to-v6-5-0): manual reservations, gateway interface changes and a scheduled command.
 5. [Upgrading to v6.5.2](#upgrading-to-v6-5-2): a security fix, one migration and two translation keys.
 6. [Upgrading to v6.5.3](#upgrading-to-v6-5-3): one translation key, two payment views and a check for custom gateways.
+7. [Upgrading to v6.5.4](#upgrading-to-v6-5-4): a check for searches that set the quantity themselves.
 
 Each section ends with a checklist for confirming the upgrade worked.
 
@@ -592,3 +593,34 @@ The same goes for a custom gateway's [inline payment view](/custom-payment-gatew
 - [ ] Your published language files include `noGatewayAvailable`.
 - [ ] With a redirect gateway, a cancelled test payment shows the payment-failed message, and going back to the checkout opens it instead of "Reservation not found in the session".
 - [ ] Every custom gateway's `handleRedirectBack()` returns `false` only when the customer has to act again.
+
+## Upgrading to v6.5.4 [#upgrading-to-v6-5-4]
+
+v6.5.4 stops a quantity picked in one page's search from pricing and booking the results of another. It has no migrations. The [v6.5.4 changelog](/changelog#v6-5-4) has the details.
+
+### 1. Update the package [#_1-update-the-package-v6-5-4]
+
+```bash
+composer update reachweb/statamic-resrv
+```
+
+### 2. Check searches that set the quantity themselves [#_2-check-searches-that-set-the-quantity-themselves]
+
+An `availability-search` without `enableQuantity="true"` now [resets the quantity to 1](/availability-search-component#the-quantity-on-other-pages) when the page loads. If a published search view sets `data.quantity` its own way, such as the [Guests component bound to the quantity](/guests#binding-to-the-quantity), add `enableQuantity="true"` to that search. Otherwise the guest counts it shows stay after a reload, but the results price one unit.
+
+`enableQuantity` also shows the stock quantity control in a view that keeps the packaged `@if ($enableQuantity)` block. Remove that block if the view has its own control.
+
+### 3. Optional: remove page-level quantity workarounds [#_3-optional-remove-page-level-quantity-workarounds]
+
+Code that set the quantity back to 1 on pages whose search has no quantity control can go. The [Resrv Hotel starter kit]({{hotelKitUrl}}) has one in `resources/views/spa-treatments/show.antlers.html`: on `for_two` treatments, the booking panel's Alpine `x-init` calls `Livewire.getByName('availability-search')` and `$set('data.quantity', 1)`, and an `x-bind:class` on the results wrapper keeps the results invisible until they search again. Delete the Antlers comment above the panel, the panel's `x-data`, `x-init` and `x-on:availability-results-updated` attributes, and the `x-bind:class` on the results wrapper, with the `if for_two` conditions around them. Left in place, they do nothing, because the quantity is already 1 when they run.
+
+### What changes for existing sites
+
+- A search without `enableQuantity` resets a quantity the visitor picked on another page to 1.
+- Results, lists and collections that render before that search on the same page load still read the saved quantity. That includes all of them in the page template when the search is in your layout. [The quantity on other pages](/availability-search-component#the-quantity-on-other-pages) explains the render order and pages with two searches.
+- On a page without a search, results, lists and collections keep the saved quantity. A search that redirects to such a page still carries its quantity.
+
+### Checklist [#checklist-v6-5-4]
+
+- [ ] Pick 2 in a search with a quantity control, then open a page whose search has none, with dates still set: its results show the price for one unit. If that search is in your layout, check after a second page load.
+- [ ] Every search whose view sets `data.quantity` itself has `enableQuantity="true"`.
