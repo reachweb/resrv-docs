@@ -202,7 +202,7 @@ The view from `paymentView()` renders inside the `CheckoutPayment` Livewire comp
 | `$wire.clientSecret` | string | From `paymentIntent()->client_secret` |
 | `$wire.publicKey` | string | From `getPublicKey()` |
 | `$wire.checkoutCompletedUrl` | string | Where to send the customer after paying (the payment link on the payment page) |
-| `$amount` | float | Formatted payment amount, as a Blade variable |
+| `$amount` | float | Payment amount, as a Blade variable. As a float it loses trailing zeros (316.80 becomes `316.8`), so print it with `\Reach\StatamicResrv\Facades\Price::create($amount)->format()` to show the currency's decimals |
 
 Load your provider's JavaScript in your payment page layout too.
 
