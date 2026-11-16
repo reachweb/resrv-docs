@@ -272,9 +272,9 @@ public function handleRedirectBack(): array
     return [
         'status' => match ($session->status) {
             'paid' => true,
-            // Can still complete, so not a failure
+            // The customer is done and the payment completes without them
             'processing' => 'pending',
-            // Failed or cancelled: the checkout stays open
+            // Declined, cancelled or abandoned: the checkout stays open for another try
             default => false,
         },
         'reservation' => $reservation->toArray(),
@@ -282,8 +282,13 @@ public function handleRedirectBack(): array
 }
 ```
 
-::: warning Return `false` only for a failed or cancelled payment
-After a `false` return, going back to the checkout voids the payment through `cancelPaymentIntent()`. So does the customer's next availability search, which also expires the reservation. A payment that completes after that reaches `verifyPayment()` as a stale intent and doesn't confirm the booking (see [Verifying webhooks](#verifying-webhooks)). While the payment can still complete, return `'pending'`.
+::: warning Return `false` when the customer has to try again
+After a `false` return, going back to the checkout clears the payment from the reservation and asks your gateway to cancel it through `cancelPaymentIntent()`. So does the customer's next availability search, which also expires the reservation. Cancelling is best effort: the provider may refuse, and the payment can stay payable. If the customer still pays it, the payment reaches `verifyPayment()` as a stale intent and doesn't confirm the booking (see [Verifying webhooks](#verifying-webhooks)).
+
+So decide by what the customer still has to do, not by whether the provider keeps the payment open:
+
+- Return `false` when the attempt didn't succeed and the customer has to act again, such as a declined card or a cancelled or abandoned attempt. This holds even when the provider keeps the payment open for another try, as Mollie does after a declined card.
+- Return `'pending'` when the customer has done their part and the payment is completing without them, such as a bank transfer or a payment still processing.
 :::
 
 `handlePaymentPending()` returns a pending state when `?payment_pending=<id>` is present, for async methods like bank transfer, and `false` otherwise. Return Resrv's `PendingPayment` helper, available from v6.5.2:
@@ -706,8 +711,8 @@ class PayPalPaymentGateway implements PaymentInterface
         }
 
         // TODO: check the payment with the provider's API using $token. Return true when
-        // it's paid, 'pending' while it can still complete, and false only when it failed
-        // or was cancelled, since false leaves the checkout open for another try.
+        // it's paid, 'pending' when the customer is done and it completes without them, and
+        // false when the customer has to try again, since false leaves the checkout open.
         $status = true;
 
         return [
@@ -810,7 +815,7 @@ Before deploying a custom gateway:
 - [ ] `paymentIntent()` returns `->id` with `->client_secret` (inline) or `->redirectTo` (redirect), and stores `reservation_id` in the provider metadata.
 - [ ] Redirect gateways build the return URL from `$returnUrl`, fall back to the page with <code v-pre>{{ resrv_checkout_redirect }}</code> when it's `null`, and use `&` when there's already a query string.
 - [ ] `retrievePaymentIntent()` maps statuses to Stripe's names, returns `null` only for a missing intent, throws on transient failures, and reports `canceled` after a void.
-- [ ] `handleRedirectBack()` checks `handlePaymentPending()` first and returns `false` only for a failed or cancelled payment, and `handlePaymentPending()` returns `PendingPayment::fromRequest()`.
+- [ ] `handleRedirectBack()` checks `handlePaymentPending()` first, returns `false` when the customer has to try again and `'pending'` when the payment completes without them, and `handlePaymentPending()` returns `PendingPayment::fromRequest()`.
 - [ ] `verifyPayment()` verifies the signature, confirms through `transitionTo(CONFIRMED, tolerant: true)` with no `pending`-only check, and dispatches `ReservationConfirmed` with `ReservationConfirmed::VIA_WEBHOOK` only when that succeeds.
 - [ ] `verifyPayment()` handles stale intents and orphans (with `notifyIfOrphaned()`), leaves failed attempts alone, and never ends an `awaiting_payment` reservation on a failed or cancelled intent.
 - [ ] `supportsWebhooks()` is `true` if you confirm through webhooks. Online gateways that return `false` can't be used for manual reservations.
