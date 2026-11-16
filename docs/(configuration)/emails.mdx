@@ -206,7 +206,7 @@ Add-ons can change an outgoing reservation email through the `Reach\StatamicResr
 A listener that changes the mailable must **not** implement `ShouldQueue`. The event fires inside the `build()` call that sends the email, so a queued listener would run after the email has gone out.
 :::
 
-For an example, see the `reachweb/statamic-resrv-vouchers` add-on, which attaches a PDF voucher and an inline QR code to the confirmation email.
+For an example, see the [Vouchers](/vouchers) add-on, which attaches a PDF voucher and an inline QR code to the confirmation email.
 
 ## Sending emails
 
