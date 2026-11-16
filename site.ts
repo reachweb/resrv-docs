@@ -11,6 +11,10 @@ export const sellerUrl = "https://statamic.com/sellers/reach";
 // The Composer package, from installation.md.
 export const composerPackage = "reachweb/statamic-resrv";
 
+// The Resrv Hotel starter kit: the demo site as a Statamic starter kit, for running it locally.
+// Its Composer package is reachweb/resrv-hotel-kit.
+export const hotelKitUrl = "https://github.com/reachweb/resrv-hotel-kit";
+
 // The live demo isn't public yet. It's the Resrv Hotel site (rooms, spa treatments and
 // restaurant tables, each from its own collection) and its control panel, which shows its
 // own demo login. These addresses are placeholders: set the real ones once it's online.

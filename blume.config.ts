@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import { defineConfig } from "blume";
 import {
   githubUrl,
+  hotelKitUrl,
   issuesUrl,
   license,
   marketplaceUrl,
@@ -117,6 +118,7 @@ export default defineConfig({
     marketplaceUrl,
     githubUrl,
     issuesUrl,
+    hotelKitUrl,
     supportEmail,
     partnerUrl,
     sellerUrl,

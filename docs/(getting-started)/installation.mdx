@@ -4,6 +4,31 @@ title: Installation
 
 Here you can find the installation and first-time setup instructions for Resrv.
 
+## Try the demo hotel locally
+
+The quickest way to see Resrv working is the [Resrv Hotel starter kit]({{hotelKitUrl}}). It installs the demo hotel as a new Statamic site: rooms, spa treatments and restaurant tables booked through one checkout, with rates, extras, a coupon and a year of availability already set up.
+
+You need PHP 8.4+, Composer and Node 20+. Install the Statamic CLI and create the site:
+
+```bash
+composer global require statamic/cli
+statamic new my-hotel reachweb/resrv-hotel-kit
+```
+
+The kit isn't listed on the Statamic Marketplace, so the installer asks whether to install an unlisted starter kit: answer yes. It then asks which parts of the kit you want. Keep the defaults, the demo content and the offline payment gateway, and the site works without any API keys. The installer runs the migrations and seeds the demo data for you.
+
+Then build the front end, and create a Control Panel user if you didn't when the installer asked:
+
+```bash
+cd my-hotel
+npm install && npm run build
+php please make:user --super
+```
+
+Open the site with Herd or Valet, or run `php artisan serve`. Resrv is free to use during development, so you don't need a license to try it. The kit's README covers the rest: what the demo data shows, adding photos and switching on Stripe.
+
+To add Resrv to a site you already have, follow the steps below.
+
 ## Prerequisites
 
 Statamic Resrv v6 requires **PHP {{phpVersion}}**, **Laravel {{laravelVersion}}**, **Statamic {{statamicVersion}}**, and **Livewire {{livewireVersion}}**.
