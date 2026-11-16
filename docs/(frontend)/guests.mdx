@@ -68,6 +68,12 @@ To ensure this component functions as expected, you need to create hidden text f
 
 What about cases that you might want to charge by the number of guests but you also need to know the number of adults, children, and infants? You can bind the total number of guests to the quantity.
 
+Pass `enableQuantity="true"` to the search that renders the Guests component. From v6.5.4, a search without it [resets the quantity to 1](/availability-search-component#component-basics) when the page loads, while the guest counts stay, so the price would no longer match the guests shown. The example view above doesn't render the stock quantity control, so only the Guests component shows.
+
+```antlers
+{{ livewire:availability-search calendar="range" enableQuantity="true" }}
+```
+
 Here is an example based on the default code of the Guests component:
 
 ```js

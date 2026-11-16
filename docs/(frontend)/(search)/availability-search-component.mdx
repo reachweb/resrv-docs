@@ -22,6 +22,12 @@ More often than not, you'll also want to include the [AvailabilityResults](/avai
 Each search that the user makes is saved in the session (under the key `resrv-search`), so that their search persists between page loads.
 
 From v6.1.0, if the saved [rate](/rates) doesn't apply to the current entry or collection, it's dropped. If only one valid rate exists, it's selected automatically.
+
+From v6.5.4, a search without `enableQuantity` resets the saved quantity to 1 when the page loads, so a quantity picked in another page's search doesn't carry over. Keep in mind:
+
+- Results, lists and collections pick up the reset only when they render after the search. Statamic renders the page template before its layout, so a search in the layout, such as a header bar, takes effect from the next page load. Put the search in the page template when its results must price one unit straight away.
+- On a page with two searches, the one that renders first decides. If a search with `enableQuantity` renders first, a search without it later on the page keeps the visitor's quantity. In the other order, the search with `enableQuantity` starts at 1.
+- On a page without a search, results, lists and collections keep the saved quantity, so a search that redirects to such a page still carries its quantity.
 :::
 
 <Frame caption="A very simple AvailabilitySearch component with its pal, AvailabilityResults">
@@ -38,7 +44,7 @@ Of course, there are quite a few properties that you can set depending on the us
 | live | boolean | true | When enabled, the component automatically updates the results when the user changes any value of their search. When disabled, the component only updates when the user clicks the "Search" button. |
 | rates | boolean | false | Shows the [rate](/rates) selector. Pass `:rates="true"`. Replaces the v5 `advanced` property. |
 | anyRate | boolean | false | **Usable when searching for multiple entries.** If no rate is selected, it searches "any" rate and returns the cheapest available one. Also allows searching without dates. Pass `:any-rate="true"`. |
-| enableQuantity | boolean | false | When enabled, a quantity control is added so that the user can book more than one product at once. |
+| enableQuantity | boolean | false | When enabled, a quantity control is added so that the user can book more than one product at once. Without it, the search [resets the quantity to 1](/availability-search-component#component-basics) when the page loads. Enable it on any search whose view sets `data.quantity` itself, such as the [Guests component](/guests#binding-to-the-quantity). |
 | redirectTo | string | null | If live mode is disabled, the page to redirect to when the user clicks "Search". |
 | overrideRates | array | [] | A `rate_id => label` map that replaces the rates loaded for this entry or collection. |
 | showAvailabilityOnCalendar | boolean | false | Show availability & pricing information on the calendar. Usable only when browsing [a specific entry](/availability-search-single#display-availability-in-the-calendar). |
