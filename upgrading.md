@@ -11,6 +11,7 @@ Find the section that starts at your version, then work through it and every sec
 3. [Upgrading from v6.1.0 to v6.4.0](#upgrading-from-v6-1-0-to-v6-4-0): a new gateway method, a new status and a changed tag default.
 4. [Upgrading to v6.5.0](#upgrading-to-v6-5-0): manual reservations, gateway interface changes and a scheduled command.
 5. [Upgrading to v6.5.2](#upgrading-to-v6-5-2): a security fix, one migration and two translation keys.
+6. [Upgrading to v6.5.3](#upgrading-to-v6-5-3): one translation key, two payment views and a check for custom gateways.
 
 Each section ends with a checklist for confirming the upgrade worked.
 
@@ -535,3 +536,48 @@ If your provider can't cancel an order the bank hasn't answered yet, you can now
 - [ ] If you use static caching, you've run `php please static:clear`.
 - [ ] Every custom gateway's `handlePaymentPending()` returns `PendingPayment::fromRequest()`.
 - [ ] Your published language files include `freeCancellationPassed` and `paymentAttemptStillOpen`.
+
+## Upgrading to v6.5.3
+
+v6.5.3 fixes four checkout and payment bugs. It has no migrations and no interface changes. The [v6.5.3 changelog](./changelog#v6-5-3) has the details.
+
+### 1. Update the package
+
+```bash
+composer update reachweb/statamic-resrv
+```
+
+If you use the [Mollie](./mollie) add-on, update it to v2.0.2 or later too (`composer update reachweb/resrv-payment-mollie`). Earlier versions report a customer who comes back from Mollie without paying as pending, which ends the checkout instead of letting them try again.
+
+### 2. Check what your custom gateways return
+
+There's no interface change, so nothing fails to load. But a `false` status from `handleRedirectBack()` now leaves the checkout open. When the customer goes back to the checkout or searches again, Resrv clears the payment from the reservation and calls your `cancelPaymentIntent()`. So choose the status by what the customer still has to do:
+
+- Return `false` when the attempt didn't succeed and the customer has to act again, such as a declined card or a cancelled or abandoned attempt. Do this even when the provider keeps the payment open for another try.
+- Return `'pending'` when the customer has done their part and the payment completes without them, such as a bank transfer or a payment that's still processing.
+
+A gateway that returns `false` for a payment that's still completing has it cancelled when the customer goes back. If the provider can't cancel it, it's no longer attached to the reservation, and a later payment on it won't confirm the booking. See [Handling the redirect back](./custom-payment-gateway#handling-the-redirect-back).
+
+### 3. Merge customized views and translations
+
+- The frontend language file (`--tag=resrv-language`) has one new key in `frontend.php`: `noGatewayAvailable` ("No payment method is available right now. Please try again later."). Add it to every locale you've published.
+- A published `livewire/checkout-payment.blade.php` or `livewire/checkout-payment-offline.blade.php` still prints the amount without its trailing zeros. Replace <code v-pre>{{ $amount }}</code> with the line the packaged views use:
+
+```blade
+{{ \Reach\StatamicResrv\Facades\Price::create($amount)->format() }}
+```
+
+The same goes for a custom gateway's [inline payment view](./custom-payment-gateway#the-inline-payment-view) that prints `$amount`.
+
+### What changes for existing sites
+
+- After a failed payment, the customer can go back to the checkout and pay again, and their next search releases the hold on the dates. Before, the checkout was gone and the hold stayed until `minutes_to_hold` passed.
+- With [multiple gateways](./payment-gateways), a gateway that can't be loaded is left out of the payment step instead of breaking it. Your error tracker gets "Payment gateway [name] could not be loaded and was left out of checkout." each time, so a missing gateway still needs fixing.
+- The Stripe and offline payment views show amounts with the currency's decimals.
+
+### Checklist {#checklist-v6-5-3}
+
+- [ ] The payment step shows the amount with its decimals, such as "€ 50.00".
+- [ ] Your published language files include `noGatewayAvailable`.
+- [ ] With a redirect gateway, a cancelled test payment shows the payment-failed message, and going back to the checkout opens it instead of "Reservation not found in the session".
+- [ ] Every custom gateway's `handleRedirectBack()` returns `false` only when the customer has to act again.
