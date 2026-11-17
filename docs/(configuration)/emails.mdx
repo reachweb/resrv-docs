@@ -200,13 +200,7 @@ Old copies of the changed templates ignore the new `$holdLapsed`, `$paymentInFli
 
 ## Extending emails (advanced)
 
-Add-ons can change an outgoing reservation email through the `Reach\StatamicResrv\Events\BuildingReservationEmail` event. It fires **before** the email is sent and carries the `Mailable` and the related `Reservation`. A listener can use the full Laravel mailable API, such as `attachData()`, `withSymfonyMessage(...)` for inline images, `subject(...)` or `with([...])`.
-
-:::warning[LISTENERS MUST BE SYNCHRONOUS]
-A listener that changes the mailable must **not** implement `ShouldQueue`. The event fires inside the `build()` call that sends the email, so a queued listener would run after the email has gone out.
-:::
-
-For an example, see the [Vouchers](/vouchers) add-on, which attaches a PDF voucher and an inline QR code to the confirmation email.
+To change the confirmation or payment request email from code, like attaching a file, listen to the `BuildingReservationEmail` event. See [Events](/events#buildingreservationemail).
 
 ## Sending emails
 

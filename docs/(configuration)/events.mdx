@@ -1,0 +1,161 @@
+---
+title: Events
+---
+
+Resrv fires a Laravel event when a reservation is created, confirmed, refunded, cancelled or expires. Listen to them to run your own code, like sending bookings to a CRM or a Slack channel.
+
+## Listening to an event
+
+Create a listener:
+
+```bash
+php artisan make:listener SendBookingToCrm --event="Reach\StatamicResrv\Events\ReservationConfirmed"
+```
+
+Laravel finds listeners in `app/Listeners` by itself, from the event in their `handle()` method:
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use Reach\StatamicResrv\Events\ReservationConfirmed;
+
+class SendBookingToCrm
+{
+    public function handle(ReservationConfirmed $event): void
+    {
+        $reservation = $event->reservation;
+
+        Crm::addBooking([
+            'reference' => $reservation->reference,
+            'guest' => $reservation->customerName(),
+            'total' => $reservation->total->format(),
+        ]);
+    }
+}
+```
+
+:::warning[DON'T LET YOUR LISTENER BREAK A BOOKING]
+Your listener can run before Resrv's own, like the ones that send the emails, and if it throws, they may not run. When it calls another service, queue it with `ShouldQueueAfterCommit`, or catch your own errors.
+:::
+
+## The reservation
+
+Every event carries the `$reservation`. These are its most useful fields:
+
+| Field | Description |
+| --- | --- |
+| `id` and `reference` | The reservation code and the booking reference, like `A3XN7S`. |
+| `status` | Like `pending`, `confirmed`, `partner`, `refunded`, `cancelled` or `expired`. |
+| `entry()` | The booked Statamic entry. |
+| `date_start`, `date_end` and `quantity` | What was booked. The dates are Carbon instances. |
+| `getRateLabel()` | The [rate](/rates)'s label. |
+| `price`, `payment` and `total` | Prices. Print them with `->format()`. |
+| `customer` and `customerName()` | The customer, with their `email` and checkout form `data`. |
+| `childs` | The items of a [cart booking](/cart-booking). |
+
+## The events
+
+All events are in `Reach\StatamicResrv\Events`.
+
+| Event | Fires when |
+| --- | --- |
+| [`ReservationCreated`](#reservationcreated) | A booking is started at checkout, or created in the Control Panel. |
+| [`ReservationConfirmed`](#reservationconfirmed) | A booking is confirmed. |
+| [`ReservationRefunded`](#reservationrefunded) | A booking is refunded. |
+| [`ReservationCancelled`](#reservationcancelled) | A booking is cancelled without a refund. |
+| [`ReservationCancelledByCustomer`](#reservationcancelledbycustomer) | A customer cancels their own booking. |
+| [`ReservationExpired`](#reservationexpired) | An unpaid checkout runs out of time. |
+| [`CouponUpdated`](#couponupdated) | A visitor adds or removes a coupon at checkout. |
+| [`BuildingReservationEmail`](#buildingreservationemail) | The confirmation or payment request email is being built. |
+
+### ReservationCreated
+
+Fires when a visitor presses **Book now** and the checkout starts, and when you create a [manual reservation](/manual-reservations). If your listener throws, the reservation isn't created.
+
+| Property | Description |
+| --- | --- |
+| `$data->affiliate` | The [affiliate](/affiliates) credited, or `null`. |
+| `$data->coupon` | The coupon code already applied, or `null`. |
+| `$data->viaCp` | `true` when created in the Control Panel. |
+
+### ReservationConfirmed
+
+Fires when a payment is confirmed by the provider's webhook, when a customer confirms with the offline gateway, when there's nothing to pay, and when you mark a manual reservation as paid. Affiliates who skip payment trigger it too, with the status `partner`.
+
+| Property | Description |
+| --- | --- |
+| `$via` | `checkout`, `webhook` or `cp`. |
+| `$payment` | The `gateway` and `payment_id`, when `$via` is `webhook`. |
+| `$notifyCustomer` | `false` when you chose not to email the customer. |
+
+### ReservationRefunded
+
+Fires when a booking is refunded, from the Control Panel or by a customer cancelling within the free cancellation period.
+
+### ReservationCancelled
+
+Fires when a booking ends without a refund: a customer cancels after the free cancellation period, you refund a booking that took no payment, or a manual reservation is cancelled before it's paid.
+
+| Property | Description |
+| --- | --- |
+| `$context` | For manual reservations: `unpaid_hold` when you cancelled it, `hold_lapsed` when its payment deadline passed, or `payment_in_flight` when a payment was going through. Otherwise `null`. |
+| `$notifyCustomer` | `false` when the customer isn't emailed. |
+
+### ReservationCancelledByCustomer
+
+Fires when a customer cancels on the [reservation status](/reservation-status) page, right after `ReservationRefunded` or `ReservationCancelled`.
+
+### ReservationExpired
+
+Fires when an unpaid checkout ends and its dates are released: the hold time ran out, the visitor started a new search, or the payment was cancelled.
+
+### CouponUpdated
+
+Fires when a visitor adds or removes a coupon at checkout, after the prices change.
+
+| Property | Description |
+| --- | --- |
+| `$coupon` | The coupon code. |
+| `$remove` | `true` when it was removed. |
+
+### BuildingReservationEmail
+
+Fires while Resrv builds the confirmation email (also when you resend it) or a payment request email, so you can change it: attach a file, add an image or change the subject. The [Vouchers](/vouchers) add-on uses it for its QR code.
+
+| Property | Description |
+| --- | --- |
+| `$mailable` | The email: a `ReservationConfirmed` or `ReservationPaymentRequest` mailable from `Reach\StatamicResrv\Mail`. |
+
+```php
+public function handle(BuildingReservationEmail $event): void
+{
+    if ($event->mailable instanceof \Reach\StatamicResrv\Mail\ReservationConfirmed) {
+        $event->mailable->attach(storage_path('app/welcome-guide.pdf'));
+    }
+}
+```
+
+Don't queue this listener: the email would be sent before it runs.
+
+## Browser events
+
+The search and checkout components also send Livewire events in the browser, for frontend code like analytics:
+
+```js
+document.addEventListener('livewire:init', () => {
+    Livewire.on('availability-search-updated', ([search]) => {
+        console.log(search.dates.date_start, search.dates.date_end, search.quantity);
+    });
+});
+```
+
+| Event | Sent when | Data |
+| --- | --- | --- |
+| `availability-search-updated` | The visitor searches, or clears their dates. | The search: `dates`, `quantity`, `rate` and `customer`. |
+| `availability-results-updated` | The results are redrawn. | |
+| `coupon-applied` | A coupon is added at checkout. | The coupon code. |
+| `coupon-removed` | A coupon is removed at checkout. | The coupon code. |
+
+The data arrives as a list, so take the first item, as in `([search])` above.
