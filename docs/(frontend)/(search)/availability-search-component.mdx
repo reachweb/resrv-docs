@@ -29,16 +29,24 @@ Resrv saves each search in the visitor's session, so it carries over to other pa
   ![The availability search, with availability-results below it.](/img/resrv-availability-search.webp)
 </Frame>
 
+### The quantity on other pages [#the-quantity-on-other-pages]
+
+A search without `enableQuantity` sets the saved quantity back to 1 when the page loads, so a quantity picked in another page's search isn't priced and booked here.
+
+- Results, lists and collections use the reset only when they render after the search. Statamic renders the page template before its layout, so a search in your layout, like a header bar, takes effect from the next page load. To price one unit straight away, put the search in the page template.
+- On a page with two searches, the first to render decides. After a search with `enableQuantity`, a search without it keeps the visitor's quantity. In the other order, the search with `enableQuantity` starts at 1.
+- A page with results, lists or collections but no search keeps the saved quantity, so a search that redirects there still carries its quantity.
+
 ## Properties
 
 | Property | Default | Description |
 | --- | --- | --- |
 | `calendar` | `single` | `single` picks one date, `range` picks a date range. |
 | `live` | `true` | Updates the results as the visitor changes their search. Set it to `false` to search only when they press **Search**. |
-| `redirectTo` | | With `live` off, the URL to send visitors to when they press **Search**. Without it, the page reloads. |
+| `redirectTo` | | With `live` off, the URL to send visitors to when they press **Search**. Without it, the results on the same page update. |
 | `rates` | `false` | Shows the [rate](/rates) selector. Pass `:rates="true"`. |
 | `anyRate` | `false` | For [multiple entries](/availability-search-multiple): with no rate selected, searches every rate and shows the cheapest. It also allows searching without dates. Pass `:any-rate="true"`. |
-| `enableQuantity` | `false` | Adds a quantity picker, so visitors can book more than one at once. |
+| `enableQuantity` | `false` | Adds a quantity picker, so visitors can book more than one at once. Without it, the search [sets the quantity back to 1](#the-quantity-on-other-pages). Turn it on for any search whose view sets `data.quantity` itself, like the [Guests component](/guests#binding-to-the-quantity). |
 | `overrideRates` | `[]` | Your own `rate_id => label` map for the rate selector. |
 | `showAvailabilityOnCalendar` | `false` | Shows availability and prices on the calendar. Only for a [single entry](/availability-search-single#display-availability-in-the-calendar), and needs `entry`. |
 | `entry` | | An entry ID, to load that entry's rates. |
@@ -69,7 +77,7 @@ https://yoursite.com/villa-blue?date_start=2026-08-20&date_end=2026-08-25&rate=3
 | `date_start` and `date_end` | `?date_start=2026-08-20&date_end=2026-08-25` | An exact date range. |
 | `rate` | `?rate=3` | A [rate](/rates) by its ID, or `any` when `anyRate` is on. |
 
-Dates use the `YYYY-MM-DD` format. The link replaces any search saved in the session, and invalid values, like a past date, are ignored. On a form with `live` off, the link fills in the form but the visitor still presses **Search**.
+Dates use the `YYYY-MM-DD` format. The link replaces any search saved in the session, so a link with dates but no `rate` doesn't keep a rate the visitor picked earlier. Invalid values, like a past date, are ignored. On a form that redirects (`live` off with `redirectTo`), the link fills in the form but the visitor still presses **Search**.
 
 ## Passing data to checkout
 
