@@ -192,6 +192,17 @@ See the [Custom payment gateway guide](/custom-payment-gateway) for each method,
 
 ### 6. Update published frontend templates [#_6-update-published-frontend-templates]
 
+#### Component property renames
+
+In your Antlers templates, rename these properties on the availability components:
+
+| Component | v5 | v6 |
+| --- | --- | --- |
+| [`availability-search`](/availability-search-component) | `advanced` | `rates` |
+| [`availability-search`](/availability-search-component) | `anyAdvanced` | `anyRate` |
+| [`availability-search`](/availability-search-component) and [`availability-results`](/availability-results) | `overrideProperties` | `overrideRates` |
+| [`availability-results`](/availability-results) | `advanced` | `rates` |
+
 :::tip[ONLY FOR PUBLISHED VIEWS]
 The template edits below apply to views you published to `resources/views/vendor/statamic-resrv/` and customized. The bundled views are already up to date.
 :::
@@ -230,6 +241,8 @@ In `availability-results.blade.php`, replace the `request.property` checks with 
 {{-- New --}}
 @if (data_get($availability, 'message.status') === true)
 ```
+
+Also rename `advancedProperties()` to `entryRates()` and `checkoutProperty()` to `checkoutRate()`. If you copied the old advanced sub-view, move your changes to the `<x-resrv::availability-results-advanced>` component (`components/availability-results-advanced.blade.php`), which replaces it.
 
 #### Checkout and email templates
 

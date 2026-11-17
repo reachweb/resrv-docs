@@ -4,129 +4,67 @@ sidebar:
   label: Results
 ---
 
-The `AvailabilityResults` Livewire component handles displaying the results of an availability search and lets the user start the checkout process. This page explains how to use it and how to provide extra functionality.
+The `availability-results` component shows whether one entry is available for the visitor's search, with its price and a **Book now** button that starts the checkout. Not sure this is the right component? See [which component to use](/availability-search-component#which-component-to-use).
 
-:::warning[UPGRADING FROM v5]
-v6 renames the "advanced availability" props to match [Rates](/rates). If you used `advanced` or `:overrideProperties`, or copied the advanced sub-view, see [Breaking changes from v5](#breaking-changes-from-v5).
-:::
+## Adding the results
 
-## Component basics
-
-This component is designed to work for a **single Entry**. To show many entries at once, see the [Availability Collection](/availability-search-multiple#the-availability-collection-component) component. To let visitors book several rates or dates together, see [Cart booking](/cart-booking).
-
-In its most basic form, you can include it in your templates like so:
+Put it on the entry's page, with an [`availability-search`](/availability-search-component) so visitors can change their dates:
 
 ```antlers
+{{ livewire:availability-search enableQuantity="true" calendar="range" }}
 {{ livewire:availability-results :entry="id" }}
 ```
 
-This will load the component and display the results for the Entry at the current page. As described in the [Availability Search for a Single Entry](/availability-search-single) page, you usually want to attach an instance of the AvailabilitySearch component so that the user can change their search:
+When the visitor presses **Book now**, Resrv creates a pending reservation and takes them to the [checkout](/checkout). See [single entry](/availability-search-single) for more examples.
 
-```antlers
-<div class="max-w-md">
-    <div class="my-8">
-        {{ livewire:availability-search enableQuantity="true" calendar="range" }}
-    </div>
-    <div class="my-8">
-        {{ livewire:availability-results :entry="id" }}
-    </div>
-</div>
-```
+## Properties
 
-## Component properties
-
-Of course, there are quite a few properties that you can set depending on the use case. Here's a list of all the available properties:
-
-| Property | Type | Default | Description |
-| -------- | ---- | ------- | ----------- |
-| entry | string | none - required | **Needs to be a Statamic Entry ID**. The ID of the entry you want to display results for. |
-| extraDays | integer | 0 | When set to a number greater than 0, the component will also get availability for the days before and after the current period the user searches for. |
-| extraDaysOffset | integer | 0 | If extra days are enabled you can set an offset between the dates it searches for. |
-| rates | boolean | false | Shows the [rate](/rates) labels. If the search is for any rate (`rate=any`), every available rate gets its own price and "Book now" button. |
-| rateSorting | string | "order" | The order of the rate rows. `"order"` follows each rate's configured order, `"price"` puts the cheapest first. |
-| showExtras | boolean or array | false | If you want to display an Extras select box here, you can set this to true to show all extras or an array of the IDs you want to display. (more information below) |
-| showOptions | boolean or array | false | If you want to display an Options select box here, you can set this to true to show all options for this Entry or an array of the IDs you want to display. (more information below) |
-| overrideRates | array | [] | Your own `rate_id => label` map to replace the rate labels. |
-| view | string | "availability-results" | You can override the view that is used to render the component. Expects a `name.blade.php` file in the `/resources/views/vendor/statamic-resrv/livewire` folder. |
+| Property | Default | Description |
+| --- | --- | --- |
+| `entry` | | The entry's ID. Required. |
+| `rates` | `false` | Shows [rate](/rates) labels. |
+| `rateSorting` | `order` | The order of the rates: `order` (as set in Rates) or `price` (cheapest first). |
+| `overrideRates` | `[]` | Your own `rate_id => label` map for the rate labels. |
+| `showExtras` | `false` | Shows the entry's [extras](/extras): `true` for all, or an array of extra IDs. |
+| `showOptions` | `false` | Shows the entry's [options](/options): `true` for all, or an array of option IDs. |
+| `extraDays` | `0` | Also checks the same stay moved up to this many days earlier and later, to suggest nearby dates. |
+| `extraDaysOffset` | `0` | Spaces those dates out. With `1`, they move by 2, 4, 6 days instead of 1, 2, 3. |
+| `view` | `availability-results` | A custom view in `resources/views/vendor/statamic-resrv/livewire`. |
 
 ## Working with rates
 
-If an Entry has more than one [rate](/rates), set `rates="true"` to show each rate's label and price:
+If the entry has more than one [rate](/rates), turn on `rates` in both components. When the visitor searches any rate, each available rate gets its own row, price and **Book now** button:
 
 ```antlers
 {{ livewire:availability-search :rates="true" :any-rate="true" }}
-{{ livewire:availability-results :entry="id" :rates="true" }}
-```
-
-When the search is for any rate, each available rate gets its own row and the visitor picks one. To list the cheapest rate first, set `rateSorting` to `"price"`:
-
-```antlers
 {{ livewire:availability-results :entry="id" :rates="true" rateSorting="price" }}
 ```
-
-### The rates sub-view
-
-The rate rows are rendered by the anonymous Blade component `<x-resrv::availability-results-advanced>` (`availability-results-advanced.blade.php`). The main view calls it like this:
-
-```blade
-<x-resrv::availability-results-advanced
-    :$availability
-    :entryRates="$this->entryRates"
-    :dateStart="$data->dates['date_start'] ?? null" />
-```
-
-It lists each rate with its label (from `entryRates`), price and cancellation label, and books it with `wire:click="checkoutRate('{rateId}')"`. Only the filename still says "advanced".
-
-## Cancellation policy
 
 Rates with a cancellation policy show a label:
 
 - **Non-refundable** for non-refundable rates.
-- **Free cancellation until \<date\>** for rates with a free cancellation period. The date is the check-in date minus that period.
-- **No free cancellation for these dates** when that date has already passed. The rate is still refundable for later check-ins, so this isn't the non-refundable label. To style it differently in a custom view, check `CancellationPolicy::freeCancellationOpen()`.
+- **Free cancellation until \<date\>** for rates with a free cancellation period.
+- **No free cancellation for these dates** when that date has already passed for this check-in.
 
-Rates on the global default with no period show no label. The policy is in each rate row's `data` as `cancellation_policy`, a `['policy', 'period']` array. See [Rates](/rates) to set it.
+See [Rates](/rates) to set the policies.
 
-## Customizing
+## Extras and options
 
-Obviously, depending on the use case, you'll need to customize the component to fit your needs. The main template file can be found at `/resources/views/vendor/statamic-resrv/livewire/availability-results.blade.php`. There you can select what elements you want to display and customize them.
-
-## Extras and Options (Optional)
-
-Besides just displaying the availability results, you can also display the Extras and Options of that Entry. It might strike you as weird that this is part of the `AvailabilityResults` component instead of the `AvailabilitySearch` component, but the Extras and Options need access to the Entry data, so they need to be displayed in the same component.
-
-By default, the Extras and Options are not displayed since they are part of the [Checkout](/checkout) component. However there are cases where you might want to display them next to the availability results.
-
-To do so, just enable the appropriate properties. For example:
+Extras and options are normally chosen at [checkout](/checkout). To let visitors pick them next to the results instead, turn on `showExtras` or `showOptions`:
 
 ```antlers
 {{ livewire:availability-results :entry="id" showExtras="true" }}
 ```
 
-<Frame caption="An AvailabilityResults component with the Extras enabled.">
-  ![An AvailabilityResults component with the Extras enabled.](/img/resrv-availability-results-extras.webp)
+<Frame caption="Availability results with the extras shown.">
+  ![Availability results with the extras shown.](/img/resrv-availability-results-extras.webp)
 </Frame>
 
-## Checking out
+## Customizing
 
-The final task of the `AvailabilityResults` component is to let the user start the checkout process. When the user clicks "Book now", the component will create a "Pending" reservation and move the user to the checkout page.
+Publish the views with `php artisan vendor:publish --tag=resrv-checkout-views`, then edit `resources/views/vendor/statamic-resrv/livewire/availability-results.blade.php`. The rate rows are in `components/availability-results-advanced.blade.php`.
 
-Read along to learn more about the [Checkout](/checkout) component.
-
-## Breaking changes from v5
-
-v6 replaces "advanced availability" with collection-scoped [Rates](/rates). Apply these renames when you upgrade:
-
-| v5 | v6 |
-| -- | -- |
-| `advanced` prop | `rates` prop |
-| `overrideProperties` prop | `overrideRates` prop |
-| `advancedProperties()` computed | `entryRates()` computed |
-| `checkoutProperty()` | `checkoutRate()` |
-
-If you copied the old advanced sub-view, move your changes to the anonymous `<x-resrv::availability-results-advanced>` component, which replaces that partial view. See [Upgrading to v6](/upgrading) for the full upgrade guide.
-
-## Related components
+## Related
 
 - [Availability List](/availability-list): upcoming available dates for one entry.
 - [Availability Collection](/availability-search-multiple#the-availability-collection-component): availability for many entries at once.
