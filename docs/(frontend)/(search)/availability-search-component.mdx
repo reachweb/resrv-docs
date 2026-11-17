@@ -4,103 +4,90 @@ sidebar:
   label: Overview
 ---
 
-The AvailabilitySearch Livewire component is the main component that you'll use to add the reservation functionality to your site. It allows the user to search for a date or date range, by specific [rate](/rates) and select the quantity that they want to book.
+The `availability-search` component is the search form visitors use to pick their dates, and optionally a [rate](/rates) and a quantity. You pair it with a component that shows what's available.
 
-In this page, we'll go over the basics of how to use the component, and then we'll explain how to use it to search for availability of a [single entry](/availability-search-single) or how to pair it with [Livewire Filters](https://livewirefilters.com/) or Statamic's Collection Tag in order to search for all [available entries](/availability-search-multiple) for a specific date or dates.
+## Which component to use
 
-## Component basics
+| You want | Use |
+| --- | --- |
+| Availability of **one** entry on its page | [`availability-results`](/availability-results) |
+| **Upcoming available dates** for one entry | [`availability-list`](/availability-list) |
+| A **cart** of several rates or dates for one entry | [`availability-multi-results`](/cart-booking) |
+| **Many entries** of a collection, live, no extra package | [`availability-collection`](/availability-search-multiple#the-availability-collection-component) |
+| Many entries, with availability as one **filter** among others | [`lf-availability-filter`](/availability-search-multiple#livewire-filters-filtering-beyond-dates) (requires `reachweb/statamic-livewire-filters`) |
+| Many entries, server-rendered with a page reload | [the `resrv_search` collection-tag query scope](/availability-search-multiple#collection-tag-server-rendered) |
 
-In its most simple form, you can include the AvailabilitySearch component in your Antlers templates like so:
+## Adding the search
 
 ```antlers
 {{ livewire:availability-search calendar="range" }}
 ```
 
-More often than not, you'll also want to include the [AvailabilityResults](/availability-results) component to display the results of the search and the "Book now" button that starts the checkout process.
+Resrv saves each search in the visitor's session, so it carries over to other pages. A saved rate that doesn't apply to the current entry is dropped, and when there's only one rate, it's selected for the visitor.
 
-:::tip
-Each search that the user makes is saved in the session (under the key `resrv-search`), so that their search persists between page loads.
-
-From v6.1.0, if the saved [rate](/rates) doesn't apply to the current entry or collection, it's dropped. If only one valid rate exists, it's selected automatically.
-:::
-
-<Frame caption="A very simple AvailabilitySearch component with its pal, AvailabilityResults">
-  ![A very simple AvailabilitySearch component with its pal, AvailabilityResults](/img/resrv-availability-search.webp)
+<Frame caption="The availability search, with availability-results below it.">
+  ![The availability search, with availability-results below it.](/img/resrv-availability-search.webp)
 </Frame>
 
-## Component properties
+## Properties
 
-Of course, there are quite a few properties that you can set depending on the use case. Here's a list of all the available properties:
+| Property | Default | Description |
+| --- | --- | --- |
+| `calendar` | `single` | `single` picks one date, `range` picks a date range. |
+| `live` | `true` | Updates the results as the visitor changes their search. Set it to `false` to search only when they press **Search**. |
+| `redirectTo` | | With `live` off, the URL to send visitors to when they press **Search**. Without it, the page reloads. |
+| `rates` | `false` | Shows the [rate](/rates) selector. Pass `:rates="true"`. |
+| `anyRate` | `false` | For [multiple entries](/availability-search-multiple): with no rate selected, searches every rate and shows the cheapest. It also allows searching without dates. Pass `:any-rate="true"`. |
+| `enableQuantity` | `false` | Adds a quantity picker, so visitors can book more than one at once. |
+| `overrideRates` | `[]` | Your own `rate_id => label` map for the rate selector. |
+| `showAvailabilityOnCalendar` | `false` | Shows availability and prices on the calendar. Only for a [single entry](/availability-search-single#display-availability-in-the-calendar), and needs `entry`. |
+| `entry` | | An entry ID, to load that entry's rates. |
+| `ratesBlueprint` | | A `collection.blueprint`, mainly for Livewire Filters. |
+| `view` | `availability-search` | A custom view in `resources/views/vendor/statamic-resrv/livewire`, for example a different search form on your home page. |
 
-| Property | Type | Default | Description |
-| -------- | ---- | ------- | ----------- |
-| calendar | string | "single" | The calendar type to use. `single` selects a single date, `range` selects a date range. |
-| live | boolean | true | When enabled, the component automatically updates the results when the user changes any value of their search. When disabled, the component only updates when the user clicks the "Search" button. |
-| rates | boolean | false | Shows the [rate](/rates) selector. Pass `:rates="true"`. Replaces the v5 `advanced` property. |
-| anyRate | boolean | false | **Usable when searching for multiple entries.** If no rate is selected, it searches "any" rate and returns the cheapest available one. Also allows searching without dates. Pass `:any-rate="true"`. |
-| enableQuantity | boolean | false | When enabled, a quantity control is added so that the user can book more than one product at once. |
-| redirectTo | string | null | If live mode is disabled, the page to redirect to when the user clicks "Search". |
-| overrideRates | array | [] | A `rate_id => label` map that replaces the rates loaded for this entry or collection. |
-| showAvailabilityOnCalendar | boolean | false | Show availability & pricing information on the calendar. Usable only when browsing [a specific entry](/availability-search-single#display-availability-in-the-calendar). |
-| entry | string | null | **Needs to be a Statamic Entry ID.** Loads the entry's rate labels. Required when *showAvailabilityOnCalendar* is enabled, optional for collection-wide search. |
-| ratesBlueprint | string | null | A `collection.blueprint` reference, mainly for use with Livewire Filters. Not needed for normal searches. |
-| view | string | "availability-search" | Override the view that's used to render the component. Really useful when you want different versions of the AvailabilitySearch component on different pages. Expects a `name.blade.php` file in the `/resources/views/vendor/statamic-resrv/livewire` folder. |
+## A search form on another page
 
-:::warning[UPGRADING FROM v5 OR v6.0.0]
-With the move to [Rates](/rates), v6 renamed `advanced` to `rates`, `anyAdvanced` to `anyRate` and `overrideProperties` to `overrideRates`. See [Upgrading to v6](/upgrading) for the full list.
+To put a search form on your home page that sends visitors to a results page, turn off `live` and set `redirectTo`:
 
-`resetAdvancedOnBoot` (v5), later `resetOnBoot` (v6.0.0), was **removed in v6.1.0**. Passing `:resetOnBoot` now throws a Livewire "property does not exist" error, so remove it from your templates. You no longer need it, as the component drops stale rates itself. See [Upgrading from v6.0.0 to v6.1.0](/upgrading#upgrading-from-v6-0-0-to-v6-1-0).
-:::
+```antlers
+{{ livewire:availability-search calendar="range" live="false" redirectTo="/rooms" }}
+```
 
-## Customizing
-
-The design of the Availability Search component is very basic by default, since it's meant to be modified to fit your layout. To modify it, make sure you've published the views during checkout and edit the `/resources/views/vendor/statamic-resrv/livewire/availability-search.blade.php` file.
-
-In the same path, inside the `components` folder, you can find and customize the Blade components that are used by the Availability Search component. The rate selector is in `components/availability-rates.blade.php`.
-
-## Usage
-
-The component can be used in three different ways:
-
-1. **As a standalone search form that redirects to a results page.**
-This is something that you'd probably use on the homepage of a site. To use it this way, you can set `live` to false and `redirectTo` to the Entry ID of the page you want to redirect to.
-2. **As a search form inside a single Entry.**
-When you want your user to search for a single Entry, usually on the aforementioned Entry's page. Follow along at [single entry](/availability-search-single) for examples.
-3. **As a search form on an index page.**
-When you want the user to input their search and list all available Entries. You can find your options on the [multiple entries](/availability-search-multiple) page.
+The results page picks up the search from the session. For the results themselves, see [single entry](/availability-search-single) or [multiple entries](/availability-search-multiple).
 
 ## Setting the search via URL parameters
 
-From v6.2.0, you can prefill the search with URL query parameters. A link like this opens the page with the dates set and the results loaded:
+You can fill in the search from a link, for example in a newsletter. This opens the page with the dates set and the results loaded:
 
-```
+```text
 https://yoursite.com/villa-blue?date_start=2026-08-20&date_end=2026-08-25&rate=3
 ```
 
-The supported parameters are:
-
 | Parameter | Example | Description |
-| --------- | ------- | ----------- |
-| date | `?date=2026-08-20` | Sets the start date. The end date comes from the `minimum_reservation_period_in_days` setting (at least 1 day). |
-| date_start & date_end | `?date_start=2026-08-20&date_end=2026-08-25` | Sets an exact date range. Both are required, and they take priority over `date`. |
-| rate | `?rate=3` | Preselects a [rate](/rates) by its numeric ID, or `any` when `anyRate` is enabled. |
+| --- | --- | --- |
+| `date` | `?date=2026-08-20` | The start date. The end date follows your minimum reservation period. |
+| `date_start` and `date_end` | `?date_start=2026-08-20&date_end=2026-08-25` | An exact date range. |
+| `rate` | `?rate=3` | A [rate](/rates) by its ID, or `any` when `anyRate` is on. |
 
-Keep in mind:
-
-- Dates must use the `YYYY-MM-DD` format.
-- Parameters are read once on page load and replace any search saved in the session.
-- Invalid values, such as a past date, are silently ignored.
-- A rate that doesn't apply to the current entry or collection is dropped.
-- `rate` on its own only preselects the rate. A search runs only if there are dates in the URL or the session.
-- On a search form that redirects (`live` set to false with `redirectTo`), the parameters fill the form and session but don't trigger the redirect. The visitor still has to click "Search".
+Dates use the `YYYY-MM-DD` format. The link replaces any search saved in the session, and invalid values, like a past date, are ignored. On a form with `live` off, the link fills in the form but the visitor still presses **Search**.
 
 ## Passing data to checkout
 
-There are some cases where you might want to pass some data to the checkout page before the user gets there. A good example is the [Guests component](/guests) where we pass along the number of guests to the checkout page. To achieve that you can bind the control you want to use to the `data.customer.handle` property of the `AvailabilitySearch` component. Just make sure to create the appropriate fields in your [checkout form](/checkout#checkout-form). If you don't want to allow the user to edit them, remember to set them as `hidden` fields in your blueprint.
+You can send values from the search to the checkout form, like the number of guests from the [Guests component](/guests). Bind your control to `data.customer.<handle>`, and add a field with the same handle to your [checkout form](/checkout#checkout-form). To stop visitors changing it at checkout, make that field hidden.
 
-## Disabling dates of the week
+## Customizing
 
-In some cases you might want to disable specific days of the week. To do so, you need to edit your `availability-search.blade.php` file (make sure you [publish your views during installation](/installation) or by running `php artisan vendor:publish --tag=resrv-checkout-views`) and add a `disabledDays` array to the `x-resrv::availability-dates` component like so:
+The search form is plain by default, so you can match it to your site. Publish the views:
+
+```bash
+php artisan vendor:publish --tag=resrv-checkout-views
+```
+
+Then edit `resources/views/vendor/statamic-resrv/livewire/availability-search.blade.php`. The parts it uses are in the `components` folder next to it, like the rate selector in `availability-rates.blade.php`.
+
+### Disabling days of the week
+
+To stop visitors picking certain days, add `disabledDays` to the dates component in your published `availability-search.blade.php`, with full English day names:
 
 ```blade {3}
 <x-resrv::availability-dates
@@ -109,5 +96,3 @@ In some cases you might want to disable specific days of the week. To do so, you
     :errors="$errors"
 />
 ```
-
-Use full English day names (`Sunday`, `Monday`, `Tuesday`, `Wednesday`, `Thursday`, `Friday`, `Saturday`).
