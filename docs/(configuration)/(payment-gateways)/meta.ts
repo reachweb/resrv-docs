@@ -4,5 +4,5 @@ export default defineMeta({
   title: "Payment gateways",
   display: "group",
   collapsed: false,
-  pages: ["payment-gateways", "stripe", "mollie", "custom-payment-gateway"],
+  pages: ["payment-gateways", "stripe", "mollie", "paypal", "custom-payment-gateway"],
 });

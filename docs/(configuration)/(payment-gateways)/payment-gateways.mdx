@@ -5,7 +5,7 @@ sidebar:
   badge: NEW
 ---
 
-Resrv ships with [Stripe](/stripe) for card payments and an **Offline** gateway for bank transfers or paying at the premises. You can also use [Mollie](/mollie) or [write your own gateway](/custom-payment-gateway). From v6 you can offer several gateways at checkout, add a surcharge per gateway and limit a gateway to an order value range.
+Resrv ships with [Stripe](/stripe) for card payments and an **Offline** gateway for bank transfers or paying at the premises. You can also use the [Mollie](/mollie) and [PayPal](/paypal) add-ons, or [write your own gateway](/custom-payment-gateway). From v6 you can offer several gateways at checkout, add a surcharge per gateway and limit a gateway to an order value range.
 
 ## Configuring gateways
 
@@ -163,7 +163,7 @@ See [Stripe](/stripe) for setting up the Stripe webhook and its signing secret.
 
 ## Redirect vs inline gateways
 
-Inline gateways, like Stripe and Offline, show their payment form on the checkout page. Redirect gateways send the customer to the provider's payment page, and Resrv adds a `resrv_gateway=<config-key>` parameter to the redirect URL.
+Inline gateways, like Stripe, PayPal and Offline, show their payment form on the checkout page. Redirect gateways send the customer to the provider's payment page, and Resrv adds a `resrv_gateway=<config-key>` parameter to the redirect URL.
 
 When the customer returns, your checkout complete page (the one with the `{{ resrv_checkout_redirect }}` tag) works out which gateway handled the payment. It checks the reservation's stored gateway first, then the `resrv_gateway` parameter, then the default. It then shows a `success`, `failed` or `pending` status. See [Checkout](/checkout) for details.
 
@@ -181,6 +181,7 @@ The offline gateway has nothing to cancel. If you build your own gateway, cancel
 
 - [Stripe](/stripe): set up the default card gateway.
 - [Mollie](/mollie): a maintained redirect gateway add-on.
+- [PayPal](/paypal): a maintained inline gateway add-on, for PayPal and card payments.
 - [Custom payment gateway](/custom-payment-gateway): build your own gateway against `PaymentInterface`.
 - [Checkout](/checkout): where gateways appear in the booking flow.
 - [Manual reservations](/manual-reservations): create bookings in the Control Panel and request a payment.

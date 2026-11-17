@@ -1,0 +1,97 @@
+---
+title: PayPal
+---
+
+You can take payments with PayPal. Customers pay on your checkout page, with the PayPal button or a card, without leaving your site. It comes as a separate add-on (`reachweb/resrv-payment-paypal`) for Resrv 6.5 or later, and you need a PayPal Business account.
+
+## Install the add-on
+
+```bash
+composer require reachweb/resrv-payment-paypal
+```
+
+## Set up your PayPal app
+
+In the [PayPal Developer Dashboard](https://developer.paypal.com/), create an app and note its **Client ID** and **Client Secret**. To take cards as well as PayPal, turn on **Advanced Credit and Debit Card Payments** for the app. Without it, customers only see the PayPal button.
+
+Add the keys to your `.env` file. You'll get the webhook ID in the next step.
+
+```dotenv
+PAYPAL_CLIENT_ID=...
+PAYPAL_CLIENT_SECRET=...
+PAYPAL_MODE=sandbox
+PAYPAL_WEBHOOK_ID=...
+```
+
+Use `sandbox` while you test, and `live` for real payments.
+
+## Set up the webhook
+
+The webhook is what confirms each booking, so it's required.
+
+1. In your app's settings, open **Webhooks** and click **Add Webhook**.
+2. Enter `https://your-site.com/resrv/api/webhook/paypal`.
+3. Subscribe to `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.DENIED` and `PAYMENT.CAPTURE.REFUNDED`.
+4. Save it, and copy its **Webhook ID** into `PAYPAL_WEBHOOK_ID`.
+
+If the webhook ID is wrong, bookings aren't confirmed.
+
+## Register the gateway
+
+Add PayPal to the `payment_gateways` array in `config/resrv-config.php`:
+
+```php
+'payment_gateways' => [
+    'paypal' => [
+        'class' => Reach\ResrvPaymentPaypal\Http\Payment\PaypalPaymentGateway::class,
+        'label' => 'PayPal',
+    ],
+],
+```
+
+Keep the `paypal` key as it is, since it's part of the webhook URL. You can also give PayPal a surcharge or amount limits (see [Payment gateways](/payment-gateways)).
+
+### Alternative: set it as the single gateway
+
+If PayPal is your only gateway, you can set it in the `payment_gateway` setting instead, near the end of `config/resrv-config.php`. Its webhook URL is then `https://your-site.com/resrv/api/webhook`.
+
+```php
+'payment_gateway' => Reach\ResrvPaymentPaypal\Http\Payment\PaypalPaymentGateway::class,
+```
+
+## Card payments and 3-D Secure
+
+When rules such as PSD2 require it, the customer's bank asks them to confirm a card payment. To ask on every card payment, add this to `.env`:
+
+```dotenv
+PAYPAL_SCA_METHOD=SCA_ALWAYS
+```
+
+## Refunds and manual reservations
+
+Refunds go back through PayPal for the full amount the customer paid. PayPal also works on the [payment page](/payment-page), for [manual reservations](/manual-reservations).
+
+## Customizing the payment form
+
+To restyle the payment form, publish its view:
+
+```bash
+php artisan vendor:publish --tag=resrv-paypal-views
+```
+
+Then edit `resources/views/vendor/resrv-paypal/livewire/checkout-payment.blade.php`. Change the markup and styles, but leave its script as it is.
+
+## Going live
+
+1. Test the whole booking flow in sandbox first.
+2. Add a webhook to your live app, with the same URL and events.
+3. Turn on card payments for the live app.
+4. Put your live keys and webhook ID in `.env`, set `PAYPAL_MODE=live`, and run `php artisan config:clear`.
+
+Check that PayPal [supports your currency](https://developer.paypal.com/docs/reports/reference/paypal-supported-currencies/).
+
+## Troubleshooting
+
+- **Only the PayPal button shows.** Card payments aren't turned on for your app.
+- **Bookings aren't confirmed.** Check the webhook URL, its three events and `PAYPAL_WEBHOOK_ID`.
+- **Payments fail.** Check that `PAYPAL_MODE` matches your keys: sandbox keys need `sandbox`, live keys need `live`.
