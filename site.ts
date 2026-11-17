@@ -28,7 +28,7 @@ export const demoLogin = { email: "demo@example.com", password: "password" } as 
 export const price = "$195";
 export const license = "Single-site license";
 
-export const version = "6.5.3";
+export const version = "6.5.4";
 
 // From installation.md: keep in step with it.
 export const requirements = {

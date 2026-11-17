@@ -5,10 +5,15 @@ sidebar:
 ---
 
 ## v6.5.4 [#v6-5-4]
-#### Release date: unreleased
+#### Release date: 17th November 2026
+
+This release fixes four search bugs. It has no migrations.
 
 ### Bug fixes
 - **Quantity carried over from another page:** a quantity picked in an `availability-search` with `enableQuantity` stayed in the shared `resrv-search` session, and a search without a quantity control on a later page still priced and booked it. A room page showed and booked two rooms, a restaurant two tables, and a collection listed an entry with one unit left as unavailable. A search without `enableQuantity` now resets the quantity to 1 when the page loads. See [The quantity on other pages](/availability-search-component#the-quantity-on-other-pages).
+- **Clearing a search with `live` off:** clearing the dates reloaded the page when the search had no `redirectTo`. On a page with tabbed searches, the visitor landed back on the first tab. Clearing now updates the results on the page, as it does on a live search.
+- **Guest counts after clearing the dates:** clearing the dates also wiped the guest counts of the [Guests component](/guests), while the component kept showing them. The booking then had no guest counts, and extras priced per guest charged for one. Clearing now keeps the guest counts and resets only the dates, quantity and rate.
+- **Dated links and a saved rate:** a link with `?date=` or `?date_start=&date_end=` but no `rate` searched only the rate left in the session from the visitor's earlier search. After booking a 90-minute massage, a link to the spa page showed only the 90-minute option. The link now replaces the saved rate too, so it searches every rate unless it names one. See [Setting the search via URL parameters](/availability-search-component#setting-the-search-via-url-parameters).
 
 ### Upgrading
 
