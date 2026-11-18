@@ -56,16 +56,16 @@ The hash depends on `config('app.key')`. Rotating the key invalidates every exis
 :::
 
 :::info[LOOKABLE STATUSES]
-The page shows **Confirmed**, **Partner**, **Refunded**, **Cancelled** and **Completed** reservations. **Pending** and **Expired** ones never got a reference, so they're left out.
+The page shows **Confirmed**, **Partner**, **Awaiting payment**, **Refunded**, **Cancelled** and **Completed** reservations. **Pending** and **Expired** ones never got a reference, so they're left out.
 
-From v6.5.0, **Awaiting payment** reservations you [created in the Control Panel](/manual-reservations) are left out too. Until they're paid, customers reach them through the [payment page](/payment-page) link in their payment request email.
+From v6.6.0, **Awaiting payment** reservations are shown too: website bookings made with an offline method, and reservations you [created in the Control Panel](/manual-reservations). Their payment request email carries the booking reference. In v6.5, Control Panel reservations were left out until they were paid.
 :::
 
 ## The status view
 
-A found reservation shows a status badge, the booking reference and the reservation period (one line per rate for cart bookings). Below that come the quantity and rate where relevant, extras and options, the cancellation policy, the total and the amount paid online. That amount is zero for bookings paid through manual gateways such as bank transfer, or [marked as paid](/manual-reservations#mark-as-paid) in the Control Panel.
+A found reservation shows a status badge, the booking reference and the reservation period (one line per rate for cart bookings). Below that come the quantity and rate where relevant, extras and options, the cancellation policy, the total and the amount paid. That's what Resrv recorded as received, through the gateway or with [Mark as paid](/manual-reservations#mark-as-paid), and zero until the booking is paid. Offline bookings confirmed at checkout before v6.6.0 show zero, since nothing records whether they were paid.
 
-The badge reads **Confirmed** for live bookings, **Cancelled & refunded** when the charge went back, **Cancelled** when there was no charge, **Cancelled — no refund issued** when you kept the payment, and **Completed** for past stays.
+The badge reads **Confirmed** for live bookings, **Awaiting payment** for bookings waiting for their payment, **Cancelled & refunded** when the charge went back, **Cancelled** when there was no charge, **Cancelled — no refund issued** when you kept the payment, and **Completed** for past stays. An **Awaiting payment** booking also shows "We will confirm this reservation once your payment arrives. To cancel it, please contact us."
 
 ## Cancelling a reservation
 
@@ -82,6 +82,7 @@ Instead of a cancel button, the customer sees a "contact us" note when:
 - no cancellation policy was ever set (the default period of `0` means unconfigured);
 - the booking was paid through a gateway that can't refund automatically (such as bank transfer) or is no longer configured;
 - it's a partner booking;
+- it's awaiting payment;
 - the booking was [marked as paid](/manual-reservations#mark-as-paid) in the Control Panel (manual reservations paid through their link follow the rules above);
 - the stay has already started.
 
@@ -119,10 +120,12 @@ The component uses these frontend keys, which you can override as described in [
 | `reservationLinkFailed` | We couldn't open your reservation from that link. Please enter your email address and booking reference below. |
 | `reservationStatus` | Reservation status |
 | `statusConfirmed` | Confirmed |
+| `statusAwaitingPayment` | Awaiting payment |
 | `statusCancelled` | Cancelled & refunded |
 | `statusCancelledNoRefund` | Cancelled |
 | `statusCancelledNoRefundIssued` | Cancelled — no refund issued |
 | `statusCompleted` | Completed |
+| `awaitingPaymentNote` | We will confirm this reservation once your payment arrives. To cancel it, please contact us. |
 | `amountPaid` | Amount paid |
 | `cancelReservation` | Cancel reservation |
 | `cancelReservationConfirmation` | Are you sure you want to cancel this reservation? This action cannot be undone. |

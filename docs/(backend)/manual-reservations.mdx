@@ -34,7 +34,7 @@ A manual reservation that collects money uses one of your [payment gateways](/pa
 Online payments are confirmed **only** by the gateway's webhook. Without a working webhook, a reservation paid by card stays **Awaiting payment**. See [Webhook routes](/payment-gateways#webhook-routes), [Setup the webhook](/stripe#setup-the-webhook) for Stripe, and [Gateways for manual reservations](/payment-gateways#gateways-for-manual-reservations).
 
 :::warning[GATEWAYS ARE SHARED WITH CHECKOUT]
-Every gateway in `payment_gateways` is offered at checkout (within its [amount limits](/payment-gateways#amount-limits)) and on the **Create reservation** page. If you add the Offline gateway for manual bookings, website customers can choose it at checkout too, where it confirms the booking without payment.
+Every gateway in `payment_gateways` is offered at checkout (within its [amount limits](/payment-gateways#amount-limits)) and on the **Create reservation** page. If you add the Offline gateway for manual bookings, website customers can choose it at checkout too. From v6.6.0, their booking then waits in **Awaiting payment** like a manual one, until you mark it as paid (see [Offline / pay-later](/checkout#offline-pay-later)).
 :::
 
 ## Before you start
@@ -176,7 +176,9 @@ The reservation page shows who created it under **Created by**.
 
 ## The Awaiting payment status
 
-**Awaiting payment** (`awaiting_payment`) is the status of a manual reservation waiting for its payment. It holds availability like a confirmed booking, unless it's view-only.
+**Awaiting payment** (`awaiting_payment`) is the status of a manual reservation waiting for its payment. From v6.6.0, a website booking made with an offline method waits in it too (see [Offline / pay-later](/checkout#offline-pay-later)). It holds availability like a confirmed booking, unless it's view-only.
+
+You manage website bookings awaiting payment as described below. They have no deadline, so the [lapsed-hold sweep](#the-lapsed-hold-sweep) leaves them alone unless you set one with **Extend hold**. They show no **Created by**.
 
 **Minutes to hold** doesn't apply to it. It never becomes **Expired**, gets no abandoned-reservation emails, and housekeeping never purges it.
 
@@ -397,14 +399,14 @@ The payment request uses the new **Customer payment request** event (`customer_p
 
 **Does Resrv collect the remaining balance of a deposit?** No. You collect it the way you normally would.
 
-**Can customers see an awaiting-payment reservation on the reservation status page?** No. The [Reservation Status](/reservation-status) page leaves them out, so the payment link is the customer's way in. Once paid, the booking shows there as **Confirmed**.
+**Can customers see an awaiting-payment reservation on the reservation status page?** From v6.6.0, yes. The [Reservation Status](/reservation-status) page shows it as **Awaiting payment**, without a cancel button. Customers pay through the payment link, and once paid, the booking shows there as **Confirmed**.
 
 **What if the customer pays after the hold lapsed?** If the sweep hasn't run yet and the payment was started before the deadline, the webhook confirms it as usual. If the sweep already cancelled the reservation, your admins get a reconciliation alert and you refund the payment in your provider's dashboard.
 
 **Can I edit availability on dates with an unpaid reservation?** Yes. If the reservation is later cancelled or lapses, its quantity is added back on top of the value you set, as when a confirmed booking is refunded. You can't delete availability while an awaiting-payment reservation that took stock overlaps the dates, or delete an entry that has any awaiting-payment reservation.
 
 :::info[DEVELOPER NOTE]
-Manual reservations use the `awaiting_payment` status (`ReservationStatus::AWAITING_PAYMENT`), which can only move to `confirmed` or `cancelled`. Control Panel confirmations dispatch `ReservationConfirmed` with `ReservationConfirmed::VIA_CP` and a `$notifyCustomer` flag. It's `false` when a booking that collects nothing was created with **Send confirmation email** off. Cancellations dispatch `ReservationCancelled` with a context (`CONTEXT_UNPAID_HOLD`, `CONTEXT_HOLD_LAPSED` or `CONTEXT_PAYMENT_IN_FLIGHT`) and a `$notifyCustomer` flag. Custom listeners that email customers on either event should honour the flag. Gateway changes are covered in [Writing a custom payment gateway](/custom-payment-gateway).
+Manual reservations use the `awaiting_payment` status (`ReservationStatus::AWAITING_PAYMENT`), which can only move to `confirmed` or `cancelled`. From v6.6.0, a checkout booking made with an offline gateway enters it from `pending`. Control Panel confirmations dispatch `ReservationConfirmed` with `ReservationConfirmed::VIA_CP` and a `$notifyCustomer` flag. It's `false` when a booking that collects nothing was created with **Send confirmation email** off. Cancellations dispatch `ReservationCancelled` with a context (`CONTEXT_UNPAID_HOLD`, `CONTEXT_HOLD_LAPSED` or `CONTEXT_PAYMENT_IN_FLIGHT`) and a `$notifyCustomer` flag. Custom listeners that email customers on either event should honour the flag. Gateway changes are covered in [Writing a custom payment gateway](/custom-payment-gateway).
 :::
 
 ## Related

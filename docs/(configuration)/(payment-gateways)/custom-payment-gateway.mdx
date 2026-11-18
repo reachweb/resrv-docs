@@ -71,7 +71,7 @@ public function supportsManualConfirmation(): bool
 }
 ```
 
-`supportsManualConfirmation()` returns `true` only when no provider checks the payment, as with bank transfer. Checkout then shows a **Confirm reservation** button that confirms the booking straight away.
+`supportsManualConfirmation()` returns `true` only when no provider checks the payment, as with bank transfer. Checkout then shows a **Confirm reservation** button and never calls `paymentIntent()`. From v6.6.0 the button places the booking in **Awaiting payment** until you mark it as paid. Before, it confirmed the booking straight away.
 
 ## Creating the payment intent
 

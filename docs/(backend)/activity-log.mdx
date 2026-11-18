@@ -41,6 +41,7 @@ The second tab tracks each reservation's status changes. Each row stores the old
 |---|---|
 | Checkout started | A customer begins checkout and a pending reservation is created. |
 | Created in the Control Panel | A user creates a reservation with **Create reservation** (see [Manual reservations](/manual-reservations)). It starts as **Awaiting payment**. |
+| Placed at checkout, awaiting payment | A customer confirms a website booking made with an offline method. From v6.6.0 it becomes **Awaiting payment** (see [Offline / pay-later](/checkout#offline-pay-later)). |
 | Confirmed at checkout | The customer returns from payment and the reservation is confirmed. |
 | Confirmed by payment webhook | The payment provider's webhook confirms the reservation, including payments made from the [payment page](/payment-page). The gateway and payment ID are stored too. |
 | Confirmed in the Control Panel | A user marks an **Awaiting payment** reservation as paid, or creates a reservation that collects nothing (it's confirmed straight away). |

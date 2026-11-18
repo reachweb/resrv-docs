@@ -13,11 +13,12 @@ Each email Resrv sends is tied to an **event**, with a default template, subject
 | `customer_refunded` | A reservation is refunded | Customer, admins |
 | `customer_cancelled` | A reservation is cancelled without a refund: the customer cancels outside the free cancellation window, you void a booking that collected nothing, or an unpaid [manual reservation](/manual-reservations) is cancelled (see [Manual reservation emails](#manual-reservation-emails)) | Customer |
 | `customer_abandoned` | A customer started but didn't finish a reservation (opt-in, see below) | Customer |
-| `customer_payment_request` | A [manual reservation](/manual-reservations) asks the customer to pay (see [Payment request](#payment-request)) | Customer |
+| `customer_payment_request` | A [manual reservation](/manual-reservations) asks the customer to pay, or a website booking made with an offline method is placed (see [Payment request](#payment-request)) | Customer |
+| `admin_awaiting_payment` | A website booking made with an offline method is placed and waits for its payment (see [Offline checkout bookings](#offline-checkout-bookings)) | Admins |
 | `admin_cancelled` | A customer cancels from the [reservation status](/reservation-status) page, or a manual reservation's payment hold lapses | Admins |
 
 :::info
-An eighth event, `admin_orphaned_payment`, alerts your admins when a payment succeeds on a reservation that can't be confirmed any more (expired, refunded, partner or, from v6.5.0, cancelled). From v6.5.0 it also flags manual reservations whose online payment needs checking. It isn't in the Control Panel email settings, so it's always on and goes to the **Admin email** addresses. See [Reconciliation alerts](/manual-reservations#reconciliation-alerts) and [The orphan-payment race](/custom-payment-gateway#the-orphan-payment-race).
+A ninth event, `admin_orphaned_payment`, alerts your admins when a payment succeeds on a reservation that can't be confirmed any more (expired, refunded, partner or, from v6.5.0, cancelled). From v6.5.0 it also flags manual reservations whose online payment needs checking. It isn't in the Control Panel email settings, so it's always on and goes to the **Admin email** addresses. See [Reconciliation alerts](/manual-reservations#reconciliation-alerts) and [The orphan-payment race](/custom-payment-gateway#the-orphan-payment-race).
 :::
 
 The `admins` recipient is the list in the **Admin email** field (Settings → Engine). If it's empty, admins get no emails. The `affiliate` recipient is any related affiliate with email notifications on, and only when [affiliates](/affiliates) are enabled.
@@ -32,7 +33,7 @@ Add a row to the **Global email event settings** grid for each event you want to
 
 | Field | Description |
 | --- | --- |
-| Event | The event to change: `customer_confirmed`, `admin_made`, `customer_refunded`, `customer_cancelled`, `customer_abandoned`, `customer_payment_request`, or `admin_cancelled`. |
+| Event | The event to change: `customer_confirmed`, `admin_made`, `customer_refunded`, `customer_cancelled`, `customer_abandoned`, `customer_payment_request`, `admin_awaiting_payment`, or `admin_cancelled`. |
 | Enabled | On by default. Turn it off to stop sending the email. |
 | Recipient sources | The built-in recipient groups: `customer`, `admins`, `affiliate`. |
 | Extra email addresses | More recipients, one per line or comma-separated. |
@@ -94,15 +95,15 @@ php please resrv:send-abandoned-emails
 
 ## Offline checkout bookings [#offline-checkout-bookings]
 
-A website booking made with an offline method, such as the [Offline gateway](/payment-gateways#the-offline-gateway), is confirmed before any money arrives. So its **Customer confirmed** email tells the customer how to pay:
+From v6.6.0, a website booking made with an offline method, such as the [Offline gateway](/payment-gateways#the-offline-gateway), waits in **Awaiting payment** until you mark it as paid (see [Offline / pay-later](/checkout#offline-pay-later)). Placing it sends two emails:
 
-- The payment information shows "Amount due", including any [surcharge](/payment-gateways#surcharges), whatever the **Payment type**. It replaces "Amount already paid", and "Total charged" is left out, since nothing was charged.
-- If you set [Offline Payment Instructions](/configuration#manual-reservations), a "How to pay" block shows them, followed by "Please include the booking reference … with your payment." If the setting is empty, the email has no such block.
+- **Customer payment request** (`customer_payment_request`) to the customer, with the **Amount to pay** including any [surcharge](/payment-gateways#surcharges), the booking reference, and your [Offline Payment Instructions](/configuration#manual-reservations) under "How to pay" (see [Payment request](#payment-request)). It opens with "Thank you for your reservation! We have received it and are holding it for you until your payment arrives." There's no payment deadline.
+- **Admin awaiting payment** (`admin_awaiting_payment`) to your admins: "A new reservation is awaiting payment.", with the payment method, the amount due, the reservation details and a **View reservation** button to the Control Panel. It uses the `awaiting-payment` template. Until you set a **Subject**, it reads "Reservation #… awaiting payment [arrival date] [customer email]".
 
-Resrv doesn't record when an offline payment arrives, so **Resend confirmation email** still shows the amount due and how to pay after the customer has paid.
+When you **Mark as paid**, the usual **Customer confirmed** and **Admin made** emails go out, with "Amount already paid". If you cancel the booking instead, the customer gets the cancellation notice described in [Cancelling an unpaid reservation](#cancelling-an-unpaid-reservation).
 
 :::warning[PUBLISHED TEMPLATES]
-A published or custom `confirmed` template keeps its old payment rows, such as "Amount already paid", and has no "How to pay" block. Merge the `$awaitingOfflinePayment` and `$offlineInstructions` checks and the `partials/how-to-pay` include from the packaged template into your copy.
+A published or custom `payment-request` template doesn't have the opening line for website bookings, so it greets these customers with "We have created a reservation for you." Merge the `$placedByCustomer` branch from the packaged template into your copy.
 :::
 
 ## Manual reservation emails <Badge variant="accent">NEW</Badge> [#manual-reservation-emails]
@@ -113,7 +114,7 @@ A published or custom `confirmed` template keeps its old payment rows, such as "
 
 The `customer_payment_request` event (**Customer payment request** in the **Event** dropdown) tells the customer how much to pay and how. It's on by default, goes to the customer and uses the `payment-request` template.
 
-It's sent when you:
+It's sent when a website customer places a booking with an offline method (see [Offline checkout bookings](#offline-checkout-bookings)), and when you:
 
 - create a reservation that requests a payment, with **Send payment request email** switched on (the default)
 - click **Send payment request** or **Resend payment request** in the reservations listing or on the reservation page
@@ -132,7 +133,7 @@ The email includes:
 - for online payment methods, a **Pay now** button to the [payment page](/payment-page), with the link also as text
 - for offline methods, your [Offline Payment Instructions](/configuration#manual-reservations) under "How to pay", or, if you left them empty, a request to contact you quoting the booking reference
 
-The first email opens with "We have created a reservation for you. Please complete the payment to confirm it." Later sends are reminders: "Here is the payment link for your reservation again." (online) or "Here are the payment details for your reservation again." (offline), then "Please complete the payment to confirm it." A reminder from **Extend hold** with a new deadline ends with "Your payment deadline is now …" and the deadline instead.
+The first email opens with "We have created a reservation for you. Please complete the payment to confirm it.", or for a website booking, "Thank you for your reservation! We have received it and are holding it for you until your payment arrives." Later sends are reminders: "Here is the payment link for your reservation again." (online) or "Here are the payment details for your reservation again." (offline), then "Please complete the payment to confirm it." A reminder from **Extend hold** with a new deadline ends with "Your payment deadline is now …" and the deadline instead.
 
 :::info[NOTHING TO COLLECT]
 A manual reservation that collects nothing is confirmed on creation and gets no payment request. The switch on the create page then reads **Send confirmation email** and only controls **Customer confirmed**. **Admin made** is always sent.
@@ -182,7 +183,8 @@ They're published to `resources/views/vendor/statamic-resrv/email`. The `reserva
 - `refunded.blade.php`: refund notice (`customer_refunded`)
 - `cancelled-customer.blade.php`: customer cancellation notice, including lapsed holds (`customer_cancelled`)
 - `abandoned.blade.php`: recovery email (`customer_abandoned`)
-- `payment-request.blade.php`: payment request for manual reservations (`customer_payment_request`)
+- `payment-request.blade.php`: payment request for manual reservations and offline website bookings (`customer_payment_request`)
+- `awaiting-payment.blade.php`: admin notice of an offline website booking awaiting payment (`admin_awaiting_payment`)
 - `cancelled.blade.php`: admin cancellation alert for customer cancellations and lapsed holds (`admin_cancelled`)
 - `orphaned-payment.blade.php`: admin orphaned-payment alert (`admin_orphaned_payment`)
 
@@ -201,7 +203,7 @@ These templates date from Laravel 9.x, so they use the older Markdown mail synta
 v6.5.0 changes six templates and adds one. If you published the email views, or picked a custom template for an event or form, your copies keep working but won't get these changes:
 
 - `confirmed` and `made`: when nothing was charged online (offline methods, reservations marked as paid), the payment row reads "Amount already paid" instead of "Already paid by credit card". The payment rows now also show for the **Payment type** "Charge the whole amount plus any options and extras" when less than the total was paid.
-- `refunded`: when a refund doesn't go through the gateway, the email adds "Your payment of … will be returned to you separately." If Resrv doesn't know whether the customer paid (an offline checkout booking), it reads "If you have already paid for this reservation, your payment of … will be returned to you separately." instead.
+- `refunded`: when a refund doesn't go through the gateway, the email adds "Your payment of … will be returned to you separately." If Resrv doesn't know whether the customer paid (an offline checkout booking confirmed before v6.6.0), it reads "If you have already paid for this reservation, your payment of … will be returned to you separately." instead.
 - `cancelled`: a lapsed hold tells admins the reservation was cancelled "because its payment hold lapsed" rather than "by the customer".
 - `cancelled-customer`: the "Date" row is now "Cancelled on", and lapsed holds and payments in flight get their own wording (see [Manual reservation emails](#manual-reservation-emails)).
 - `orphaned-payment`: each reconciliation case gets its own explanation and recommended action.

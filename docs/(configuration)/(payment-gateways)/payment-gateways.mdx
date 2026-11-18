@@ -57,7 +57,7 @@ Existing single-gateway sites keep working as before, bare webhook URL included.
 
 The bundled `OfflinePaymentGateway` (`offline`) is for bookings paid outside the site, by bank transfer or at the premises. It doesn't connect to any provider.
 
-The customer sees a description, the amount due and a **Confirm reservation** button. Pressing it confirms the reservation and fires the `ReservationConfirmed` event, so the confirmation email goes out right away. The checkout complete page then shows a `pending` status.
+The customer sees a description, the amount due and a **Confirm reservation** button. From v6.6.0, pressing it places the booking in **Awaiting payment**, holding its dates, and emails the customer how to pay. You confirm it with **Mark as paid** once the money arrives, which fires the `ReservationConfirmed` event and sends the confirmation emails, or cancel it if it's never paid. The checkout complete page shows a `pending` status. See [Offline / pay-later](/checkout#offline-pay-later).
 
 ```php
 'offline' => [
@@ -70,9 +70,9 @@ The customer sees a description, the amount due and a **Confirm reservation** bu
 The description, amount label and button text are translation keys (`offlinePaymentDescription`, `offlinePaymentAmount`, `confirmReservation` and others). See [Languages](/languages).
 :::
 
-Resrv can't know if the customer paid, so from v6.5.0 the Control Panel shows the amount of these bookings as **Payment** rather than as paid. Refunding one only records the refund. If the customer did pay, you return the money yourself.
+Before v6.6.0, pressing the button confirmed the booking at once. Nothing records whether those bookings were paid, so the Control Panel shows their amount as **Payment** rather than as paid. Refunding one only records the refund. If the customer did pay, you return the money yourself.
 
-Your **Offline Payment Instructions** (**Resrv → Settings → Checkout → Manual reservations**), such as your bank details, tell customers how to pay. Website customers see them at the [offline checkout step](/checkout#offline-pay-later) and in the [confirmation email](/emails#offline-checkout-bookings).
+Your **Offline Payment Instructions** (**Resrv → Settings → Checkout → Manual reservations**), such as your bank details, tell customers how to pay. Website customers see them at the [offline checkout step](/checkout#offline-pay-later) and in the [payment request email](/emails#offline-checkout-bookings).
 
 For [manual reservations](/manual-reservations), the offline gateway shows the same instructions on the [payment page](/payment-page) and in the payment request email. You confirm the booking with **Mark as paid** once the money arrives. See [Gateways for manual reservations](#gateways-for-manual-reservations).
 
@@ -139,7 +139,7 @@ From v6.5.0 you can [create reservations in the Control Panel](/manual-reservati
 </Frame>
 
 :::warning[NO MANUAL-ONLY GATEWAYS]
-Every gateway in `payment_gateways` is offered both at checkout (within its amount limits) and on the **Create reservation** page. If you add the Offline gateway for manual bookings, website customers can also choose it at checkout, where it [confirms the booking immediately](#the-offline-gateway) without payment.
+Every gateway in `payment_gateways` is offered both at checkout (within its amount limits) and on the **Create reservation** page. If you add the Offline gateway for manual bookings, website customers can also choose it at checkout, where their booking [waits for its payment](#the-offline-gateway) until you mark it as paid.
 :::
 
 A booking paid from the payment page refunds through its gateway. For a booking you marked as paid, Resrv only records the refund and you return the money yourself. See [Refunds and reconciliation](/manual-reservations#refunds-and-reconciliation).
