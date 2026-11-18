@@ -277,10 +277,11 @@ public function verifyPayment($request)
 | Argument | Description |
 | --- | --- |
 | `reservation` | The reservation you found. |
-| `paymentId` | The provider's id for this payment. |
+| `paymentId` | The provider's id for this payment, the one saved as the reservation's payment id. |
 | `stale` | `true` for a payment you found through its metadata. |
 | `amount` | What the provider charged, in cents. Resrv confirms only when it matches the booking amount plus any surcharge. If your provider reports a decimal like `49.90`, pass `\Reach\StatamicResrv\Facades\Price::create('49.90')->raw()`. Leave it out if your provider doesn't report the amount. |
 | `eventId` | The provider's event id, which the admin email shows. |
+| `inTransaction` | A closure that changes the reservation in the same write that confirms it, or not at all. Use it when the id you confirm with replaces the one Resrv saved, such as a capture id that replaces an order id: `fn (Reservation $fresh) => $fresh->payment_id = $captureId`. |
 
 A few rules the example follows:
 
@@ -295,7 +296,7 @@ Gateways that confirm bookings themselves with `transitionTo()` keep working. Mo
 
 ### The orphan-payment race
 
-A payment can succeed just as Resrv ends the booking, for example when its hold runs out. `confirmFromGateway()` reads the reservation again when that happens, and emails your admins if money arrived for a booking that's no longer active, so you can refund it.
+A payment can succeed just as Resrv ends the booking, for example when its hold runs out, or just as another payment confirms it. `confirmFromGateway()` reads the reservation again when that happens. It emails your admins if money arrived for a booking that's no longer active, or that the customer paid another way first, such as with the offline gateway or through [**Mark as paid**](/manual-reservations#mark-as-paid). You can then refund it.
 
 It sends the same email for the other payments it won't confirm:
 
