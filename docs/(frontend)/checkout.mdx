@@ -69,9 +69,9 @@ See [Payment gateways](/payment-gateways) to set up gateways, surcharges and amo
 
 Resrv ships with an **Offline** gateway (`OfflinePaymentGateway`) for payments you collect yourself, such as bank transfers. Enable it like any other gateway (see [Payment gateways](/payment-gateways)).
 
-The user sees the amount due and a **Confirm reservation** button instead of a card form. If there are other gateways, *Change payment method* takes them back to the picker.
+The user sees the amount due and a **Confirm reservation** button instead of a card form. If you set [Offline Payment Instructions](/configuration#manual-reservations), such as your bank details, they're shown above the amount. If there are other gateways, *Change payment method* takes them back to the picker.
 
-Confirming books the reservation and sends the confirmation email, but takes no payment. The checkout complete page shows the `pending` status, telling the customer that payment is still to be settled. You collect the payment outside Resrv.
+Confirming books the reservation and sends the confirmation email, but takes no payment. The email shows the amount due and your instructions (see [Offline checkout bookings](/emails#offline-checkout-bookings)). The checkout complete page shows the `pending` status, telling the customer that payment is still to be settled. You collect the payment outside Resrv.
 
 ## Checkout Complete
 

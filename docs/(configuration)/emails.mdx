@@ -92,6 +92,19 @@ You can also run it manually:
 php please resrv:send-abandoned-emails
 ```
 
+## Offline checkout bookings [#offline-checkout-bookings]
+
+A website booking made with an offline method, such as the [Offline gateway](/payment-gateways#the-offline-gateway), is confirmed before any money arrives. So its **Customer confirmed** email tells the customer how to pay:
+
+- Where the email lists the payment, it reads "Amount due", including any [surcharge](/payment-gateways#surcharges), instead of "Amount already paid".
+- If you set [Offline Payment Instructions](/configuration#manual-reservations), a "How to pay" block shows them, followed by "Please include the booking reference … with your payment." If the setting is empty, the email has no such block.
+
+Resrv doesn't record when an offline payment arrives, so **Resend confirmation email** still shows the amount due and how to pay after the customer has paid.
+
+:::warning[PUBLISHED TEMPLATES]
+A published or custom `confirmed` template keeps the "Amount already paid" row and has no "How to pay" block. Merge the `$awaitingOfflinePayment` and `$offlineInstructions` checks and the `partials/how-to-pay` include from the packaged template into your copy.
+:::
+
 ## Manual reservation emails <Badge variant="accent">NEW</Badge> [#manual-reservation-emails]
 
 [Manual reservations](/manual-reservations) add the **Customer payment request** event and reuse the cancellation events. Once the customer pays, or you **Mark as paid**, the usual **Customer confirmed** and **Admin made** emails go out.
