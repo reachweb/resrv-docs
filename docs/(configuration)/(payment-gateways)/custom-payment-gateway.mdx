@@ -75,7 +75,7 @@ public function supportsManualConfirmation(): bool
 
 ## Creating the payment intent
 
-`paymentIntent()` starts the payment at the provider. `$amount` is a `Price` that includes any surcharge, and `$amount->raw()` gives it in cents. Save the reservation's id in the provider's metadata, so a late webhook can still find it.
+`paymentIntent()` starts the payment at the provider. `$amount` is a `Price` that includes any surcharge, and `$amount->raw()` gives it in cents. Save the reservation's id and reference in the provider's metadata, so a late webhook can still find it.
 
 Inline gateways return an `->id` and a `->client_secret` for your payment form:
 
@@ -85,7 +85,10 @@ public function paymentIntent($amount, Reservation $reservation, $data, ?string 
     $session = AcmePay::createSession([
         'amount' => $amount->raw(),
         'currency' => Str::lower(config('resrv-config.currency_isoCode')),
-        'metadata' => ['reservation_id' => $reservation->id],
+        'metadata' => [
+            'reservation_id' => $reservation->id,
+            'reservation_reference' => $reservation->reference,
+        ],
     ]);
 
     $result = new \stdClass;
@@ -211,23 +214,26 @@ Look the reservation up with a value your provider issued, like the payment id a
 
 The [payment page](/payment-page) calls `handleRedirectBack()` too, only to choose its message. The webhook still confirms the booking.
 
-## Verifying webhooks
+## Verifying webhooks <Badge variant="accent">NEW</Badge> [#verifying-webhooks]
 
 Gateways that confirm bookings through a webhook return `true` from `supportsWebhooks()` and implement `verifyPayment()`. Their webhook URL ends in the config key, like `https://your-site.com/resrv/api/webhook/acmepay` (see [Webhook routes](/payment-gateways#webhook-routes)).
+
+Your gateway only talks to the provider. Resrv decides what a successful payment does to the booking: add the `Reach\StatamicResrv\Http\Payment\ConfirmsGatewayPayments` trait to your class, as the [starter gateway](#a-redirect-gateway-to-start-from) does, and pass the payment to its `confirmFromGateway()` method.
 
 `verifyPayment()` should:
 
 1. Check the signature against `getWebhookSecret()`, and reject the request if it doesn't match.
-2. Find the reservation by its payment id, or by the id in the metadata if Resrv has already dropped the payment.
-3. When the payment succeeded, confirm the reservation with `transitionTo(CONFIRMED, tolerant: true)`, and dispatch `ReservationConfirmed` only if that returns `true`. It confirms checkouts and manual reservations awaiting payment alike, so don't check the status first.
-4. Leave failed attempts alone, since the customer can try again.
+2. Find the reservation by its payment id. If Resrv has already dropped the payment, find it by the id and reference in the metadata, and mark the payment stale.
+3. When the payment succeeded, call `confirmFromGateway()`.
+4. When the payment was cancelled and isn't stale, call `$reservation->expire()`. Leave failed attempts alone, since the customer can try again.
 5. Return a 200 response.
 
 ```php
 public function verifyPayment($request)
 {
     // Check the signature first.
-    $data = json_decode($request->getContent(), true)['data'];
+    $event = json_decode($request->getContent(), true);
+    $data = $event['data'];
 
     $reservation = Reservation::findByPaymentId($data['id'])->first();
 
@@ -235,6 +241,12 @@ public function verifyPayment($request)
     $isStale = false;
     if (! $reservation && isset($data['metadata']['reservation_id'])) {
         $reservation = Reservation::find($data['metadata']['reservation_id']);
+
+        // Another site on the same AcmePay account can have a reservation with this id.
+        if ($reservation && ($data['metadata']['reservation_reference'] ?? null) !== $reservation->reference) {
+            $reservation = null;
+        }
+
         $isStale = (bool) $reservation;
     }
 
@@ -243,27 +255,13 @@ public function verifyPayment($request)
     }
 
     if ($data['status'] === 'succeeded') {
-        if ($isStale) {
-            Log::warning('AcmePay payment succeeded after it was abandoned', [
-                'reservation_id' => $reservation->id,
-                'payment_id' => $data['id'],
-            ]);
-
-            return response()->json([], 200);
-        }
-
-        if ($reservation->transitionTo(ReservationStatus::CONFIRMED, tolerant: true)) {
-            ReservationConfirmed::dispatch($reservation, ReservationConfirmed::VIA_WEBHOOK, [
-                'gateway' => $reservation->payment_gateway,
-                'payment_id' => $data['id'],
-            ]);
-
-            return response()->json([], 200);
-        }
-
-        // See "The orphan-payment race" below.
-        $reservation->refresh();
-        \Reach\StatamicResrv\Mail\OrphanedPaymentNotification::notifyIfOrphaned($reservation, $data['id']);
+        $this->confirmFromGateway(
+            $reservation,
+            $data['id'],
+            stale: $isStale,
+            amount: $data['amount'], // in cents
+            eventId: $event['id'],
+        );
     }
 
     if ($data['status'] === 'canceled' && ! $isStale) {
@@ -274,17 +272,38 @@ public function verifyPayment($request)
 }
 ```
 
+`confirmFromGateway()` confirms the reservation and fires `ReservationConfirmed`, so the [activity log](/activity-log) shows "Confirmed by payment webhook". It confirms checkouts and manual reservations awaiting payment alike, so don't check the status first. A repeat delivery for a booking it already confirmed does nothing. When the payment can't confirm the booking, it emails your admins instead (see below).
+
+| Argument | Description |
+| --- | --- |
+| `reservation` | The reservation you found. |
+| `paymentId` | The provider's id for this payment. |
+| `stale` | `true` for a payment you found through its metadata. |
+| `amount` | What the provider charged, in cents. Resrv confirms only when it matches the booking amount plus any surcharge. If your provider reports a decimal like `49.90`, pass `\Reach\StatamicResrv\Facades\Price::create('49.90')->raw()`. Leave it out if your provider doesn't report the amount. |
+| `eventId` | The provider's event id, which the admin email shows. |
+
 A few rules the example follows:
 
-- **Don't confirm abandoned payments.** If the customer left a payment before it succeeded, log it and settle it with the provider by hand. Confirming it could charge an amount or gateway the booking no longer matches.
+- **Don't confirm abandoned payments.** Pass `stale: true`, and Resrv emails your admins to settle the payment with the provider by hand. Confirming it could charge an amount or gateway the booking no longer matches.
 - **Don't end a manual reservation that's awaiting payment** when a payment fails or is cancelled. The customer can still pay from the same link.
-- **Pass `ReservationConfirmed::VIA_WEBHOOK`**, the gateway and the payment id, so the [activity log](/activity-log) shows "Confirmed by payment webhook".
 
 `verifyWebhook()` answers the webhook's GET route. Return `true`.
 
+:::info
+Gateways that confirm bookings themselves with `transitionTo()` keep working. Moving them to `confirmFromGateway()` means Resrv's fixes to this code reach them with each Resrv update. The [upgrade guide](https://github.com/reachweb/statamic-resrv/blob/main/UPGRADE-PAYMENT-GATEWAYS.md) shows how.
+:::
+
 ### The orphan-payment race
 
-A payment can succeed just as Resrv ends the booking, for example when its hold runs out. `transitionTo()` then returns `false`. Refresh the reservation and call `notifyIfOrphaned()`, as above: it emails your admins if money arrived for a booking that's no longer active, so you can refund it.
+A payment can succeed just as Resrv ends the booking, for example when its hold runs out. `confirmFromGateway()` reads the reservation again when that happens, and emails your admins if money arrived for a booking that's no longer active, so you can refund it.
+
+It sends the same email for the other payments it won't confirm:
+
+- A stale payment, even when the booking is confirmed: the customer may then have paid twice.
+- A payment for a booking that already expired, was refunded or was cancelled. A cancelled booking that kept its payment on purpose is the exception.
+- A payment whose amount doesn't match.
+
+Each payment is reported once, however often the provider sends the webhook again.
 
 ## Cancelling abandoned intents
 
@@ -400,6 +419,7 @@ namespace App\Payment;
 
 use Illuminate\Support\Facades\Log;
 use Reach\StatamicResrv\Exceptions\RefundFailedException;
+use Reach\StatamicResrv\Http\Payment\ConfirmsGatewayPayments;
 use Reach\StatamicResrv\Http\Payment\PaymentInterface;
 use Reach\StatamicResrv\Http\Payment\PendingPayment;
 use Reach\StatamicResrv\Models\Reservation;
@@ -407,6 +427,8 @@ use Statamic\Facades\Entry;
 
 class AcmePayPaymentGateway implements PaymentInterface
 {
+    use ConfirmsGatewayPayments;
+
     public function name(): string
     {
         return 'acmepay';
@@ -508,7 +530,7 @@ class AcmePayPaymentGateway implements PaymentInterface
 
     public function verifyPayment($request)
     {
-        // TODO: see "Verifying webhooks".
+        // TODO: check the signature and call $this->confirmFromGateway(), see "Verifying webhooks".
         return response()->json([], 200);
     }
 
