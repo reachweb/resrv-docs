@@ -214,7 +214,7 @@ Look the reservation up with a value your provider issued, like the payment id a
 
 The [payment page](/payment-page) calls `handleRedirectBack()` too, only to choose its message. The webhook still confirms the booking.
 
-## Verifying webhooks <Badge variant="accent">NEW</Badge> [#verifying-webhooks]
+## Verifying webhooks <Badge variant="accent">v6.6.0</Badge> [#verifying-webhooks]
 
 Gateways that confirm bookings through a webhook return `true` from `supportsWebhooks()` and implement `verifyPayment()`. Their webhook URL ends in the config key, like `https://your-site.com/resrv/api/webhook/acmepay` (see [Webhook routes](/payment-gateways#webhook-routes)).
 
@@ -272,7 +272,7 @@ public function verifyPayment($request)
 }
 ```
 
-`confirmFromGateway()` confirms the reservation and fires `ReservationConfirmed`, so the [activity log](/activity-log) shows "Confirmed by payment webhook". It confirms checkouts and manual reservations awaiting payment alike, so don't check the status first. A repeat delivery for a booking it already confirmed does nothing. When the payment can't confirm the booking, it emails your admins instead (see below).
+`confirmFromGateway()` confirms the reservation and fires `ReservationConfirmed`, so the [activity log](/activity-log) shows "Confirmed by payment webhook". It confirms checkouts and manual reservations awaiting payment alike, so don't check the status first. A repeat delivery of the payment that confirmed the booking does nothing. When the payment can't confirm the booking, it emails your admins instead (see below).
 
 | Argument | Description |
 | --- | --- |
@@ -291,7 +291,7 @@ A few rules the example follows:
 `verifyWebhook()` answers the webhook's GET route. Return `true`.
 
 :::info
-Gateways that confirm bookings themselves with `transitionTo()` keep working. Moving them to `confirmFromGateway()` means Resrv's fixes to this code reach them with each Resrv update. The [upgrade guide](https://github.com/reachweb/statamic-resrv/blob/main/UPGRADE-PAYMENT-GATEWAYS.md) shows how.
+`confirmFromGateway()` is new in v6.6.0. Gateways that confirm bookings themselves with `transitionTo()` keep working. Moving them to `confirmFromGateway()` means Resrv's fixes to this code reach them with each Resrv update. The [upgrade guide](https://github.com/reachweb/statamic-resrv/blob/main/UPGRADE-PAYMENT-GATEWAYS.md) shows how.
 :::
 
 ### The orphan-payment race
@@ -301,6 +301,7 @@ A payment can succeed just as Resrv ends the booking, for example when its hold 
 It sends the same email for the other payments it won't confirm:
 
 - A stale payment, even when the booking is confirmed: the customer may then have paid twice.
+- A payment the customer completes after you [marked the booking as paid](/manual-reservations#mark-as-paid), when Resrv couldn't cancel it at the time.
 - A payment for a booking that already expired, was refunded or was cancelled. A cancelled booking that kept its payment on purpose is the exception.
 - A payment whose amount doesn't match.
 
