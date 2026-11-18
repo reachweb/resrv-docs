@@ -291,7 +291,7 @@ A few rules the example follows:
 `verifyWebhook()` answers the webhook's GET route. Return `true`.
 
 :::info
-`confirmFromGateway()` is new in v6.6.0. Gateways that confirm bookings themselves with `transitionTo()` keep working. Moving them to `confirmFromGateway()` means Resrv's fixes to this code reach them with each Resrv update. The [upgrade guide](https://github.com/reachweb/statamic-resrv/blob/main/UPGRADE-PAYMENT-GATEWAYS.md) shows how.
+`confirmFromGateway()` is new in v6.6.0. Gateways that confirm bookings themselves with `transitionTo()` keep working. Moving them to `confirmFromGateway()` means Resrv's fixes to this code reach them with each Resrv update. The [upgrade guide](https://github.com/reachweb/statamic-resrv/blob/main/UPGRADE-PAYMENT-GATEWAYS.md) shows how. When you move one, check the reference before you pass `stale: true`, as the example above does. `confirmFromGateway()` emails your admins about every stale payment, even for a confirmed booking, so a payment matched on the reservation id alone could ask them to refund another site's customer.
 :::
 
 ### The orphan-payment race
