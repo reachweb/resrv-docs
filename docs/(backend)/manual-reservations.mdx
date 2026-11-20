@@ -365,7 +365,7 @@ If a payment was going through when you or the sweep cancelled the reservation, 
 
 If you mark a booking as paid that the customer also paid online, Resrv keeps the online payment's reference and sends "Possible duplicate payment". Refund the duplicate in your provider.
 
-If you mark a booking as paid and Resrv can't verify the customer's online payment, the alert is "Payment intent could not be verified". If it can't cancel a payment the customer could still complete, it's "Open payment intent could not be cancelled". Check the payment in your provider and cancel it if it's still open.
+If you mark a booking as paid and Resrv can't verify the customer's online payment, the alert is "Payment intent could not be verified". If it can't cancel a payment the customer could still complete, it's "Open payment intent could not be cancelled". Check the payment in your provider and cancel it if it's still open. From v6.6.0, if the customer completes it anyway, Stripe's webhook sends "Possible duplicate payment" so you can refund one of the two payments. Add-on and custom gateways send it once they use [`confirmFromGateway()`](/custom-payment-gateway#verifying-webhooks).
 
 After a cancellation, a payment Resrv couldn't confirm as cancelled is flagged in the Control Panel and logged, without an email. Your admins are emailed only if the payment method is no longer configured ("Payment intent could not be verified"), or if the payment later goes through ("Orphaned payment detected").
 
