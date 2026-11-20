@@ -95,12 +95,12 @@ Resrv picks the checkout form in this order:
 
 #### Manual reservations <Badge variant="accent">NEW</Badge> [#manual-reservations]
 
-These settings control how customers pay for [reservations you create in the Control Panel](/manual-reservations). There's no switch to turn the feature on.
+These settings control how customers pay for [reservations you create in the Control Panel](/manual-reservations). There's no switch to turn the feature on. The Offline Payment Instructions also reach website bookings made with an offline method.
 
 | Field | Default | Description |
 |---|---|---|
 | Payment Page Entry | *(none)* | The entry that loads the [`reservation-payment`](/payment-page) Livewire component, opened from the payment request email. It must be published, not private, and have a URL. Without it, only offline payment methods work for manual reservations. |
-| Offline Payment Instructions | *(empty)* | Instructions for offline payment methods, such as your bank details. Shown as plain text on the payment page and in the payment request email. If empty, customers are told to arrange payment with you and quote their booking reference. |
+| Offline Payment Instructions | *(empty)* | Instructions for offline payment methods, such as your bank details. Shown as plain text at [checkout](/checkout#offline-pay-later), in the payment request email, and on the payment page of manual reservations. If empty, the checkout shows no instructions, and the payment request email and payment page tell customers to arrange payment with you and quote their booking reference. |
 
 <Frame caption="Select the payment page and, optionally, the instructions shown for offline payment methods.">
   ![Select the payment page and, optionally, the instructions shown for offline payment methods.](/img/resrv-settings-manual-reservations.webp)

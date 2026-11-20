@@ -22,9 +22,9 @@ The Status filter defaults to **Confirmed**, **Partner** and (from v6.5.0) **Awa
 
 The status of a reservation can be one of the following:
 
-- **Confirmed**: The reservation is confirmed. Checkout bookings with an offline payment method such as bank transfer are confirmed before the money reaches you, so confirmed doesn't always mean paid.
+- **Confirmed**: The reservation is confirmed. Before v6.6.0, checkout bookings with an offline payment method such as bank transfer were confirmed before the money reached you, so for those, confirmed doesn't always mean paid.
 - **Pending**: The user has started the checkout process but hasn't completed it. It still holds availability.
-- **Awaiting payment**: A reservation created in the Control Panel that is waiting for the customer to pay. It holds availability, unless it was created without decreasing availability. Once paid it becomes **Confirmed**. If you cancel it, or its [payment deadline](/manual-reservations#payment-deadlines) passes, it becomes **Cancelled**. See [Manual reservations](/manual-reservations#the-awaiting-payment-status).
+- **Awaiting payment**: A reservation waiting for the customer to pay: one created in the Control Panel, or from v6.6.0 a website booking made with an offline method (see [Offline / pay-later](/checkout#offline-pay-later)). It holds availability, unless it was created without decreasing availability. Once paid it becomes **Confirmed**. If you cancel it, or its [payment deadline](/manual-reservations#payment-deadlines) passes, it becomes **Cancelled**. See [Manual reservations](/manual-reservations#the-awaiting-payment-status).
 - **Refunded**: The reservation has been refunded, by you or by the customer cancelling within the free-cancellation window on the [Reservation Status](/reservation-status) page.
 - **Cancelled**: The reservation was cancelled without a refund through the payment gateway. This covers customers cancelling after the free-cancellation window (you keep the payment), cancelled partner and zero-payment bookings, and cancelled **Awaiting payment** reservations.
 - **Expired**: The user started the reservation but never finished the checkout. Availability is restored.
@@ -56,10 +56,14 @@ The page also shows:
 
 - The **rate**. Multi-rate bookings list each child reservation with its own rate (see [Rates](/rates)).
 - The **payment gateway**, and its **surcharge** if one applies (see [Payment gateways](/payment-gateways)).
-- Whether the payment was **Paid**, is **Requested (unpaid)** or was **Not collected**. For checkout bookings with an offline payment method the row just reads **Payment**, because Resrv can't know if the money arrived.
+- Whether the payment was **Paid**, is **Requested (unpaid)** or was **Not collected**. The row just reads **Payment** when nothing records whether the money arrived: offline checkout bookings confirmed before v6.6.0, and cancelled reservations whose online payment couldn't be verified as cancelled.
 - **Created by** and **Decreases availability**, for reservations created in the Control Panel.
 
 Timestamps such as **Created** show their time zone.
+
+:::info[FOR DEVELOPERS]
+From v6.6.0, the `payment_settlement` column records how a reservation was paid: `none` (nothing collected yet, or nothing owed), `gateway` (paid by the charge in `payment_id`), `out_of_band` (marked as paid in the Control Panel) or `unresolved` (Resrv can't tell). It replaces the `payment_unresolved` column, and its migration fills it in for existing reservations. Read it, or `$reservation->amountReceived()`, rather than treating a `payment_id` as money received: `out_of_band` and `unresolved` reservations can keep one so you can check that payment in your provider.
+:::
 
 **Awaiting payment** reservations also get an **Awaiting payment** section with the amount, deadline and payment link, and actions such as **Mark as paid** in the header. See [Manual reservations](/manual-reservations#managing-awaiting-payment-reservations).
 

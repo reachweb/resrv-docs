@@ -82,7 +82,7 @@ Fires when a visitor presses **Book now** and the checkout starts, and when you 
 
 ### ReservationConfirmed
 
-Fires when a payment is confirmed by the provider's webhook, when a customer confirms with the offline gateway, when there's nothing to pay, and when you mark a manual reservation as paid. Affiliates who skip payment trigger it too, with the status `partner`.
+Fires when a payment is confirmed by the provider's webhook, when there's nothing to pay, and when you mark a reservation awaiting payment as paid. From v6.6.0, a customer who confirms with the offline gateway doesn't fire it: the booking waits for its payment, and it fires when you mark it as paid. Affiliates who skip payment trigger it too, with the status `partner`.
 
 | Property | Description |
 | --- | --- |
