@@ -327,7 +327,7 @@ public function cancelPaymentIntent(string $paymentId, Reservation $reservation)
 
 Cancel only payments that can still be cancelled, and log errors instead of throwing them. Gateways with nothing to cancel, like the offline gateway, leave the method empty.
 
-## Retrieving a payment intent <Badge variant="accent">NEW</Badge> [#retrieving-a-payment-intent]
+## Retrieving a payment intent [#retrieving-a-payment-intent]
 
 `retrievePaymentIntent()` reads a payment's current state. [Manual reservations](/manual-reservations) use it to resume a payment on the [payment page](/payment-page), to check a cancellation went through, and before marking a booking as paid or refunding it. From v6.6.0, checkout uses it too: to continue a payment the customer started, and to check that the old payment is cancelled before it starts another.
 
