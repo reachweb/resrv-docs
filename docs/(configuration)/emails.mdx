@@ -18,7 +18,7 @@ Each email Resrv sends is tied to an **event**, with a default template, subject
 | `admin_cancelled` | A customer cancels from the [reservation status](/reservation-status) page, or a manual reservation's payment hold lapses | Admins |
 
 :::info
-A ninth event, `admin_orphaned_payment`, alerts your admins when a payment succeeds on a reservation that can't be confirmed any more (expired, refunded, partner or, from v6.5.0, cancelled). From v6.5.0 it also flags manual reservations whose online payment needs checking. It isn't in the Control Panel email settings, so it's always on and goes to the **Admin email** addresses. See [Reconciliation alerts](/manual-reservations#reconciliation-alerts) and [The orphan-payment race](/custom-payment-gateway#the-orphan-payment-race).
+A ninth event, `admin_orphaned_payment`, alerts your admins when a payment succeeds on a reservation that can't be confirmed any more (expired, refunded, partner or, from v6.5.0, cancelled). From v6.5.0 it also flags manual reservations whose online payment needs checking. From v6.6.0 it also sends "Possible duplicate payment" when a payment succeeds on a booking that another payment or **Mark as paid** already confirmed. It isn't in the Control Panel email settings, so it's always on and goes to the **Admin email** addresses. See [Reconciliation alerts](/manual-reservations#reconciliation-alerts) and [The orphan-payment race](/custom-payment-gateway#the-orphan-payment-race).
 :::
 
 The `admins` recipient is the list in the **Admin email** field (Settings → Engine). If it's empty, admins get no emails. The `affiliate` recipient is any related affiliate with email notifications on, and only when [affiliates](/affiliates) are enabled.

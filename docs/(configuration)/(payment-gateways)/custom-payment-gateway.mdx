@@ -309,7 +309,7 @@ Each payment is reported once, however often the provider sends the webhook agai
 
 ## Cancelling abandoned intents
 
-Resrv calls `cancelPaymentIntent()` when the customer leaves a payment behind, for example by going back a step, switching gateway or letting the checkout time out. It also calls it when a manual reservation is cancelled or marked as paid while its payment is still open.
+Resrv calls `cancelPaymentIntent()` when the customer leaves a payment behind: they change payment method, change the amount (with a coupon, for example) or let the checkout time out. It also calls it when a manual reservation is cancelled or marked as paid while its payment is still open. Except when a checkout times out, Resrv then checks the result with [`retrievePaymentIntent()`](#retrieving-a-payment-intent). From v6.6.0, checkout starts another payment only once the old one reports `canceled`.
 
 ```php
 public function cancelPaymentIntent(string $paymentId, Reservation $reservation): void
@@ -329,7 +329,7 @@ Cancel only payments that can still be cancelled, and log errors instead of thro
 
 ## Retrieving a payment intent <Badge variant="accent">NEW</Badge> [#retrieving-a-payment-intent]
 
-`retrievePaymentIntent()` reads a payment's current state. [Manual reservations](/manual-reservations) use it to resume a payment on the [payment page](/payment-page), to check a cancellation went through, and before marking a booking as paid or refunding it. Checkout doesn't use it.
+`retrievePaymentIntent()` reads a payment's current state. [Manual reservations](/manual-reservations) use it to resume a payment on the [payment page](/payment-page), to check a cancellation went through, and before marking a booking as paid or refunding it. From v6.6.0, checkout uses it too: to continue a payment the customer started, and to check that the old payment is cancelled before it starts another.
 
 Return an object with a `->status`, using Stripe's names:
 
@@ -341,7 +341,7 @@ Return an object with a `->status`, using Stripe's names:
 
 Return `null` only when the provider says the payment doesn't exist, like a 404. For timeouts, rate limits, server and login errors, throw: returning `null` there could lead to a second charge.
 
-If your provider can't cancel a payment the bank hasn't answered yet, report it as payable without `->redirectTo`, and add `->expires_at` with the time the provider stops accepting it. The payment page then tells the customer when they can try again.
+If your provider can't cancel a payment the bank hasn't answered yet, report it as payable without `->redirectTo`, and add `->expires_at` with the time the provider stops accepting it. The payment page and, from v6.6.0, checkout then tell the customer when they can try again. Without it, they see "We could not start the payment process" until your gateway reports the payment `canceled`.
 
 The Stripe gateway returns Stripe's own payment intent, which already has `->status` and `->client_secret`:
 

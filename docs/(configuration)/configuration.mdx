@@ -134,7 +134,7 @@ php please resrv:cancel-lapsed-holds --dry-run
 
 #### Cache store with lock support
 
-The [payment page](/payment-page) uses Laravel's atomic cache locks (`Cache::lock()`) so two payment attempts for the same reservation can't create two charges. Your cache store must support locks. `file`, `database`, `redis`, `memcached`, `dynamodb` and `array` do, `apc` doesn't. Without locks, every online payment on the payment page fails and the customer sees "We could not start the payment process. Please try again or contact us for assistance."
+Checkout and the [payment page](/payment-page) use Laravel's atomic cache locks (`Cache::lock()`) so two payment attempts for the same reservation can't create two charges. Your cache store must support locks. `file`, `database`, `redis`, `memcached`, `dynamodb` and `array` do, `apc` doesn't. Without locks, every online payment on the payment page fails and the customer sees "We could not start the payment process. Please try again or contact us for assistance." From v6.6.0, every checkout fails too, because checkout locks the booking from its first step.
 
 If you run more than one app server, use a shared store (`redis`, `database` or `memcached`).
 

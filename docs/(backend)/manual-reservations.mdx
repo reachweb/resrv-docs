@@ -43,7 +43,7 @@ Every gateway in `payment_gateways` is offered at checkout (within its [amount l
 2. **Register an offline payment method** if customers will pay by bank transfer or on arrival. The default config only has Stripe, so add the [Offline gateway](/payment-gateways#the-offline-gateway), or another gateway whose `supportsManualConfirmation()` returns `true`, under `payment_gateways` in `config/resrv-config.php`.
 3. **Optionally add Offline Payment Instructions**, such as your bank details, in the same settings section. See [Offline payment methods](/payment-page#offline-payment-methods).
 4. **Schedule the lapsed-hold sweep** if you will use payment deadlines. See [The lapsed-hold sweep](#the-lapsed-hold-sweep).
-5. **Use a cache store that supports locks** (`apc` doesn't), or every online payment fails. See [Cache store with lock support](/configuration#cache-store-with-lock-support).
+5. **Use a cache store that supports locks** (`apc` doesn't), or every online payment fails, and from v6.6.0 every checkout. See [Cache store with lock support](/configuration#cache-store-with-lock-support).
 6. **Update your payment gateways for v6.5.** Custom gateways and the Mollie (`reachweb/resrv-payment-mollie`) or PayPal (`reachweb/resrv-payment-paypal`) add-ons must support the v6.5 payment interface. See [Writing a custom payment gateway](/custom-payment-gateway) and the add-on note in [Upgrading](/upgrading#_1-update-custom-payment-gateways-first).
 
 <Frame caption="The Manual reservations settings: the payment page entry, and the instructions shown to customers who pay with an offline method.">

@@ -75,7 +75,7 @@ For example, a $200 price with a 50% discount becomes $100. A **Minimum** of `15
 
 A price never drops below `0`, even if a **Decrease** would push it there.
 
-Clamps also apply to [Extra](/extras) prices. For a per-day Extra, the clamp checks the Extra's total for the booking (daily price times days), not the daily price.
+Clamps also apply to [Extra](/extras) prices. The clamp checks the Extra's line for the booking: its price times the days (for a per-day Extra) and times the quantity the customer picks, not the daily or unit price. From v6.6.0, the availability results, the cart and checkout show and charge that clamped line.
 
 ## Applied Dynamic Pricing
 

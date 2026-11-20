@@ -35,7 +35,7 @@ Gateways are set up in `config/resrv-config.php`, not in the Control Panel. Add 
 | `amount_limits` | No | Array | See [Amount limits](#amount-limits). |
 
 :::tip
-The array key (`stripe`, `offline`) is the gateway's name. It's used in the webhook URL and the `resrv_gateway` redirect parameter, so keep it lowercase with no spaces.
+The array key (`stripe`, `offline`) is the gateway's name. It's used in the webhook URL and the `resrv_gateway` return URL parameter, so keep it lowercase with no spaces.
 :::
 
 ### The default gateway
@@ -151,7 +151,7 @@ Each gateway has its own webhook URL:
 | Route | Resolves to |
 | --- | --- |
 | `/resrv/api/webhook/{gateway}` | The gateway whose config key is `{gateway}` |
-| `/resrv/api/webhook` | The default gateway (single-gateway sites only) |
+| `/resrv/api/webhook` | Your only configured gateway (single-gateway sites only) |
 
 Each route accepts `GET` and `POST` and is exempt from CSRF protection. They also confirm payments made from the [payment page](/payment-page) of a manual reservation.
 
