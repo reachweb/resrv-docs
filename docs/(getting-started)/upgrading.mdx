@@ -11,6 +11,7 @@ Find the section that starts at your version, then work through it and every sec
 5. [Upgrading to v6.5.2](#upgrading-to-v6-5-2): a security fix, one migration and two translation keys.
 6. [Upgrading to v6.5.3](#upgrading-to-v6-5-3): one translation key, two payment views and a check for custom gateways.
 7. [Upgrading to v6.5.4](#upgrading-to-v6-5-4): a check for searches that set the quantity themselves.
+8. [Upgrading to v6.6.0](#upgrading-to-v6-6-0): two migrations, offline bookings that wait for payment, a cache store check and the PayPal add-on.
 
 Each section ends with a checklist for confirming the upgrade worked.
 
@@ -630,3 +631,114 @@ A `redirectTo` added to a search with `live` off only so that clearing its dates
 - [ ] Pick 2 in a search with a quantity control, then open a page whose search has none, with dates still set: its results show the price for one unit. If that search is in your layout, check after a second page load.
 - [ ] Every search whose view sets `data.quantity` itself has `enableQuantity="true"`.
 - [ ] Clearing the dates of a search with `live` off and no `redirectTo` updates the results without reloading the page.
+
+## Upgrading to v6.6.0 [#upgrading-to-v6-6-0]
+
+v6.6.0 holds offline checkout bookings until they're paid and changes how the checkout starts and cancels payments. It has two migrations, and one of them drops a column, so back up your database first. The [v6.6.0 changelog](/changelog#v6-6-0) has the details.
+
+### 1. Use a cache store that supports locks [#_1-use-a-cache-store-that-supports-locks-v6-6-0]
+
+From v6.6.0, the checkout takes a cache lock for each booking, so two tabs can't start two payments for it. On the `apc` store, which has no locks, every checkout now fails, not only the [payment page](/payment-page). Check that `CACHE_STORE` in `.env` isn't `apc`. [Use a cache store that supports locks](#_6-use-a-cache-store-that-supports-locks) lists the stores that work.
+
+### 2. Update the package and run the migrations [#_2-update-the-package-and-run-the-migrations-v6-6-0]
+
+```bash
+composer update reachweb/statamic-resrv
+php artisan migrate
+```
+
+The two migrations change `resrv_reservations`:
+
+- `2026_11_18_000000_add_payment_intent_amount_to_resrv_reservations_table` adds `payment_intent_amount` (nullable decimal), the amount the stored payment charges, so a customer can continue it.
+- `2026_11_18_000001_add_payment_settlement_to_resrv_reservations_table` adds `payment_settlement` (string, default `none`), fills it in for existing reservations and drops `payment_unresolved`.
+
+Run them before the site serves traffic: starting a payment and confirming a booking write the new columns, and fail until they exist.
+
+`payment_settlement` records how a reservation was paid (see [Reservation Details](/reservations#reservation-details)). The migration sets it from each reservation's payment:
+
+- Paid through a gateway: `gateway`.
+- Marked as paid in the Control Panel: `out_of_band`.
+- Cancelled while its online payment couldn't be verified as cancelled: `unresolved`.
+- An offline checkout booking confirmed before v6.6.0: `unresolved`, and its made-up `offline_…` payment id is removed. Nothing recorded whether it was paid, so the Control Panel still shows **Payment** rather than **Paid**.
+- Everything else: `none`.
+
+Every reservation reports the same amount received as before. Rolling the migration back restores `payment_unresolved`.
+
+### 3. Update the PayPal add-on [#_3-update-the-paypal-add-on-v6-6-0]
+
+If you use the [PayPal](/paypal) add-on, update it to v1.1.1 or later in the same deploy:
+
+```bash
+composer update reachweb/resrv-payment-paypal
+```
+
+From v6.6.0, the checkout checks with the provider that a payment is cancelled before it starts another one. Earlier versions of the add-on report a PayPal order the customer started as still payable, so once a customer picks PayPal, **Change payment method** and a coupon change show "We could not start the payment process" until the checkout expires.
+
+### 4. Check what relies on offline bookings being confirmed [#_4-check-what-relies-on-offline-bookings-being-confirmed-v6-6-0]
+
+A website booking made with the [Offline gateway](/payment-gateways#the-offline-gateway), or any gateway whose `supportsManualConfirmation()` returns `true`, now waits in **Awaiting payment** until you **Mark as paid** (see [Offline / pay-later](/checkout#offline-pay-later)). Skip this step if you don't offer one at checkout.
+
+- **Emails:** the customer gets the **Customer payment request** email instead of the confirmation, and it's the only email they get when they book. If you turned that event off because you don't create manual reservations, turn it back on. Your admins get the new **Admin awaiting payment** email when the customer books, and **Admin made** when you mark it as paid. See [Offline checkout bookings](/emails#offline-checkout-bookings).
+- **Events:** `ReservationConfirmed` fires when you mark the booking as paid, not when the customer books. Listeners and integrations that act on it, such as the [Vouchers](/vouchers) add-on, now act then.
+- **Your process:** mark these bookings as paid when the money arrives, and cancel the ones that are never paid. They have no deadline, so `resrv:cancel-lapsed-holds` leaves them alone unless you set one with **Extend hold**.
+
+Bookings confirmed before v6.6.0 stay **Confirmed**.
+
+### 5. Update custom code and custom payment gateways [#_5-update-custom-code-and-custom-payment-gateways-v6-6-0]
+
+`PaymentInterface` hasn't changed, so nothing fails to load. Check your own code for these changes:
+
+- **`payment_unresolved` is gone.** Read `payment_settlement` or `$reservation->amountReceived()` instead, and don't treat a `payment_id` as money received.
+- **Removed `Reservation` methods:** `supportsAutomaticRefund()` (use `refundIsAutomatic()`) and `confirmedWithoutGatewayCharge()`. `amountPaidOnline()` still works, but it's a deprecated alias of `amountPaid()`.
+- **Removed pricing methods:** `Extra::getPriceForDates()`, `Option::valuesPriceForDates()`, and in the Extras and Options components `getExtrasForReservation()`, `getExtrasForSearch()`, `getExtrasForSelections()`, `updateEnabledExtraPrices()`, `getOptionsForReservation()`, `getOptionsForSearch()`, `getOptionsForSelections()` and `updateEnabledOptionPrices()`. Extras and options are now priced by `Reach\StatamicResrv\Support\AddonQuote`.
+- **`Checkout::resetPaymentState()` returns `bool`.** A component that extends `Checkout` and overrides it must declare the return type too.
+- **New enum cases:** `ReservationEmailEvent::AdminAwaitingPayment` and `ReservationLogReason::CheckoutAwaitingPayment`. An exhaustive `match` over either enum throws `UnhandledMatchError` until it handles them.
+
+If you wrote a payment gateway:
+
+- **Report a dead payment as `canceled`.** The checkout now replaces a payment only when `retrievePaymentIntent()` returns `null` or reports it `canceled`. Any other status counts as still payable, and the customer can't switch method or apply a coupon until it changes. Add `->expires_at` when the provider's payment expires on its own, so the customer is told when to try again. See [Retrieving a payment intent](/custom-payment-gateway#retrieving-a-payment-intent).
+- **Put `resrv_gateway` on your return URL.** Resrv no longer adds it to the provider URL a redirect gateway returns. See [The return URL](/custom-payment-gateway#the-return-url).
+- **Offline gateways** never get `paymentIntent()` calls at checkout, and their bookings wait for **Mark as paid**.
+- **Optional:** move your webhook handling to `confirmFromGateway()`, which adds the stale-payment and paid-twice alerts. See [Verifying webhooks](/custom-payment-gateway#verifying-webhooks) and the [upgrade guide for gateways](https://github.com/reachweb/statamic-resrv/blob/main/UPGRADE-PAYMENT-GATEWAYS.md).
+
+### 6. Merge customized views and translations [#_6-merge-customized-views-and-translations-v6-6-0]
+
+Old copies keep working, but they keep the old wording and miss the new states. Merge in the changes from `vendor/reachweb/statamic-resrv/resources`:
+
+- **Language file** (`--tag=resrv-language`): `frontend.php` has two new keys, `statusAwaitingPayment` and `awaitingPaymentNote` (see [Translations](/reservation-status#translations)). `offlinePaymentDescription` changed too: the old text tells customers payment "can be arranged separately". Update all three in every locale you've published.
+- **Email templates** (`--tag=resrv-emails`):
+  - `payment-request` needs the `$placedByCustomer` branch, or it greets website customers with "We have created a reservation for you." It also lists each stay of a cart booking.
+  - `confirmed` and `made` show **Payment** when Resrv doesn't know whether the customer paid.
+  - `cancelled` and `cancelled-customer` decide whether money was collected from `amountPaid()`. `cancelled-customer` also lists each stay of a cart booking.
+  - `orphaned-payment` has a new `confirmed_by_another_payment` context. An old copy describes it as a payment on a booking that's no longer live.
+  - The new `awaiting-payment` template uses the packaged copy until you publish it.
+- **Checkout views** (`--tag=resrv-checkout-views`):
+  - `livewire/checkout-payment-offline.blade.php` shows your **Offline Payment Instructions**.
+  - `livewire/components/checkout-payment-table.blade.php` shows an extra's clamped line with `$enabledExtras->lineTotal($extra)->format()`, not price times quantity.
+  - `livewire/reservation-status.blade.php` shows the **Awaiting payment** badge and note.
+- **JSON translations:** the new email and Control Panel sentences go through `__()`. If you translate Resrv in `lang/<locale>.json`, add them there.
+
+Sites built on the [Resrv Hotel starter kit]({{hotelKitUrl}}) have published copies of these files, so they need the merges too.
+
+### What changes for existing sites
+
+The [v6.6.0 changelog](/changelog#v6-6-0) has the details.
+
+- Website bookings made with an offline method wait in **Awaiting payment**, with their dates held, until you mark them as paid or cancel them.
+- The [Reservation Status](/reservation-status) page shows **Awaiting payment** bookings, including reservations you created in the Control Panel, without a cancel button.
+- A customer who comes back to the checkout and pays with the same gateway and amount continues the payment they started.
+- The checkout no longer starts a second payment while the first can still be paid. With the [Mollie](/mollie) add-on, a customer who leaves Mollie's page without paying or cancelling, with the browser's back button for example, can pay with Mollie again, but can't switch to another method until Mollie expires that payment. Most open Mollie payments can't be cancelled.
+- Your admins get "Orphaned payment detected" when a Stripe payment succeeds on a booking that another payment, or **Mark as paid**, already confirmed.
+- An extra clamped by a [minimum or maximum price](/dynamic-pricing#minimum-and-maximum-prices) shows and charges its clamped line in the results, the cart, checkout and the Control Panel.
+- Checkout offers only published option values, so a required option with no published values blocks checkout, as it already did on the **Create reservation** page. An extra that doesn't allow multiple is capped at one unit.
+- With no rate selected and order sorting, the entry page shows the first bookable rate, which can differ from before.
+- `/resrv/api/webhook` without a gateway name goes to your only configured gateway.
+
+### Checklist [#checklist-v6-6-0]
+
+- [ ] `php artisan migrate:status` shows the two v6.6.0 migrations as ran.
+- [ ] Your cache store (`CACHE_STORE` in `.env`) isn't `apc`, and a test checkout reaches the payment step.
+- [ ] If you use PayPal: after picking PayPal at checkout, **Change payment method** and another method load its payment form.
+- [ ] If you offer an offline method: a test booking turns **Awaiting payment**, the customer gets the payment request, your admins get "awaiting payment", and **Mark as paid** confirms it.
+- [ ] A search of your code for `payment_unresolved`, `supportsAutomaticRefund`, `confirmedWithoutGatewayCharge`, `getPriceForDates` and `valuesPriceForDates` finds nothing.
+- [ ] Your published email templates, checkout views and language files include the v6.6.0 changes.

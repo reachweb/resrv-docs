@@ -4,6 +4,53 @@ sidebar:
   label: Changelog
 ---
 
+## v6.6.0 [#v6-6-0]
+#### Release date: TBD
+
+This release holds offline checkout bookings until they're paid, stops the checkout from starting a second payment next to a live one, and fixes add-on pricing and payment bugs found in a code review. It has two migrations, and the PayPal add-on must be updated in the same deploy, so read [Upgrading to v6.6.0](/upgrading#upgrading-to-v6-6-0) first.
+
+### New features
+- **Offline bookings wait for their payment:** a website booking made with an offline method, such as bank transfer, now goes to **Awaiting payment** instead of **Confirmed**. Its dates stay held, with no deadline, until you **Mark as paid** or **Cancel reservation**. The customer gets the payment request email with your **Offline Payment Instructions** and their booking reference, and the confirmation emails go out when you mark it as paid. Bookings confirmed before v6.6.0 stay **Confirmed**. See [Offline / pay-later](/checkout#offline-pay-later).
+- **Admin awaiting payment email:** a new email event, on by default, tells your admins when a website booking is waiting for its payment. See [Offline checkout bookings](/emails#offline-checkout-bookings).
+- **Payment instructions at checkout:** the offline payment step shows your **Offline Payment Instructions** above the amount.
+- **Awaiting-payment bookings on the status page:** the [Reservation Status](/reservation-status) page shows them with an **Awaiting payment** badge and a note, without a cancel button. This includes reservations created in the Control Panel, which v6.5 left out until they were paid.
+- **Continuing a payment at checkout:** a customer who comes back to the checkout and pays with the same gateway and amount continues the payment they started, as on the [payment page](/payment-page). See [Cancelling abandoned payments](/payment-gateways#cancelling-abandoned-payments).
+
+### Improvements
+- **No second payment next to a live one:** when a customer switches payment method or changes the amount, the checkout now checks with the provider that the old payment is cancelled before it starts another. If the provider can't cancel it, the customer sees an error, or a notice saying when they can try again. If the old payment already went through, they go to your checkout complete page. Before, a failed cancel was ignored and the customer could pay twice.
+- **Paid-twice alerts:** your admins get the "Orphaned payment detected" email when a payment succeeds on a booking that another payment had already confirmed. That covers a customer who switched payment method and paid both ways, and a payment the customer completed after you used **Mark as paid**. Stripe sends it from v6.6.0, and add-on and custom gateways once they use [`confirmFromGateway()`](/custom-payment-gateway#verifying-webhooks).
+- **Stripe:** an abandoned payment that succeeds after the booking was confirmed another way now alerts your admins. Before, the second charge was kept without an alert. Payment intents also carry the booking reference, so another site on the same Stripe account can't raise an alert against one of your bookings.
+- **Extras with a minimum or maximum price:** an extra whose line is clamped by a [dynamic pricing minimum or maximum](/dynamic-pricing#minimum-and-maximum-prices) now shows and charges the clamped line everywhere: in the availability results, the cart, checkout and the Control Panel. Before, checkout rejected more than one unit as a price change, and the results showed the unit price times the quantity.
+- **Checkout follows the Control Panel's add-on rules:** it offers only published option values, and caps an extra that doesn't allow multiple at one unit.
+
+### Bug fixes
+- **Coupons at checkout:** applying or removing a coupon charged the add-ons selected in the browser, not the ones booked at the first step, so a selection changed afterwards lowered the amount while the booking kept its add-ons. An extras coupon applied at the payment step also left the booked extras at their old prices. Both now re-price what's booked. Add-ons deselected after going back to the first step are now removed from the booking.
+- **Two tabs at checkout:** booking the add-ons, changing the coupon and starting a payment now run one at a time for each reservation. Two tabs could create two payments, or leave add-on lines that didn't add up to the amount charged.
+- **Custom-priced extras without their field:** checkout threw a server error when an extra priced by a customer field had that field missing or holding text. It now shows an error for that extra.
+- **Bare webhook URL:** `/resrv/api/webhook` now goes to your only configured gateway. Before, it went to Stripe.
+- **Rate on the entry page:** with no rate selected and order sorting, the page showed the entry as unavailable when the first rate failed a restriction such as `min_stay`. It now shows the first bookable rate, the one the listing shows first.
+- **Option ordering:** reordering an option renumbered every option on the site, and a drag to some positions did nothing. It now renumbers only that entry's options.
+- **Deleted add-ons in the cart:** an extra or option value deleted while in a customer's cart caused a server error on the next cart change. It now keeps its stored price and checkout rejects it.
+- **Control Panel quote with no rate chosen:** the **Create reservation** page listed add-ons without a rate but charged the first rate's prices. With [Booked units per add-on](/rates#booked-units-per-add-on), it showed 50.00 for a 25.00 charge. It now lists them under the rate it charges.
+- **Offline Payment Instructions with Greek letters:** instructions containing letters such as υ made the payment request email fail to render.
+
+### For custom payment gateways
+- **`confirmFromGateway()`:** the new `ConfirmsGatewayPayments` trait runs the whole webhook confirm in one call, including the stale-payment, amount and paid-twice checks. It's optional, and gateways that confirm bookings themselves keep working. See [Verifying webhooks](/custom-payment-gateway#verifying-webhooks).
+- **Report dead payments as `canceled`:** checkout now replaces a payment only when `retrievePaymentIntent()` reports it `canceled` or returns `null`. See [Upgrading to v6.6.0](/upgrading#_5-update-custom-code-and-custom-payment-gateways-v6-6-0).
+- **Redirect URLs are used as returned:** Resrv no longer adds `resrv_gateway` to the provider URL your gateway returns. Put it on your return URL instead (see [The return URL](/custom-payment-gateway#the-return-url)).
+- **Offline gateways:** a gateway whose `supportsManualConfirmation()` returns `true` now leaves the booking awaiting payment, and checkout never calls its `paymentIntent()`.
+
+### Breaking changes
+- **Offline bookings no longer confirm at checkout:** `ReservationConfirmed` fires when you mark them as paid, so listeners that act on a confirmation run then.
+- **`payment_unresolved` is replaced** by the new `payment_settlement` column (`none`, `gateway`, `out_of_band` or `unresolved`). The migration fills it in and drops the old column.
+- **Removed methods:** `Reservation::supportsAutomaticRefund()` and `confirmedWithoutGatewayCharge()`, `Extra::getPriceForDates()` and `Option::valuesPriceForDates()`, and the pricing methods of the Extras and Options components. `amountPaidOnline()` is now a deprecated alias of `amountPaid()`.
+- **New enum cases:** `ReservationEmailEvent::AdminAwaitingPayment` and `ReservationLogReason::CheckoutAwaitingPayment`. An exhaustive `match` over either enum throws `UnhandledMatchError` until it handles them.
+- **Cache locks at checkout:** the checkout now takes a cache lock on every booking, so on the `apc` cache store every checkout fails.
+
+### Upgrading
+
+Run `composer update reachweb/statamic-resrv` and `php artisan migrate` before the site serves traffic, and update the PayPal add-on in the same deploy. [Upgrading to v6.6.0](/upgrading#upgrading-to-v6-6-0) covers the migrations, the cache store, custom code and gateways, and the views and translations to merge.
+
 ## v6.5.4 [#v6-5-4]
 #### Release date: 17th November 2026
 
