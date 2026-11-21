@@ -69,9 +69,13 @@ See [Payment gateways](/payment-gateways) to set up gateways, surcharges and amo
 
 Resrv ships with an **Offline** gateway (`OfflinePaymentGateway`) for payments you collect yourself, such as bank transfers. Enable it like any other gateway (see [Payment gateways](/payment-gateways)).
 
-The user sees the amount due and a **Confirm reservation** button instead of a card form. If there are other gateways, *Change payment method* takes them back to the picker.
+The user sees the amount due and a **Confirm reservation** button instead of a card form. If you set [Offline Payment Instructions](/configuration#manual-reservations), such as your bank details, they're shown above the amount. If there are other gateways, *Change payment method* takes them back to the picker.
 
-Confirming books the reservation and sends the confirmation email, but takes no payment. The checkout complete page shows the `pending` status, telling the customer that payment is still to be settled. You collect the payment outside Resrv.
+From v6.6.0, confirming places the booking in **Awaiting payment** and takes no payment. Its dates stay held, with no deadline, until you **Mark as paid** or **Cancel reservation** in the Control Panel (see [The Awaiting payment status](/manual-reservations#the-awaiting-payment-status)). The customer is emailed the payment request with your instructions and the booking reference, and your admins are told a booking is awaiting payment (see [Offline checkout bookings](/emails#offline-checkout-bookings)). The confirmation emails go out when you mark it as paid.
+
+The checkout complete page shows the `pending` status: "Your reservation has been received and is awaiting payment. We have emailed you the payment details, and we will confirm your reservation once your payment arrives." You collect the payment outside Resrv.
+
+Before v6.6.0, confirming confirmed the booking straight away. Those bookings stay **Confirmed**.
 
 ## Checkout Complete
 
@@ -137,7 +141,7 @@ You can use Statamic's validation tab to add validation to your fields. The fiel
 - Textarea
 - Integer
 - Toggle
-- Dictionaries <Badge variant="accent">NEW</Badge>
+- Dictionaries
 
 The dictionary *Countries* will display an AlpineJS filtered select box. Resrv adds the dictionary *Country Phone Codes* which displays a select box with all country codes plus an input box for the actual phone number.
 

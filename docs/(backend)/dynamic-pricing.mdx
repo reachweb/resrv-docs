@@ -54,7 +54,7 @@ You can set up coupons to apply a discount to a reservation. Simply enter a coup
 
 Please note that coupons **always** get applied, even if there are overriding dynamic pricing campaigns in place. You can also apply the other conditions mentioned above to coupons, such as limiting their use to a specific date range.
 
-## Minimum and maximum prices <Badge variant="accent">NEW</Badge> [#minimum-and-maximum-prices]
+## Minimum and maximum prices [#minimum-and-maximum-prices]
 
 Besides **Increase** and **Decrease**, the Operation field has two values that clamp the price:
 
@@ -75,7 +75,7 @@ For example, a $200 price with a 50% discount becomes $100. A **Minimum** of `15
 
 A price never drops below `0`, even if a **Decrease** would push it there.
 
-Clamps also apply to [Extra](/extras) prices. For a per-day Extra, the clamp checks the Extra's total for the booking (daily price times days), not the daily price.
+Clamps also apply to [Extra](/extras) prices. The clamp checks the Extra's line for the booking: its price times the days (for a per-day Extra) and times the quantity the customer picks, not the daily or unit price. From v6.6.0, the availability results, the cart and checkout show and charge that clamped line.
 
 ## Applied Dynamic Pricing
 

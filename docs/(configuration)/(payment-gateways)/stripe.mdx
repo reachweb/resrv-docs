@@ -57,7 +57,7 @@ In case you have cached your config, remember to clear the config cache when mak
 php artisan config:clear
 ```
 
-### Per-collection Stripe accounts <Badge variant="accent">NEW</Badge> [#per-collection-stripe-accounts]
+### Per-collection Stripe accounts [#per-collection-stripe-accounts]
 
 To charge different collections through different Stripe accounts, set each key to an array keyed by collection handle. Resrv picks the one for the reserved entry's collection:
 
@@ -108,7 +108,7 @@ RESRV_STRIPE_WEBHOOK_SECRET=whsec_.....
 ```
 
 :::info[Webhook hardening]
-In v6, webhooks signed against an empty secret are rejected, and a reservation is only confirmed when the amount received matches the booking amount plus any surcharge. Payments that can't be matched to a reservation trigger an orphaned payment email to your admins. From v6.5.0 that includes payments that arrive after the reservation was cancelled.
+In v6, webhooks signed against an empty secret are rejected, and a reservation is only confirmed when the amount received matches the booking amount plus any surcharge. Payments that can't be matched to a reservation trigger an orphaned payment email to your admins. From v6.5.0 that includes payments that arrive after the reservation was cancelled. From v6.6.0, a payment on a booking that another payment or **Mark as paid** already confirmed sends "Possible duplicate payment" (see [The orphan-payment race](/custom-payment-gateway#the-orphan-payment-race)).
 :::
 
 From v6.5.0 the same webhook and events also confirm payments from the [payment page](/payment-page) of a [manual reservation](/manual-reservations). Without a working webhook, those reservations stay **Awaiting payment** after the customer pays. If a card payment fails or is cancelled, the customer can try again from the same link.

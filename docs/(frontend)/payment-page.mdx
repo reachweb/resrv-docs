@@ -1,7 +1,5 @@
 ---
 title: Payment Page
-sidebar:
-  badge: NEW
 ---
 
 The `reservation-payment` Livewire component is the page where customers pay for a reservation you [created in the Control Panel](/manual-reservations). They open it from a signed link, without logging in. It shows what they owe, then takes the payment online or tells them how to pay you. The gateway's webhook confirms the booking afterwards.
@@ -112,7 +110,7 @@ If the payment can't be started, the customer sees "We could not start the payme
 Resrv remembers the payment it started for a reservation and checks it with the provider before starting another. If it can still be completed, the page resumes it. If it already went through or is still processing, the page shows **Payment processing**. If the provider cancelled it or it no longer exists, Resrv creates a new one.
 
 :::warning[CACHE LOCKS REQUIRED]
-Payment attempts are serialized with a cache lock (`Cache::lock()`). The `file`, `database`, `redis`, `memcached`, `dynamodb` and `array` cache stores support locks, but `apc` doesn't. On a store without locks, every online payment on this page fails with "We could not start the payment process". If you run more than one app server, use a shared store (`redis`, `database` or `memcached`).
+Payment attempts are serialized with a cache lock (`Cache::lock()`). The `file`, `database`, `redis`, `memcached`, `dynamodb` and `array` cache stores support locks, but `apc` doesn't. On a store without locks, every online payment on this page fails with "We could not start the payment process", and from v6.6.0 every checkout fails too. If you run more than one app server, use a shared store (`redis`, `database` or `memcached`).
 :::
 
 ### The webhook confirms the booking

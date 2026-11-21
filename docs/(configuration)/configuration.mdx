@@ -93,14 +93,14 @@ Resrv picks the checkout form in this order:
 2. **Collection mapping**: a form mapped to the entry's collection.
 3. **Default checkout form**.
 
-#### Manual reservations <Badge variant="accent">NEW</Badge> [#manual-reservations]
+#### Manual reservations [#manual-reservations]
 
-These settings control how customers pay for [reservations you create in the Control Panel](/manual-reservations). There's no switch to turn the feature on.
+These settings control how customers pay for [reservations you create in the Control Panel](/manual-reservations). There's no switch to turn the feature on. The Offline Payment Instructions also reach website bookings made with an offline method.
 
 | Field | Default | Description |
 |---|---|---|
 | Payment Page Entry | *(none)* | The entry that loads the [`reservation-payment`](/payment-page) Livewire component, opened from the payment request email. It must be published, not private, and have a URL. Without it, only offline payment methods work for manual reservations. |
-| Offline Payment Instructions | *(empty)* | Instructions for offline payment methods, such as your bank details. Shown as plain text on the payment page and in the payment request email. If empty, customers are told to arrange payment with you and quote their booking reference. |
+| Offline Payment Instructions | *(empty)* | Instructions for offline payment methods, such as your bank details. Shown as plain text at [checkout](/checkout#offline-pay-later), in the payment request email, and on the payment page of manual reservations. If empty, the checkout shows no instructions, and the payment request email and payment page tell customers to arrange payment with you and quote their booking reference. |
 
 <Frame caption="Select the payment page and, optionally, the instructions shown for offline payment methods.">
   ![Select the payment page and, optionally, the instructions shown for offline payment methods.](/img/resrv-settings-manual-reservations.webp)
@@ -134,7 +134,7 @@ php please resrv:cancel-lapsed-holds --dry-run
 
 #### Cache store with lock support
 
-The [payment page](/payment-page) uses Laravel's atomic cache locks (`Cache::lock()`) so two payment attempts for the same reservation can't create two charges. Your cache store must support locks. `file`, `database`, `redis`, `memcached`, `dynamodb` and `array` do, `apc` doesn't. Without locks, every online payment on the payment page fails and the customer sees "We could not start the payment process. Please try again or contact us for assistance."
+Checkout and the [payment page](/payment-page) use Laravel's atomic cache locks (`Cache::lock()`) so two payment attempts for the same reservation can't create two charges. Your cache store must support locks. `file`, `database`, `redis`, `memcached`, `dynamodb` and `array` do, `apc` doesn't. Without locks, every online payment on the payment page fails and the customer sees "We could not start the payment process. Please try again or contact us for assistance." From v6.6.0, every checkout fails too, because checkout locks the booking from its first step.
 
 If you run more than one app server, use a shared store (`redis`, `database` or `memcached`).
 

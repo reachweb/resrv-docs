@@ -2,7 +2,6 @@
 title: Payment Gateways
 sidebar:
   label: Overview
-  badge: NEW
 ---
 
 Resrv ships with [Stripe](/stripe) for card payments and an **Offline** gateway for bank transfers or paying at the premises. You can also use the [Mollie](/mollie) and [PayPal](/paypal) add-ons, or [write your own gateway](/custom-payment-gateway). From v6 you can offer several gateways at checkout, add a surcharge per gateway and limit a gateway to an order value range.
@@ -35,7 +34,7 @@ Gateways are set up in `config/resrv-config.php`, not in the Control Panel. Add 
 | `amount_limits` | No | Array | See [Amount limits](#amount-limits). |
 
 :::tip
-The array key (`stripe`, `offline`) is the gateway's name. It's used in the webhook URL and the `resrv_gateway` redirect parameter, so keep it lowercase with no spaces.
+The array key (`stripe`, `offline`) is the gateway's name. It's used in the webhook URL and the `resrv_gateway` return URL parameter, so keep it lowercase with no spaces.
 :::
 
 ### The default gateway
@@ -57,7 +56,7 @@ Existing single-gateway sites keep working as before, bare webhook URL included.
 
 The bundled `OfflinePaymentGateway` (`offline`) is for bookings paid outside the site, by bank transfer or at the premises. It doesn't connect to any provider.
 
-The customer sees a description, the amount due and a **Confirm reservation** button. Pressing it confirms the reservation and fires the `ReservationConfirmed` event, so the confirmation email goes out right away. The checkout complete page then shows a `pending` status.
+The customer sees a description, the amount due and a **Confirm reservation** button. From v6.6.0, pressing it places the booking in **Awaiting payment**, holding its dates, and emails the customer how to pay. You confirm it with **Mark as paid** once the money arrives, which fires the `ReservationConfirmed` event and sends the confirmation emails, or cancel it if it's never paid. The checkout complete page shows a `pending` status. See [Offline / pay-later](/checkout#offline-pay-later).
 
 ```php
 'offline' => [
@@ -70,9 +69,11 @@ The customer sees a description, the amount due and a **Confirm reservation** bu
 The description, amount label and button text are translation keys (`offlinePaymentDescription`, `offlinePaymentAmount`, `confirmReservation` and others). See [Languages](/languages).
 :::
 
-Resrv can't know if the customer paid, so from v6.5.0 the Control Panel shows the amount of these bookings as **Payment** rather than as paid. Refunding one only records the refund. If the customer did pay, you return the money yourself.
+Before v6.6.0, pressing the button confirmed the booking at once. Nothing records whether those bookings were paid, so the Control Panel shows their amount as **Payment** rather than as paid. Refunding one only records the refund. If the customer did pay, you return the money yourself.
 
-For [manual reservations](/manual-reservations), the offline gateway shows your **Offline Payment Instructions** (**Resrv → Settings → Checkout → Manual reservations**) on the [payment page](/payment-page) and in the payment request email. You confirm the booking with **Mark as paid** once the money arrives. See [Gateways for manual reservations](#gateways-for-manual-reservations).
+Your **Offline Payment Instructions** (**Resrv → Settings → Checkout → Manual reservations**), such as your bank details, tell customers how to pay. Website customers see them at the [offline checkout step](/checkout#offline-pay-later) and in the [payment request email](/emails#offline-checkout-bookings).
+
+For [manual reservations](/manual-reservations), the offline gateway shows the same instructions on the [payment page](/payment-page) and in the payment request email. You confirm the booking with **Mark as paid** once the money arrives. See [Gateways for manual reservations](#gateways-for-manual-reservations).
 
 ## Surcharges
 
@@ -119,7 +120,7 @@ When more than one gateway is available, the payment step lists them by label, w
 
 See [Checkout](/checkout) for the full flow and how to customise the checkout views.
 
-## Gateways for manual reservations <Badge variant="accent">NEW</Badge> [#gateways-for-manual-reservations]
+## Gateways for manual reservations [#gateways-for-manual-reservations]
 
 From v6.5.0 you can [create reservations in the Control Panel](/manual-reservations) and ask the customer to pay. The same gateways collect those payments, with a few differences:
 
@@ -137,7 +138,7 @@ From v6.5.0 you can [create reservations in the Control Panel](/manual-reservati
 </Frame>
 
 :::warning[NO MANUAL-ONLY GATEWAYS]
-Every gateway in `payment_gateways` is offered both at checkout (within its amount limits) and on the **Create reservation** page. If you add the Offline gateway for manual bookings, website customers can also choose it at checkout, where it [confirms the booking immediately](#the-offline-gateway) without payment.
+Every gateway in `payment_gateways` is offered both at checkout (within its amount limits) and on the **Create reservation** page. If you add the Offline gateway for manual bookings, website customers can also choose it at checkout, where their booking [waits for its payment](#the-offline-gateway) until you mark it as paid.
 :::
 
 A booking paid from the payment page refunds through its gateway. For a booking you marked as paid, Resrv only records the refund and you return the money yourself. See [Refunds and reconciliation](/manual-reservations#refunds-and-reconciliation).
@@ -149,7 +150,7 @@ Each gateway has its own webhook URL:
 | Route | Resolves to |
 | --- | --- |
 | `/resrv/api/webhook/{gateway}` | The gateway whose config key is `{gateway}` |
-| `/resrv/api/webhook` | The default gateway (single-gateway sites only) |
+| `/resrv/api/webhook` | Your only configured gateway (single-gateway sites only) |
 
 Each route accepts `GET` and `POST` and is exempt from CSRF protection. They also confirm payments made from the [payment page](/payment-page) of a manual reservation.
 
@@ -163,7 +164,7 @@ See [Stripe](/stripe) for setting up the Stripe webhook and its signing secret.
 
 ## Redirect vs inline gateways
 
-Inline gateways, like Stripe, PayPal and Offline, show their payment form on the checkout page. Redirect gateways send the customer to the provider's payment page, and Resrv adds a `resrv_gateway=<config-key>` parameter to the redirect URL.
+Inline gateways, like Stripe, PayPal and Offline, show their payment form on the checkout page. Redirect gateways send the customer to the provider's payment page. From v6.6.0, Resrv uses the provider's URL as the gateway returns it, since adding a parameter could break a signed URL. The `resrv_gateway=<config-key>` parameter goes on the return URL instead (see [The return URL](/custom-payment-gateway#the-return-url)).
 
 When the customer returns, your checkout complete page (the one with the `{{ resrv_checkout_redirect }}` tag) works out which gateway handled the payment. It checks the reservation's stored gateway first, then the `resrv_gateway` parameter, then the default. It then shows a `success`, `failed` or `pending` status. See [Checkout](/checkout) for details.
 
@@ -171,7 +172,11 @@ For a [manual reservation](/manual-reservations), the customer returns to the [p
 
 ## Cancelling abandoned payments
 
-When a customer leaves the payment step, switches gateway or reopens an expired checkout, Resrv cancels the old payment intent at the provider. Provider errors during cancellation are logged and ignored, so they never block checkout.
+From v6.6.0, a customer who comes back to the checkout and pays with the same gateway and amount continues the payment they started, as long as the provider still accepts it.
+
+When a customer leaves the payment step, switches gateway or changes the amount, with a coupon for example, Resrv cancels the old payment intent at the provider. From v6.6.0, it checks that the payment is cancelled before it creates another, so a customer can't be charged twice. If the provider can't cancel it, the customer sees an error, or a notice saying when they can try again. If the old payment already went through, they go to your checkout complete page.
+
+When a checkout expires, Resrv cancels its payment intent too. Provider errors there are logged and ignored.
 
 Manual reservations work differently, because the customer may still be paying from the link. When you cancel one, mark one as paid, or the lapsed-hold sweep cancels one, Resrv cancels any open intent and checks the result with the provider. It forgets the payment reference only once the provider confirms the intent is dead. If money has moved, or Resrv can't confirm, it keeps the reference and warns your admins. See [Reconciliation alerts](/manual-reservations#reconciliation-alerts).
 
